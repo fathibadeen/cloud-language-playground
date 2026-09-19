@@ -62,7 +62,7 @@ function KnowledgePage() {
         })
         .select()
         .single();
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       baseId = data.id;
     }
     const { error } = await supabase.from("knowledge_documents").insert({
@@ -73,7 +73,7 @@ function KnowledgePage() {
       content: form.content || null,
       source_url: form.source_url || null,
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(t("saved"));
     setOpen(false);
     setForm({ title: "", source_type: "text", content: "", source_url: "" });
@@ -83,7 +83,7 @@ function KnowledgePage() {
 
   async function remove(id: string) {
     const { error } = await supabase.from("knowledge_documents").delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["knowledge_documents"] });
   }
 

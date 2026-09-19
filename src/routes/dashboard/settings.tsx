@@ -59,7 +59,7 @@ function SettingsPage() {
     try {
       workingHours = hours.trim() ? JSON.parse(hours) : {};
     } catch {
-      return toast.error("JSON");
+      { toast.error("JSON"); return; }
     }
     const { error } = await supabase
       .from("companies")
@@ -74,10 +74,10 @@ function SettingsPage() {
         contact_phone: form.contact_phone ?? null,
         contact_email: form.contact_email ?? null,
         default_locale: form.default_locale ?? "ar",
-        working_hours: workingHours,
+        working_hours: workingHours as never,
       })
       .eq("id", company.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(t("saved"));
     qc.invalidateQueries({ queryKey: ["membership"] });
   }

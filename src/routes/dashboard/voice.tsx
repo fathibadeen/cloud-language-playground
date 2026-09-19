@@ -38,7 +38,7 @@ function VoicePage() {
   async function toggleService(enabled: boolean) {
     if (!company) return;
     const { error } = await supabase.from("companies").update({ voice_enabled: enabled }).eq("id", company.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["membership"] });
   }
 

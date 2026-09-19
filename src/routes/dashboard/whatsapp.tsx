@@ -68,7 +68,7 @@ function WhatsappPage() {
       })
       .select()
       .single();
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     if (form.token) {
       await saveProviderCredentials({
         data: {
@@ -91,7 +91,7 @@ function WhatsappPage() {
       .from("companies")
       .update({ whatsapp_enabled: enabled })
       .eq("id", company.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["membership"] });
   }
 

@@ -182,8 +182,8 @@ function Landing() {
                 <span className="grid size-8 place-items-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                   {i + 1}
                 </span>
-                <h3 className="mt-4 font-semibold">{t(k)}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{t(d)}</p>
+                <h3 className="mt-4 font-semibold">{t(k!)}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{t(d!)}</p>
               </div>
             ))}
           </div>

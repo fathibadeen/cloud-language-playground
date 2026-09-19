@@ -93,7 +93,7 @@ function DashboardLayout() {
         </div>
         <nav className="space-y-1 p-3">
           {nav.map((item) => {
-            const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
+            const active = "exact" in item && item.exact ? pathname === item.to : pathname.startsWith(item.to);
             return (
               <Link
                 key={item.to}

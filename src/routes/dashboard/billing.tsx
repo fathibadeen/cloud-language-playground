@@ -44,7 +44,7 @@ function BillingPage() {
       .from("subscriptions")
       .update({ plan_id: planId })
       .eq("id", subscription.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(t("saved"));
     qc.invalidateQueries({ queryKey: ["subscription"] });
   }

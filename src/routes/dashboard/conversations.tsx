@@ -68,9 +68,9 @@ function ConversationsPage() {
   async function takeOver(id: string) {
     const { error } = await supabase
       .from("conversations")
-      .update({ status: "human", assigned_user_id: user?.id })
+      .update({ status: "human", assigned_user_id: user?.id ?? null })
       .eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["conversations"] });
   }
 
