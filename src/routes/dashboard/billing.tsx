@@ -1,6 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, usePlans, useSubscription } from "@/lib/tenant";
-import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/dashboard/billing")({
   component: BillingPage,
@@ -30,7 +28,6 @@ type Invoice = {
 
 function BillingPage() {
   const { t, locale } = useI18n();
-  const qc = useQueryClient();
   const companyId = useCompanyId();
   const { data: subscription } = useSubscription(companyId);
   const { data: plans } = usePlans();
