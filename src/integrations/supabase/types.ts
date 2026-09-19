@@ -1292,6 +1292,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_company_with_owner: {
+        Args: { _payload: Json; _service?: string }
+        Returns: string
+      }
       has_company_role: {
         Args: {
           _company_id: string

@@ -1,6 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, usePlans, useSubscription } from "@/lib/tenant";
-import { supabase } from "@/integrations/supabase/client";
+
 
 export const Route = createFileRoute("/dashboard/billing")({
   component: BillingPage,
@@ -30,7 +28,6 @@ type Invoice = {
 
 function BillingPage() {
   const { t, locale } = useI18n();
-  const qc = useQueryClient();
   const companyId = useCompanyId();
   const { data: subscription } = useSubscription(companyId);
   const { data: plans } = usePlans();
@@ -38,16 +35,6 @@ function BillingPage() {
 
   const currentPlanId = subscription?.plan_id;
 
-  async function changePlan(planId: string) {
-    if (!subscription) return;
-    const { error } = await supabase
-      .from("subscriptions")
-      .update({ plan_id: planId })
-      .eq("id", subscription.id);
-    if (error) { toast.error(error.message); return; }
-    toast.success(t("saved"));
-    qc.invalidateQueries({ queryKey: ["subscription"] });
-  }
 
   return (
     <div className="space-y-6">
@@ -84,13 +71,8 @@ function BillingPage() {
                     {p.max_agents} {t("navAgents")}
                   </li>
                 </ul>
-                <Button
-                  className="w-full"
-                  variant={current ? "outline" : "default"}
-                  disabled={current}
-                  onClick={() => changePlan(p.id)}
-                >
-                  {current ? t("currentPlan") : t("upgrade")}
+                <Button className="w-full" variant="outline" disabled>
+                  {current ? t("currentPlan") : t("paymentsDisabled")}
                 </Button>
               </CardContent>
             </Card>

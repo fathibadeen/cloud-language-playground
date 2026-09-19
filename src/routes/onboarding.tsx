@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { useMembership, usePlans } from "@/lib/tenant";
+import { useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/onboarding")({
@@ -37,7 +37,6 @@ function Onboarding() {
   const qc = useQueryClient();
   const { user, loading } = useAuth();
   const { data: membership, isLoading: memberLoading } = useMembership();
-  const { data: plans } = usePlans();
 
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
@@ -56,7 +55,6 @@ function Onboarding() {
   const [knowledge, setKnowledge] = useState("");
   const [agentName, setAgentName] = useState("");
   const [greeting, setGreeting] = useState("");
-  const [planCode, setPlanCode] = useState("starter");
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
@@ -77,30 +75,16 @@ function Onboarding() {
     if (!user) return;
     setBusy(true);
     try {
-      const { data: company, error: cErr } = await supabase
-        .from("companies")
-        .insert({
-          ...form,
-          created_by: user.id,
-          default_locale: locale,
-          voice_enabled: service !== "whatsapp",
-          whatsapp_enabled: service !== "voice",
-          onboarding_completed: true,
-          onboarding_step: 7,
-        })
-        .select()
-        .single();
+      const { data: companyId, error: cErr } = await supabase.rpc("create_company_with_owner", {
+        _payload: { ...form, default_locale: locale },
+        _service: service,
+      });
       if (cErr) throw cErr;
-
-      const { error: mErr } = await supabase
-        .from("company_members")
-        .insert({ company_id: company.id, user_id: user.id, role: "owner" });
-      if (mErr) throw mErr;
 
       const { data: kb, error: kErr } = await supabase
         .from("knowledge_bases")
         .insert({
-          company_id: company.id,
+          company_id: companyId,
           name: locale === "ar" ? "قاعدة معرفة الشركة" : "Company knowledge base",
         })
         .select()
@@ -109,7 +93,7 @@ function Onboarding() {
 
       if (knowledge.trim()) {
         await supabase.from("knowledge_documents").insert({
-          company_id: company.id,
+          company_id: companyId,
           knowledge_base_id: kb.id,
           title: locale === "ar" ? "معلومات أساسية" : "Company basics",
           source_type: "text",
@@ -121,7 +105,7 @@ function Onboarding() {
         service === "both" ? ["voice", "whatsapp"] : [service];
       for (const ch of channels) {
         await supabase.from("ai_agents").insert({
-          company_id: company.id,
+          company_id: companyId,
           name: agentName || (locale === "ar" ? "وكيل خدمة العملاء" : "Customer service agent"),
           channel: ch,
           language: locale,
@@ -131,10 +115,9 @@ function Onboarding() {
         });
       }
 
-      const plan = plans?.find((p) => p.code === planCode);
+      // لا توجد مدفوعات حاليًا — يبدأ الحساب بفترة تجريبية بدون باقة مدفوعة
       await supabase.from("subscriptions").insert({
-        company_id: company.id,
-        plan_id: plan?.id ?? null,
+        company_id: companyId,
         status: "trialing",
       });
 
@@ -152,13 +135,7 @@ function Onboarding() {
     return <div className="grid min-h-screen place-items-center text-muted-foreground">{t("loading")}</div>;
   }
 
-  const steps = [
-    t("companyInfo"),
-    t("chooseService"),
-    t("navKnowledge"),
-    t("navAgents"),
-    t("pricing"),
-  ];
+  const steps = [t("companyInfo"), t("chooseService"), t("navKnowledge"), t("navAgents")];
 
   return (
     <div className="min-h-screen bg-secondary/40">
@@ -280,29 +257,11 @@ function Onboarding() {
               </div>
             ) : null}
 
-            {step === 5 ? (
-              <div className="grid gap-4 md:grid-cols-3">
-                {(plans ?? []).map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => setPlanCode(p.code)}
-                    className={`rounded-xl border p-5 text-start transition-colors ${
-                      planCode === p.code ? "border-primary bg-secondary" : "bg-card"
-                    }`}
-                  >
-                    <p className="font-semibold">{locale === "ar" ? p.name_ar : p.name_en}</p>
-                    <p className="mt-2 text-2xl font-bold">{Number(p.price_sar).toFixed(0)}</p>
-                    <p className="text-xs text-muted-foreground">{t("perMonth")}</p>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-
             <div className="flex justify-between pt-2">
               <Button variant="outline" disabled={step === 1} onClick={() => setStep((s) => s - 1)}>
                 {t("back")}
               </Button>
-              {step < 5 ? (
+              {step < 4 ? (
                 <Button disabled={step === 1 && !form.name} onClick={() => setStep((s) => s + 1)}>
                   {t("next")}
                 </Button>
