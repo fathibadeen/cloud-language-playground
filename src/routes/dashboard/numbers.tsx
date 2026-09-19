@@ -62,7 +62,7 @@ function NumbersPage() {
   async function addNumber() {
     if (!companyId) return;
     const { error } = await supabase.from("phone_numbers").insert({ company_id: companyId, ...form });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(t("saved"));
     setOpen(false);
     qc.invalidateQueries({ queryKey: ["phone_numbers"] });
@@ -73,7 +73,7 @@ function NumbersPage() {
       .from("phone_numbers")
       .update({ agent_id: agentId === "none" ? null : agentId })
       .eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["phone_numbers"] });
   }
 

@@ -68,7 +68,7 @@ function AgentsPage() {
       channel: form.channel as "voice" | "whatsapp",
       language: form.language as "ar" | "en",
     });
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     toast.success(t("saved"));
     setOpen(false);
     qc.invalidateQueries({ queryKey: ["ai_agents"] });
@@ -79,7 +79,7 @@ function AgentsPage() {
       .from("ai_agents")
       .update({ is_active: !agent.is_active })
       .eq("id", agent.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["ai_agents"] });
   }
 

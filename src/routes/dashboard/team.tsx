@@ -50,13 +50,13 @@ function TeamPage() {
       .from("company_members")
       .update({ role: value as "owner" | "admin" | "agent" | "viewer" })
       .eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["company_members"] });
   }
 
   async function remove(id: string) {
     const { error } = await supabase.from("company_members").delete().eq("id", id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     qc.invalidateQueries({ queryKey: ["company_members"] });
   }
 

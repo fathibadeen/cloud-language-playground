@@ -10,24 +10,33 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardAgentsRouteImport } from './routes/dashboard/agents'
+import { Route as DashboardBillingRouteImport } from './routes/dashboard/billing'
 import { Route as DashboardCallsRouteImport } from './routes/dashboard/calls'
 import { Route as DashboardConversationsRouteImport } from './routes/dashboard/conversations'
 import { Route as DashboardKnowledgeRouteImport } from './routes/dashboard/knowledge'
 import { Route as DashboardNumbersRouteImport } from './routes/dashboard/numbers'
+import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardTeamRouteImport } from './routes/dashboard/team'
 import { Route as DashboardUsageRouteImport } from './routes/dashboard/usage'
 import { Route as DashboardVoiceRouteImport } from './routes/dashboard/voice'
 import { Route as DashboardWhatsappRouteImport } from './routes/dashboard/whatsapp'
+import { Route as ApiPublicWebhooksProviderRouteImport } from './routes/api/public/webhooks/$provider'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -60,6 +69,11 @@ const DashboardAgentsRoute = DashboardAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardBillingRoute = DashboardBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardCallsRoute = DashboardCallsRouteImport.update({
   id: '/calls',
   path: '/calls',
@@ -78,6 +92,11 @@ const DashboardKnowledgeRoute = DashboardKnowledgeRouteImport.update({
 const DashboardNumbersRoute = DashboardNumbersRouteImport.update({
   id: '/numbers',
   path: '/numbers',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardSettingsRoute = DashboardSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 const DashboardTeamRoute = DashboardTeamRouteImport.update({
@@ -100,117 +119,149 @@ const DashboardWhatsappRoute = DashboardWhatsappRouteImport.update({
   path: '/whatsapp',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const ApiPublicWebhooksProviderRoute =
+  ApiPublicWebhooksProviderRouteImport.update({
+    id: '/api/public/webhooks/$provider',
+    path: '/api/public/webhooks/$provider',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/calls': typeof DashboardCallsRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/team': typeof DashboardTeamRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/dashboard/voice': typeof DashboardVoiceRoute
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/calls': typeof DashboardCallsRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/team': typeof DashboardTeamRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/dashboard/voice': typeof DashboardVoiceRoute
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/calls': typeof DashboardCallsRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
+  '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/team': typeof DashboardTeamRoute
   '/dashboard/usage': typeof DashboardUsageRoute
   '/dashboard/voice': typeof DashboardVoiceRoute
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/admin'
     | '/auth'
     | '/onboarding'
     | '/reset-password'
     | '/dashboard/agents'
+    | '/dashboard/billing'
     | '/dashboard/calls'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
+    | '/dashboard/settings'
     | '/dashboard/team'
     | '/dashboard/usage'
     | '/dashboard/voice'
     | '/dashboard/whatsapp'
     | '/dashboard/'
+    | '/api/public/webhooks/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/auth'
     | '/onboarding'
     | '/reset-password'
     | '/dashboard/agents'
+    | '/dashboard/billing'
     | '/dashboard/calls'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
+    | '/dashboard/settings'
     | '/dashboard/team'
     | '/dashboard/usage'
     | '/dashboard/voice'
     | '/dashboard/whatsapp'
     | '/dashboard'
+    | '/api/public/webhooks/$provider'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/admin'
     | '/auth'
     | '/onboarding'
     | '/reset-password'
     | '/dashboard/agents'
+    | '/dashboard/billing'
     | '/dashboard/calls'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
+    | '/dashboard/settings'
     | '/dashboard/team'
     | '/dashboard/usage'
     | '/dashboard/voice'
     | '/dashboard/whatsapp'
     | '/dashboard/'
+    | '/api/public/webhooks/$provider'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicWebhooksProviderRoute: typeof ApiPublicWebhooksProviderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -220,6 +271,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -264,6 +322,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAgentsRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/billing': {
+      id: '/dashboard/billing'
+      path: '/billing'
+      fullPath: '/dashboard/billing'
+      preLoaderRoute: typeof DashboardBillingRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/calls': {
       id: '/dashboard/calls'
       path: '/calls'
@@ -290,6 +355,13 @@ declare module '@tanstack/react-router' {
       path: '/numbers'
       fullPath: '/dashboard/numbers'
       preLoaderRoute: typeof DashboardNumbersRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/settings': {
+      id: '/dashboard/settings'
+      path: '/settings'
+      fullPath: '/dashboard/settings'
+      preLoaderRoute: typeof DashboardSettingsRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/team': {
@@ -320,15 +392,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWhatsappRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/api/public/webhooks/$provider': {
+      id: '/api/public/webhooks/$provider'
+      path: '/api/public/webhooks/$provider'
+      fullPath: '/api/public/webhooks/$provider'
+      preLoaderRoute: typeof ApiPublicWebhooksProviderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface DashboardRouteRouteChildren {
   DashboardAgentsRoute: typeof DashboardAgentsRoute
+  DashboardBillingRoute: typeof DashboardBillingRoute
   DashboardCallsRoute: typeof DashboardCallsRoute
   DashboardConversationsRoute: typeof DashboardConversationsRoute
   DashboardKnowledgeRoute: typeof DashboardKnowledgeRoute
   DashboardNumbersRoute: typeof DashboardNumbersRoute
+  DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardTeamRoute: typeof DashboardTeamRoute
   DashboardUsageRoute: typeof DashboardUsageRoute
   DashboardVoiceRoute: typeof DashboardVoiceRoute
@@ -338,10 +419,12 @@ interface DashboardRouteRouteChildren {
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardAgentsRoute: DashboardAgentsRoute,
+  DashboardBillingRoute: DashboardBillingRoute,
   DashboardCallsRoute: DashboardCallsRoute,
   DashboardConversationsRoute: DashboardConversationsRoute,
   DashboardKnowledgeRoute: DashboardKnowledgeRoute,
   DashboardNumbersRoute: DashboardNumbersRoute,
+  DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardTeamRoute: DashboardTeamRoute,
   DashboardUsageRoute: DashboardUsageRoute,
   DashboardVoiceRoute: DashboardVoiceRoute,
@@ -356,9 +439,11 @@ const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRouteRoute: DashboardRouteRouteWithChildren,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicWebhooksProviderRoute: ApiPublicWebhooksProviderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
