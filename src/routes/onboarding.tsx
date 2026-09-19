@@ -77,30 +77,16 @@ function Onboarding() {
     if (!user) return;
     setBusy(true);
     try {
-      const { data: company, error: cErr } = await supabase
-        .from("companies")
-        .insert({
-          ...form,
-          created_by: user.id,
-          default_locale: locale,
-          voice_enabled: service !== "whatsapp",
-          whatsapp_enabled: service !== "voice",
-          onboarding_completed: true,
-          onboarding_step: 7,
-        })
-        .select()
-        .single();
+      const { data: companyId, error: cErr } = await supabase.rpc("create_company_with_owner", {
+        _payload: { ...form, default_locale: locale },
+        _service: service,
+      });
       if (cErr) throw cErr;
-
-      const { error: mErr } = await supabase
-        .from("company_members")
-        .insert({ company_id: company.id, user_id: user.id, role: "owner" });
-      if (mErr) throw mErr;
 
       const { data: kb, error: kErr } = await supabase
         .from("knowledge_bases")
         .insert({
-          company_id: company.id,
+          company_id: companyId,
           name: locale === "ar" ? "قاعدة معرفة الشركة" : "Company knowledge base",
         })
         .select()
@@ -109,7 +95,7 @@ function Onboarding() {
 
       if (knowledge.trim()) {
         await supabase.from("knowledge_documents").insert({
-          company_id: company.id,
+          company_id: companyId,
           knowledge_base_id: kb.id,
           title: locale === "ar" ? "معلومات أساسية" : "Company basics",
           source_type: "text",
@@ -121,7 +107,7 @@ function Onboarding() {
         service === "both" ? ["voice", "whatsapp"] : [service];
       for (const ch of channels) {
         await supabase.from("ai_agents").insert({
-          company_id: company.id,
+          company_id: companyId,
           name: agentName || (locale === "ar" ? "وكيل خدمة العملاء" : "Customer service agent"),
           channel: ch,
           language: locale,
@@ -131,10 +117,9 @@ function Onboarding() {
         });
       }
 
-      const plan = plans?.find((p) => p.code === planCode);
+      // لا توجد مدفوعات حاليًا — يبدأ الحساب بفترة تجريبية بدون باقة مدفوعة
       await supabase.from("subscriptions").insert({
-        company_id: company.id,
-        plan_id: plan?.id ?? null,
+        company_id: companyId,
         status: "trialing",
       });
 
