@@ -265,29 +265,11 @@ function Onboarding() {
               </div>
             ) : null}
 
-            {step === 5 ? (
-              <div className="grid gap-4 md:grid-cols-3">
-                {(plans ?? []).map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => setPlanCode(p.code)}
-                    className={`rounded-xl border p-5 text-start transition-colors ${
-                      planCode === p.code ? "border-primary bg-secondary" : "bg-card"
-                    }`}
-                  >
-                    <p className="font-semibold">{locale === "ar" ? p.name_ar : p.name_en}</p>
-                    <p className="mt-2 text-2xl font-bold">{Number(p.price_sar).toFixed(0)}</p>
-                    <p className="text-xs text-muted-foreground">{t("perMonth")}</p>
-                  </button>
-                ))}
-              </div>
-            ) : null}
-
             <div className="flex justify-between pt-2">
               <Button variant="outline" disabled={step === 1} onClick={() => setStep((s) => s - 1)}>
                 {t("back")}
               </Button>
-              {step < 5 ? (
+              {step < 4 ? (
                 <Button disabled={step === 1 && !form.name} onClick={() => setStep((s) => s + 1)}>
                   {t("next")}
                 </Button>
