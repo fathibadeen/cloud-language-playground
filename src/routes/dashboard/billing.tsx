@@ -38,16 +38,6 @@ function BillingPage() {
 
   const currentPlanId = subscription?.plan_id;
 
-  async function changePlan(planId: string) {
-    if (!subscription) return;
-    const { error } = await supabase
-      .from("subscriptions")
-      .update({ plan_id: planId })
-      .eq("id", subscription.id);
-    if (error) { toast.error(error.message); return; }
-    toast.success(t("saved"));
-    qc.invalidateQueries({ queryKey: ["subscription"] });
-  }
 
   return (
     <div className="space-y-6">
