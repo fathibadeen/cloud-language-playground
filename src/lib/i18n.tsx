@@ -248,9 +248,10 @@ export const dict: Dict = {
   invoices: { ar: "الفواتير", en: "Invoices" },
   amount: { ar: "المبلغ", en: "Amount" },
   paymentsSoon: {
-    ar: "بوابات الدفع السعودية (تاب، هايبر باي، ميسر، نيوليب) جاهزة للربط لاحقًا — لا تتم معالجة مدفوعات حاليًا.",
-    en: "Saudi payment gateways (Tap, HyperPay, Moyasar, Neoleap) are ready to connect later — no payments are processed yet.",
+    ar: "الدفع معطّل حاليًا — جميع الحسابات تعمل بفترة تجريبية مجانية. ستُفعَّل بوابات الدفع لاحقًا.",
+    en: "Payments are disabled for now — all accounts run on a free trial. Payment gateways will be enabled later.",
   },
+  paymentsDisabled: { ar: "الدفع معطّل حاليًا", en: "Payments disabled" },
 
   // settings
   companySettings: { ar: "إعدادات الشركة", en: "Company settings" },
