@@ -16,8 +16,12 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardAgentsRouteImport } from './routes/dashboard/agents'
+import { Route as DashboardCallsRouteImport } from './routes/dashboard/calls'
+import { Route as DashboardConversationsRouteImport } from './routes/dashboard/conversations'
 import { Route as DashboardKnowledgeRouteImport } from './routes/dashboard/knowledge'
 import { Route as DashboardNumbersRouteImport } from './routes/dashboard/numbers'
+import { Route as DashboardTeamRouteImport } from './routes/dashboard/team'
+import { Route as DashboardUsageRouteImport } from './routes/dashboard/usage'
 import { Route as DashboardVoiceRouteImport } from './routes/dashboard/voice'
 import { Route as DashboardWhatsappRouteImport } from './routes/dashboard/whatsapp'
 
@@ -56,6 +60,16 @@ const DashboardAgentsRoute = DashboardAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardCallsRoute = DashboardCallsRouteImport.update({
+  id: '/calls',
+  path: '/calls',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardConversationsRoute = DashboardConversationsRouteImport.update({
+  id: '/conversations',
+  path: '/conversations',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardKnowledgeRoute = DashboardKnowledgeRouteImport.update({
   id: '/knowledge',
   path: '/knowledge',
@@ -64,6 +78,16 @@ const DashboardKnowledgeRoute = DashboardKnowledgeRouteImport.update({
 const DashboardNumbersRoute = DashboardNumbersRouteImport.update({
   id: '/numbers',
   path: '/numbers',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardTeamRoute = DashboardTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardUsageRoute = DashboardUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
 const DashboardVoiceRoute = DashboardVoiceRouteImport.update({
@@ -84,8 +108,12 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
+  '/dashboard/team': typeof DashboardTeamRoute
+  '/dashboard/usage': typeof DashboardUsageRoute
   '/dashboard/voice': typeof DashboardVoiceRoute
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -96,8 +124,12 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
+  '/dashboard/team': typeof DashboardTeamRoute
+  '/dashboard/usage': typeof DashboardUsageRoute
   '/dashboard/voice': typeof DashboardVoiceRoute
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/dashboard': typeof DashboardIndexRoute
@@ -110,8 +142,12 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/reset-password': typeof ResetPasswordRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
+  '/dashboard/team': typeof DashboardTeamRoute
+  '/dashboard/usage': typeof DashboardUsageRoute
   '/dashboard/voice': typeof DashboardVoiceRoute
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/dashboard/': typeof DashboardIndexRoute
@@ -125,8 +161,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/reset-password'
     | '/dashboard/agents'
+    | '/dashboard/calls'
+    | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
+    | '/dashboard/team'
+    | '/dashboard/usage'
     | '/dashboard/voice'
     | '/dashboard/whatsapp'
     | '/dashboard/'
@@ -137,8 +177,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/reset-password'
     | '/dashboard/agents'
+    | '/dashboard/calls'
+    | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
+    | '/dashboard/team'
+    | '/dashboard/usage'
     | '/dashboard/voice'
     | '/dashboard/whatsapp'
     | '/dashboard'
@@ -150,8 +194,12 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/reset-password'
     | '/dashboard/agents'
+    | '/dashboard/calls'
+    | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
+    | '/dashboard/team'
+    | '/dashboard/usage'
     | '/dashboard/voice'
     | '/dashboard/whatsapp'
     | '/dashboard/'
@@ -216,6 +264,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAgentsRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/calls': {
+      id: '/dashboard/calls'
+      path: '/calls'
+      fullPath: '/dashboard/calls'
+      preLoaderRoute: typeof DashboardCallsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/conversations': {
+      id: '/dashboard/conversations'
+      path: '/conversations'
+      fullPath: '/dashboard/conversations'
+      preLoaderRoute: typeof DashboardConversationsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/knowledge': {
       id: '/dashboard/knowledge'
       path: '/knowledge'
@@ -228,6 +290,20 @@ declare module '@tanstack/react-router' {
       path: '/numbers'
       fullPath: '/dashboard/numbers'
       preLoaderRoute: typeof DashboardNumbersRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/team': {
+      id: '/dashboard/team'
+      path: '/team'
+      fullPath: '/dashboard/team'
+      preLoaderRoute: typeof DashboardTeamRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/usage': {
+      id: '/dashboard/usage'
+      path: '/usage'
+      fullPath: '/dashboard/usage'
+      preLoaderRoute: typeof DashboardUsageRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
     '/dashboard/voice': {
@@ -249,8 +325,12 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteRouteChildren {
   DashboardAgentsRoute: typeof DashboardAgentsRoute
+  DashboardCallsRoute: typeof DashboardCallsRoute
+  DashboardConversationsRoute: typeof DashboardConversationsRoute
   DashboardKnowledgeRoute: typeof DashboardKnowledgeRoute
   DashboardNumbersRoute: typeof DashboardNumbersRoute
+  DashboardTeamRoute: typeof DashboardTeamRoute
+  DashboardUsageRoute: typeof DashboardUsageRoute
   DashboardVoiceRoute: typeof DashboardVoiceRoute
   DashboardWhatsappRoute: typeof DashboardWhatsappRoute
   DashboardIndexRoute: typeof DashboardIndexRoute
@@ -258,8 +338,12 @@ interface DashboardRouteRouteChildren {
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardAgentsRoute: DashboardAgentsRoute,
+  DashboardCallsRoute: DashboardCallsRoute,
+  DashboardConversationsRoute: DashboardConversationsRoute,
   DashboardKnowledgeRoute: DashboardKnowledgeRoute,
   DashboardNumbersRoute: DashboardNumbersRoute,
+  DashboardTeamRoute: DashboardTeamRoute,
+  DashboardUsageRoute: DashboardUsageRoute,
   DashboardVoiceRoute: DashboardVoiceRoute,
   DashboardWhatsappRoute: DashboardWhatsappRoute,
   DashboardIndexRoute: DashboardIndexRoute,
