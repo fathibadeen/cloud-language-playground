@@ -137,13 +137,7 @@ function Onboarding() {
     return <div className="grid min-h-screen place-items-center text-muted-foreground">{t("loading")}</div>;
   }
 
-  const steps = [
-    t("companyInfo"),
-    t("chooseService"),
-    t("navKnowledge"),
-    t("navAgents"),
-    t("pricing"),
-  ];
+  const steps = [t("companyInfo"), t("chooseService"), t("navKnowledge"), t("navAgents")];
 
   return (
     <div className="min-h-screen bg-secondary/40">
