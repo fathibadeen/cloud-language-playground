@@ -37,7 +37,6 @@ function Onboarding() {
   const qc = useQueryClient();
   const { user, loading } = useAuth();
   const { data: membership, isLoading: memberLoading } = useMembership();
-  const { data: plans } = usePlans();
 
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
