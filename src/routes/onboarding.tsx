@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { useMembership, usePlans } from "@/lib/tenant";
+import { useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/onboarding")({
@@ -55,7 +55,6 @@ function Onboarding() {
   const [knowledge, setKnowledge] = useState("");
   const [agentName, setAgentName] = useState("");
   const [greeting, setGreeting] = useState("");
-  const [planCode, setPlanCode] = useState("starter");
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
