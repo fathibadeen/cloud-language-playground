@@ -10,33 +10,207 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
+import { Route as DashboardAgentsRouteImport } from './routes/dashboard/agents'
+import { Route as DashboardCallsRouteImport } from './routes/dashboard/calls'
+import { Route as DashboardConversationsRouteImport } from './routes/dashboard/conversations'
+import { Route as DashboardKnowledgeRouteImport } from './routes/dashboard/knowledge'
+import { Route as DashboardNumbersRouteImport } from './routes/dashboard/numbers'
+import { Route as DashboardTeamRouteImport } from './routes/dashboard/team'
+import { Route as DashboardUsageRouteImport } from './routes/dashboard/usage'
+import { Route as DashboardVoiceRouteImport } from './routes/dashboard/voice'
+import { Route as DashboardWhatsappRouteImport } from './routes/dashboard/whatsapp'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRouteRoute = DashboardRouteRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardIndexRoute = DashboardIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardAgentsRoute = DashboardAgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardCallsRoute = DashboardCallsRouteImport.update({
+  id: '/calls',
+  path: '/calls',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardConversationsRoute = DashboardConversationsRouteImport.update({
+  id: '/conversations',
+  path: '/conversations',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardKnowledgeRoute = DashboardKnowledgeRouteImport.update({
+  id: '/knowledge',
+  path: '/knowledge',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardNumbersRoute = DashboardNumbersRouteImport.update({
+  id: '/numbers',
+  path: '/numbers',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardTeamRoute = DashboardTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardUsageRoute = DashboardUsageRouteImport.update({
+  id: '/usage',
+  path: '/usage',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardVoiceRoute = DashboardVoiceRouteImport.update({
+  id: '/voice',
+  path: '/voice',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
+const DashboardWhatsappRoute = DashboardWhatsappRouteImport.update({
+  id: '/whatsapp',
+  path: '/whatsapp',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/conversations': typeof DashboardConversationsRoute
+  '/dashboard/knowledge': typeof DashboardKnowledgeRoute
+  '/dashboard/numbers': typeof DashboardNumbersRoute
+  '/dashboard/team': typeof DashboardTeamRoute
+  '/dashboard/usage': typeof DashboardUsageRoute
+  '/dashboard/voice': typeof DashboardVoiceRoute
+  '/dashboard/whatsapp': typeof DashboardWhatsappRoute
+  '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/conversations': typeof DashboardConversationsRoute
+  '/dashboard/knowledge': typeof DashboardKnowledgeRoute
+  '/dashboard/numbers': typeof DashboardNumbersRoute
+  '/dashboard/team': typeof DashboardTeamRoute
+  '/dashboard/usage': typeof DashboardUsageRoute
+  '/dashboard/voice': typeof DashboardVoiceRoute
+  '/dashboard/whatsapp': typeof DashboardWhatsappRoute
+  '/dashboard': typeof DashboardIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/onboarding': typeof OnboardingRoute
+  '/reset-password': typeof ResetPasswordRoute
+  '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/conversations': typeof DashboardConversationsRoute
+  '/dashboard/knowledge': typeof DashboardKnowledgeRoute
+  '/dashboard/numbers': typeof DashboardNumbersRoute
+  '/dashboard/team': typeof DashboardTeamRoute
+  '/dashboard/usage': typeof DashboardUsageRoute
+  '/dashboard/voice': typeof DashboardVoiceRoute
+  '/dashboard/whatsapp': typeof DashboardWhatsappRoute
+  '/dashboard/': typeof DashboardIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/auth'
+    | '/onboarding'
+    | '/reset-password'
+    | '/dashboard/agents'
+    | '/dashboard/calls'
+    | '/dashboard/conversations'
+    | '/dashboard/knowledge'
+    | '/dashboard/numbers'
+    | '/dashboard/team'
+    | '/dashboard/usage'
+    | '/dashboard/voice'
+    | '/dashboard/whatsapp'
+    | '/dashboard/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/onboarding'
+    | '/reset-password'
+    | '/dashboard/agents'
+    | '/dashboard/calls'
+    | '/dashboard/conversations'
+    | '/dashboard/knowledge'
+    | '/dashboard/numbers'
+    | '/dashboard/team'
+    | '/dashboard/usage'
+    | '/dashboard/voice'
+    | '/dashboard/whatsapp'
+    | '/dashboard'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/auth'
+    | '/onboarding'
+    | '/reset-password'
+    | '/dashboard/agents'
+    | '/dashboard/calls'
+    | '/dashboard/conversations'
+    | '/dashboard/knowledge'
+    | '/dashboard/numbers'
+    | '/dashboard/team'
+    | '/dashboard/usage'
+    | '/dashboard/voice'
+    | '/dashboard/whatsapp'
+    | '/dashboard/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRouteRoute: typeof DashboardRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
+  OnboardingRoute: typeof OnboardingRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +222,143 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/': {
+      id: '/dashboard/'
+      path: '/'
+      fullPath: '/dashboard/'
+      preLoaderRoute: typeof DashboardIndexRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/agents': {
+      id: '/dashboard/agents'
+      path: '/agents'
+      fullPath: '/dashboard/agents'
+      preLoaderRoute: typeof DashboardAgentsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/calls': {
+      id: '/dashboard/calls'
+      path: '/calls'
+      fullPath: '/dashboard/calls'
+      preLoaderRoute: typeof DashboardCallsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/conversations': {
+      id: '/dashboard/conversations'
+      path: '/conversations'
+      fullPath: '/dashboard/conversations'
+      preLoaderRoute: typeof DashboardConversationsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/knowledge': {
+      id: '/dashboard/knowledge'
+      path: '/knowledge'
+      fullPath: '/dashboard/knowledge'
+      preLoaderRoute: typeof DashboardKnowledgeRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/numbers': {
+      id: '/dashboard/numbers'
+      path: '/numbers'
+      fullPath: '/dashboard/numbers'
+      preLoaderRoute: typeof DashboardNumbersRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/team': {
+      id: '/dashboard/team'
+      path: '/team'
+      fullPath: '/dashboard/team'
+      preLoaderRoute: typeof DashboardTeamRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/usage': {
+      id: '/dashboard/usage'
+      path: '/usage'
+      fullPath: '/dashboard/usage'
+      preLoaderRoute: typeof DashboardUsageRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/voice': {
+      id: '/dashboard/voice'
+      path: '/voice'
+      fullPath: '/dashboard/voice'
+      preLoaderRoute: typeof DashboardVoiceRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
+    '/dashboard/whatsapp': {
+      id: '/dashboard/whatsapp'
+      path: '/whatsapp'
+      fullPath: '/dashboard/whatsapp'
+      preLoaderRoute: typeof DashboardWhatsappRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
   }
 }
 
+interface DashboardRouteRouteChildren {
+  DashboardAgentsRoute: typeof DashboardAgentsRoute
+  DashboardCallsRoute: typeof DashboardCallsRoute
+  DashboardConversationsRoute: typeof DashboardConversationsRoute
+  DashboardKnowledgeRoute: typeof DashboardKnowledgeRoute
+  DashboardNumbersRoute: typeof DashboardNumbersRoute
+  DashboardTeamRoute: typeof DashboardTeamRoute
+  DashboardUsageRoute: typeof DashboardUsageRoute
+  DashboardVoiceRoute: typeof DashboardVoiceRoute
+  DashboardWhatsappRoute: typeof DashboardWhatsappRoute
+  DashboardIndexRoute: typeof DashboardIndexRoute
+}
+
+const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
+  DashboardAgentsRoute: DashboardAgentsRoute,
+  DashboardCallsRoute: DashboardCallsRoute,
+  DashboardConversationsRoute: DashboardConversationsRoute,
+  DashboardKnowledgeRoute: DashboardKnowledgeRoute,
+  DashboardNumbersRoute: DashboardNumbersRoute,
+  DashboardTeamRoute: DashboardTeamRoute,
+  DashboardUsageRoute: DashboardUsageRoute,
+  DashboardVoiceRoute: DashboardVoiceRoute,
+  DashboardWhatsappRoute: DashboardWhatsappRoute,
+  DashboardIndexRoute: DashboardIndexRoute,
+}
+
+const DashboardRouteRouteWithChildren = DashboardRouteRoute._addFileChildren(
+  DashboardRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRouteRoute: DashboardRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
+  OnboardingRoute: OnboardingRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
