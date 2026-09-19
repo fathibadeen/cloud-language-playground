@@ -74,13 +74,8 @@ function BillingPage() {
                     {p.max_agents} {t("navAgents")}
                   </li>
                 </ul>
-                <Button
-                  className="w-full"
-                  variant={current ? "outline" : "default"}
-                  disabled={current}
-                  onClick={() => changePlan(p.id)}
-                >
-                  {current ? t("currentPlan") : t("upgrade")}
+                <Button className="w-full" variant="outline" disabled>
+                  {current ? t("currentPlan") : t("paymentsDisabled")}
                 </Button>
               </CardContent>
             </Card>
