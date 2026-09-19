@@ -27,6 +27,7 @@ import { Route as DashboardTeamRouteImport } from './routes/dashboard/team'
 import { Route as DashboardUsageRouteImport } from './routes/dashboard/usage'
 import { Route as DashboardVoiceRouteImport } from './routes/dashboard/voice'
 import { Route as DashboardWhatsappRouteImport } from './routes/dashboard/whatsapp'
+import { Route as ApiPublicWebhooksProviderRouteImport } from './routes/api/public/webhooks/$provider'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -118,6 +119,12 @@ const DashboardWhatsappRoute = DashboardWhatsappRouteImport.update({
   path: '/whatsapp',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const ApiPublicWebhooksProviderRoute =
+  ApiPublicWebhooksProviderRouteImport.update({
+    id: '/api/public/webhooks/$provider',
+    path: '/api/public/webhooks/$provider',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/voice': typeof DashboardVoiceRoute
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -157,6 +165,7 @@ export interface FileRoutesByTo {
   '/dashboard/voice': typeof DashboardVoiceRoute
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -178,6 +187,7 @@ export interface FileRoutesById {
   '/dashboard/voice': typeof DashboardVoiceRoute
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -200,6 +210,7 @@ export interface FileRouteTypes {
     | '/dashboard/voice'
     | '/dashboard/whatsapp'
     | '/dashboard/'
+    | '/api/public/webhooks/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -219,6 +230,7 @@ export interface FileRouteTypes {
     | '/dashboard/voice'
     | '/dashboard/whatsapp'
     | '/dashboard'
+    | '/api/public/webhooks/$provider'
   id:
     | '__root__'
     | '/'
@@ -239,6 +251,7 @@ export interface FileRouteTypes {
     | '/dashboard/voice'
     | '/dashboard/whatsapp'
     | '/dashboard/'
+    | '/api/public/webhooks/$provider'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -248,6 +261,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  ApiPublicWebhooksProviderRoute: typeof ApiPublicWebhooksProviderRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -378,6 +392,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardWhatsappRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/api/public/webhooks/$provider': {
+      id: '/api/public/webhooks/$provider'
+      path: '/api/public/webhooks/$provider'
+      fullPath: '/api/public/webhooks/$provider'
+      preLoaderRoute: typeof ApiPublicWebhooksProviderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -422,6 +443,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  ApiPublicWebhooksProviderRoute: ApiPublicWebhooksProviderRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
