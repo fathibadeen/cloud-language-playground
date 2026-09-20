@@ -139,6 +139,75 @@ function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="requests">
+            <Card>
+              <CardHeader><CardTitle className="text-base">{t("connectRequests")}</CardTitle></CardHeader>
+              <CardContent className="overflow-x-auto p-0">
+                <Table>
+                  <TableHeader><TableRow><TableHead>{t("companyName")}</TableHead><TableHead>{t("provider")}</TableHead><TableHead>{t("phoneNumber")}</TableHead><TableHead>{t("status")}</TableHead><TableHead>{t("actions")}</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {(data?.connectionRequests ?? []).length === 0 ? (
+                      <TableRow><TableCell colSpan={5} className="py-12 text-center text-muted-foreground">{t("noRequests")}</TableCell></TableRow>
+                    ) : (
+                      data?.connectionRequests.map((request) => {
+                        const payload = (request.payload ?? {}) as { phone_number?: string; business_name?: string };
+                        const companyName = data?.companies.find((company) => company.id === request.company_id)?.name ?? "—";
+                        return (
+                          <TableRow key={request.id}>
+                            <TableCell className="font-medium">{companyName}</TableCell>
+                            <TableCell>{request.channel}</TableCell>
+                            <TableCell dir="ltr">{payload.phone_number ?? "—"}</TableCell>
+                            <TableCell>
+                              <Badge variant={request.status === "approved" ? "default" : request.status === "rejected" ? "destructive" : "secondary"}>
+                                {t(request.status === "approved" ? "requestApproved" : request.status === "rejected" ? "requestRejected" : "requestPending")}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {request.status === "pending" ? (
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={async () => {
+                                      try {
+                                        await reviewConnectionRequest({ data: { requestId: request.id, action: "approved" } });
+                                        toast.success(t("saved"));
+                                        await refetch();
+                                      } catch (error) {
+                                        toast.error(error instanceof Error ? error.message : String(error));
+                                      }
+                                    }}
+                                  >
+                                    {t("approve")}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={async () => {
+                                      try {
+                                        await reviewConnectionRequest({ data: { requestId: request.id, action: "rejected" } });
+                                        toast.success(t("saved"));
+                                        await refetch();
+                                      } catch (error) {
+                                        toast.error(error instanceof Error ? error.message : String(error));
+                                      }
+                                    }}
+                                  >
+                                    {t("reject")}
+                                  </Button>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">{request.admin_note ?? "—"}</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
           <TabsContent value="events"><Card><CardHeader><CardTitle className="text-base">{t("navWebhooks")}</CardTitle></CardHeader><CardContent className="overflow-x-auto p-0"><Table><TableHeader><TableRow><TableHead>{t("provider")}</TableHead><TableHead>{t("status")}</TableHead><TableHead>{t("date")}</TableHead></TableRow></TableHeader><TableBody>{(data?.webhooks ?? []).length === 0 ? <TableRow><TableCell colSpan={3} className="py-12 text-center text-muted-foreground">{t("empty")}</TableCell></TableRow> : data?.webhooks.map((event) => <TableRow key={event.id}><TableCell className="font-medium">{event.provider}</TableCell><TableCell><Badge variant={event.status === "failed" ? "destructive" : "secondary"}>{event.status}</Badge></TableCell><TableCell>{new Date(event.created_at).toLocaleString(locale === "ar" ? "ar-SA" : "en-US")}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
         </Tabs>
       </main>
