@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,8 @@ import {
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
+import { inviteTeamMember } from "@/lib/team.functions";
+import { humanizeDbError } from "@/lib/errors";
 
 export const Route = createFileRoute("/dashboard/team")({
   component: TeamPage,
@@ -37,36 +40,81 @@ type Member = {
   created_at: string;
 };
 
+type Invitation = {
+  id: string;
+  email: string;
+  role: string;
+  token: string;
+  expires_at: string;
+  accepted_at: string | null;
+};
+
 function TeamPage() {
   const { t } = useI18n();
   const qc = useQueryClient();
   const companyId = useCompanyId();
   const { data: members } = useCompanyTable<Member>("company_members", companyId);
+  const invite = useServerFn(inviteTeamMember);
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState("agent");
+  const [role, setRole] = useState<"admin" | "agent" | "viewer">("agent");
+  const [busy, setBusy] = useState(false);
+
+  const { data: invitations } = useQuery({
+    queryKey: ["company_invitations", companyId],
+    enabled: !!companyId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("company_invitations")
+        .select("id, email, role, token, expires_at, accepted_at")
+        .eq("company_id", companyId!)
+        .is("accepted_at", null)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return (data ?? []) as Invitation[];
+    },
+  });
 
   async function updateRole(id: string, value: string) {
     const { error } = await supabase
       .from("company_members")
       .update({ role: value as "owner" | "admin" | "agent" | "viewer" })
       .eq("id", id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(humanizeDbError(error.message, t)); return; }
     qc.invalidateQueries({ queryKey: ["company_members"] });
   }
 
   async function remove(id: string) {
     const { error } = await supabase.from("company_members").delete().eq("id", id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(humanizeDbError(error.message, t)); return; }
     qc.invalidateQueries({ queryKey: ["company_members"] });
   }
 
-  function invite() {
+  async function sendInvite() {
     if (!companyId || !email) return;
-    toast.message(t("inviteMember"), {
-      description:
-        t("email") + ": " + email + " — " + t("role") + ": " + role,
-    });
-    setEmail("");
+    setBusy(true);
+    try {
+      const created = await invite({ data: { companyId, email, role } });
+      const link = `${window.location.origin}/invite/${created.token}`;
+      await navigator.clipboard.writeText(link).catch(() => undefined);
+      toast.success(t("inviteSent"), { description: link });
+      setEmail("");
+      qc.invalidateQueries({ queryKey: ["company_invitations"] });
+    } catch (e) {
+      toast.error(humanizeDbError((e as Error).message, t));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function revoke(id: string) {
+    const { error } = await supabase.from("company_invitations").delete().eq("id", id);
+    if (error) { toast.error(humanizeDbError(error.message, t)); return; }
+    qc.invalidateQueries({ queryKey: ["company_invitations"] });
+  }
+
+  async function copyLink(token: string) {
+    await navigator.clipboard.writeText(`${window.location.origin}/invite/${token}`);
+    toast.success(t("copied"));
   }
 
   const roleLabel: Record<string, string> = {
@@ -88,7 +136,7 @@ function TeamPage() {
           </div>
           <div className="space-y-2">
             <Label>{t("role")}</Label>
-            <Select value={role} onValueChange={setRole}>
+            <Select value={role} onValueChange={(v) => setRole(v as typeof role)}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
@@ -99,7 +147,7 @@ function TeamPage() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={invite} disabled={!email}>
+          <Button onClick={sendInvite} disabled={!email || busy}>
             {t("inviteMember")}
           </Button>
         </CardContent>
@@ -145,6 +193,45 @@ function TeamPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <div className="space-y-3">
+        <h2 className="text-lg font-semibold">{t("pendingInvites")}</h2>
+        <Card>
+          <CardContent className="p-0">
+            {(invitations ?? []).length === 0 ? (
+              <p className="p-5 text-sm text-muted-foreground">{t("noInvites")}</p>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("email")}</TableHead>
+                    <TableHead>{t("role")}</TableHead>
+                    <TableHead>{t("expires")}</TableHead>
+                    <TableHead>{t("actions")}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(invitations ?? []).map((i) => (
+                    <TableRow key={i.id}>
+                      <TableCell dir="ltr" className="font-mono text-xs">{i.email}</TableCell>
+                      <TableCell>{roleLabel[i.role]}</TableCell>
+                      <TableCell>{new Date(i.expires_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="flex gap-2">
+                        <Button variant="outline" size="sm" onClick={() => copyLink(i.token)}>
+                          {t("copyLink")}
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => revoke(i.id)}>
+                          {t("revoke")}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
