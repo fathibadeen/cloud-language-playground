@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -13,6 +14,7 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
+import { provisionCompanyVoice } from "@/lib/retell.functions";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -35,6 +37,7 @@ function Onboarding() {
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const provision = useServerFn(provisionCompanyVoice);
   const { user, loading } = useAuth();
   const { data: membership, isLoading: memberLoading } = useMembership();
 
