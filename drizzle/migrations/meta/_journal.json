@@ -36,6 +36,13 @@
       "when": 1789880122156,
       "tag": "0004_connection_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1789883189560,
+      "tag": "0005_add_whatsapp_embedded_signup_fields",
+      "breakpoints": true
     }
   ]
 }

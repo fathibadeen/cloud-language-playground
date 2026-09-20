@@ -50,20 +50,19 @@ async function generateReply(
   return data.choices?.[0]?.message?.content?.trim() ?? null;
 }
 
-async function sendWhatsapp(phoneNumberId: string, to: string, body: string): Promise<boolean> {
-  const key = process.env["WHATSAPP_API_KEY"];
-  if (!key || !phoneNumberId) return false;
-  const res = await fetch(`https://graph.facebook.com/v21.0/${phoneNumberId}/messages`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to,
-      type: "text",
-      text: { body },
-    }),
-  });
-  return res.ok;
+async function sendWhatsapp(
+  companyId: string,
+  phoneNumberId: string,
+  to: string,
+  body: string,
+): Promise<boolean> {
+  const meta = await import("@/lib/meta.server");
+  // Per-company token first (Meta Embedded Signup); env key is a fallback for
+  // the legacy single-account setup.
+  const token = (await meta.loadCompanyWhatsappToken(companyId)) ?? process.env["WHATSAPP_API_KEY"];
+  if (!token || !phoneNumberId) return false;
+  const result = await meta.sendMetaText(phoneNumberId, token, to, body);
+  return result.ok;
 }
 
 export async function ingestWhatsappMessage(
@@ -74,15 +73,39 @@ export async function ingestWhatsappMessage(
   const msg = firstMessage(payload);
   if (!msg) return { ok: true, reason: "no_message" };
 
-  let query = supabaseAdmin
-    .from("whatsapp_accounts")
-    .select("id, company_id, agent_id, phone_number, business_account_id")
-    .limit(1);
-  query = msg.businessNumber
-    ? query.eq("phone_number", msg.businessNumber)
-    : query.eq("business_account_id", msg.phoneNumberId);
-  const { data: account } = await query.maybeSingle();
+  const accountSelect =
+    "id, company_id, agent_id, phone_number, phone_number_id, business_account_id, status, is_active";
+  let account: {
+    id: string;
+    company_id: string;
+    agent_id: string | null;
+    phone_number: string | null;
+    phone_number_id: string | null;
+    business_account_id: string | null;
+    status: string;
+    is_active: boolean;
+  } | null = null;
+  // Match the tenant by phone_number_id (authoritative), then by number.
+  if (msg.phoneNumberId) {
+    const { data } = await supabaseAdmin
+      .from("whatsapp_accounts")
+      .select(accountSelect)
+      .eq("phone_number_id", msg.phoneNumberId)
+      .maybeSingle();
+    account = data ?? null;
+  }
+  if (!account && msg.businessNumber) {
+    const { data } = await supabaseAdmin
+      .from("whatsapp_accounts")
+      .select(accountSelect)
+      .eq("phone_number", msg.businessNumber)
+      .maybeSingle();
+    account = data ?? null;
+  }
   if (!account) return { ok: false, reason: "unknown_whatsapp_account" };
+  if (account.status !== "connected" || !account.is_active) {
+    return { ok: true, reason: "whatsapp_not_connected", companyId: account.company_id };
+  }
 
   const companyId = account.company_id;
 
@@ -168,16 +191,20 @@ export async function ingestWhatsappMessage(
     return { ok: true, companyId };
   }
 
-  // agent + knowledge context
-  const { data: agent } = await supabaseAdmin
-    .from("ai_agents")
-    .select("id, system_instructions, greeting, fallback_response, knowledge_base_id, is_active")
-    .eq("company_id", companyId)
-    .eq("is_active", true)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
-  if (!agent) return { ok: true, companyId };
+  // prefer the agent assigned to the WhatsApp number, fall back to the first
+  // active agent of the company
+  const agentSelect = "id, system_instructions, greeting, fallback_response, knowledge_base_id, is_active";
+  const { data: agent } = account.agent_id
+    ? await supabaseAdmin.from("ai_agents").select(agentSelect).eq("id", account.agent_id).maybeSingle()
+    : await supabaseAdmin
+        .from("ai_agents")
+        .select(agentSelect)
+        .eq("company_id", companyId)
+        .eq("is_active", true)
+        .order("created_at", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+  if (!agent || !agent.is_active) return { ok: true, companyId };
 
   const { data: chunks } = await supabaseAdmin
     .from("knowledge_chunks")
@@ -216,7 +243,7 @@ export async function ingestWhatsappMessage(
     return { ok: true, companyId };
   }
 
-  const sent = await sendWhatsapp(msg.phoneNumberId, msg.waId, reply);
+  const sent = await sendWhatsapp(companyId, msg.phoneNumberId, msg.waId, reply);
 
   await supabaseAdmin.from("messages").insert({
     company_id: companyId,

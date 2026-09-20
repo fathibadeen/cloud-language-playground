@@ -1,12 +1,27 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { AlertTriangle, Bot, Building2, Coins, CreditCard, Search, Timer } from "lucide-react";
+import {
+  AlertTriangle,
+  Bot,
+  Building2,
+  Coins,
+  CreditCard,
+  Link2,
+  MessageCircle,
+  Phone,
+  Search,
+  Settings2,
+  ShieldCheck,
+  Timer,
+  Unplug,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +31,13 @@ import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useIsSuperAdmin } from "@/lib/tenant";
 import { getPlatformOverview, reviewConnectionRequest, setCompanyStatus, updateCompanySubscription } from "@/lib/admin.functions";
+import {
+  assignWhatsappAgent,
+  completeWhatsappConnect,
+  disconnectWhatsapp,
+  getMetaConfig,
+  testWhatsappConnection,
+} from "@/lib/meta.functions";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -34,6 +56,59 @@ export const Route = createFileRoute("/admin")({
 
 type SubscriptionStatus = "trialing" | "active" | "past_due" | "canceled";
 
+// ---- Meta Embedded Signup (client side of the flow) ----
+
+declare global {
+  interface Window {
+    FB?: {
+      init: (options: Record<string, unknown>) => void;
+      login: (callback: (response: { authResponse?: { code?: string } | null }) => void, options: Record<string, unknown>) => void;
+    };
+    fbAsyncInit?: () => void;
+  }
+}
+
+let fbSdkPromise: Promise<NonNullable<Window["FB"]>> | null = null;
+
+function loadFbSdk(appId: string, version: string): Promise<NonNullable<Window["FB"]>> {
+  if (window.FB) return Promise.resolve(window.FB);
+  if (fbSdkPromise) return fbSdkPromise;
+  fbSdkPromise = new Promise((resolve, reject) => {
+    window.fbAsyncInit = () => {
+      window.FB?.init({ appId, cookie: false, xfbml: false, version });
+      resolve(window.FB!);
+    };
+    if (!document.getElementById("facebook-jssdk")) {
+      const script = document.createElement("script");
+      script.id = "facebook-jssdk";
+      script.src = "https://connect.facebook.net/en_US/sdk.js";
+      script.async = true;
+      script.onerror = () => reject(new Error("fb_sdk_failed"));
+      document.body.appendChild(script);
+    }
+  });
+  return fbSdkPromise;
+}
+
+function metaErrorText(message: string, ar: boolean): string {
+  const map: Record<string, string> = {
+    meta_not_configured: ar ? "Meta غير مُهيأ بعد — أضف مفاتيح Meta أولاً من الإعدادات" : "Meta is not configured yet — add the Meta keys first",
+    meta_auth_failed: ar ? "فشل التفويض مع Meta — تأكد أن المستخدم مدير حساب Business وجرّب من جديد" : "Meta authorization failed — try again",
+    meta_business_verification: ar ? "حساب Meta Business يحتاج توثيق قبل الربط" : "Meta Business verification required",
+    meta_no_waba: ar ? "لم يُعثر على حساب WhatsApp Business — أنشئ واحداً أثناء خطوات الربط" : "No WhatsApp Business account found",
+    meta_no_phone_numbers: ar ? "لا يوجد رقم هاتف في حساب WhatsApp Business" : "No phone number in the WhatsApp Business account",
+    meta_number_in_use: ar ? "هذا الرقم مرتبط بشركة أخرى في المنصة" : "This phone number is linked to another company",
+    meta_api_error: ar ? "خطأ من Meta — حاول بعد قليل" : "Meta API error — try again later",
+    meta_webhook_error: ar ? "تعذر تسجيل الويب هوك تلقائياً — تحقق من WHATSAPP_VERIFY_TOKEN" : "Could not register the webhook automatically",
+    whatsapp_not_connected: ar ? "واتساب غير متصل لهذه الشركة" : "WhatsApp is not connected for this company",
+    token_missing: ar ? "توكن الاتصال مفقود — أعد ربط واتساب" : "Connection token missing — reconnect",
+    agent_not_in_company: ar ? "الوكيل المختار لا ينتمي لهذه الشركة" : "Selected agent does not belong to this company",
+    company_not_found: ar ? "الشركة غير موجودة" : "Company not found",
+    Forbidden: ar ? "هذه الصلاحية للمدير فقط" : "Admins only",
+  };
+  return map[message] ?? (ar ? `خطأ: ${message}` : `Error: ${message}`);
+}
+
 function AdminPage() {
   const { t, locale } = useI18n();
   const navigate = useNavigate();
@@ -41,6 +116,7 @@ function AdminPage() {
   const { data: isAdmin, isLoading: adminLoading } = useIsSuperAdmin();
   const [search, setSearch] = useState("");
   const [savingCompany, setSavingCompany] = useState<string | null>(null);
+  const ar = locale === "ar";
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
@@ -50,6 +126,12 @@ function AdminPage() {
     queryKey: ["platform-overview"],
     enabled: !!isAdmin,
     queryFn: () => getPlatformOverview(),
+  });
+
+  const { data: metaConfig } = useQuery({
+    queryKey: ["meta-config"],
+    enabled: !!isAdmin,
+    queryFn: () => getMetaConfig(),
   });
 
   const filteredCompanies = useMemo(() => {
@@ -91,7 +173,7 @@ function AdminPage() {
 
   const totals = data?.totals;
   const subscriptionFor = (companyId: string) => data?.subscriptions.find((subscription) => subscription.company_id === companyId);
-  const statusText: Record<string, string> = locale === "ar"
+  const statusText: Record<string, string> = ar
     ? { trialing: "تجريبي", active: "نشط", past_due: "متأخر", canceled: "ملغي" }
     : { trialing: "Trial", active: "Active", past_due: "Past due", canceled: "Canceled" };
 
@@ -99,13 +181,13 @@ function AdminPage() {
     <div className="min-h-screen bg-secondary/30">
       <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex h-18 max-w-[1600px] items-center justify-between px-4 md:px-7">
-          <div className="flex items-center gap-3"><span className="grid size-9 place-items-center rounded-lg bg-sidebar font-display font-bold text-sidebar-primary">م</span><div><p className="font-display font-semibold">{t("navAdmin")}</p><p className="text-xs text-muted-foreground">{locale === "ar" ? "مركز قيادة المنصة" : "Platform command center"}</p></div></div>
+          <div className="flex items-center gap-3"><span className="grid size-9 place-items-center rounded-lg bg-sidebar font-display font-bold text-sidebar-primary">م</span><div><p className="font-display font-semibold">{t("navAdmin")}</p><p className="text-xs text-muted-foreground">{ar ? "مركز قيادة المنصة" : "Platform command center"}</p></div></div>
           <div className="flex items-center gap-2"><LanguageToggle /><Button asChild variant="outline" size="sm"><Link to="/dashboard">{t("backToDashboard")}</Link></Button></div>
         </div>
       </header>
 
       <main className="mx-auto max-w-[1600px] space-y-7 p-4 md:p-7">
-        <div><h1 className="font-display text-2xl font-bold md:text-3xl">{locale === "ar" ? "نظرة شاملة على أعمالك" : "Your platform at a glance"}</h1><p className="mt-1 text-sm text-muted-foreground">{locale === "ar" ? "تابع العملاء والاشتراكات والتشغيل من مكان واحد." : "Manage customers, subscriptions, and operations from one place."}</p></div>
+        <div><h1 className="font-display text-2xl font-bold md:text-3xl">{ar ? "نظرة شاملة على أعمالك" : "Your platform at a glance"}</h1><p className="mt-1 text-sm text-muted-foreground">{ar ? "تابع العملاء والاشتراكات والتشغيل من مكان واحد." : "Manage customers, subscriptions, and operations from one place."}</p></div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label={t("totalCompanies")} value={totals?.companies ?? 0} icon={Building2} />
           <StatCard label={t("subscriptionsCount")} value={totals?.subscriptions ?? 0} icon={CreditCard} />
@@ -118,12 +200,17 @@ function AdminPage() {
         </div>
 
         <Tabs defaultValue="companies" className="space-y-4">
-          <TabsList><TabsTrigger value="companies">{locale === "ar" ? "العملاء والاشتراكات" : "Customers & subscriptions"}</TabsTrigger><TabsTrigger value="requests">{t("connectRequests")}</TabsTrigger><TabsTrigger value="events">{t("navWebhooks")}</TabsTrigger></TabsList>
+          <TabsList>
+            <TabsTrigger value="companies">{ar ? "العملاء والاشتراكات" : "Customers & subscriptions"}</TabsTrigger>
+            <TabsTrigger value="whatsapp">{ar ? "WhatsApp" : "WhatsApp"}</TabsTrigger>
+            <TabsTrigger value="requests">{t("connectRequests")}</TabsTrigger>
+            <TabsTrigger value="events">{t("navWebhooks")}</TabsTrigger>
+          </TabsList>
           <TabsContent value="companies">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between gap-4"><CardTitle className="text-base">{t("navCompanies")}</CardTitle><div className="relative w-full max-w-xs"><Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={locale === "ar" ? "ابحث باسم الشركة أو المدينة" : "Search company or city"} className="ps-9" /></div></CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between gap-4"><CardTitle className="text-base">{t("navCompanies")}</CardTitle><div className="relative w-full max-w-xs"><Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={ar ? "ابحث باسم الشركة أو المدينة" : "Search company or city"} className="ps-9" /></div></CardHeader>
               <CardContent className="overflow-x-auto p-0">
-                <Table><TableHeader><TableRow><TableHead>{t("companyName")}</TableHead><TableHead>{t("city")}</TableHead><TableHead>{t("status")}</TableHead><TableHead>{locale === "ar" ? "الخطة" : "Plan"}</TableHead><TableHead>{locale === "ar" ? "حالة الاشتراك" : "Subscription"}</TableHead><TableHead>{t("actions")}</TableHead></TableRow></TableHeader>
+                <Table><TableHeader><TableRow><TableHead>{t("companyName")}</TableHead><TableHead>{t("city")}</TableHead><TableHead>{t("status")}</TableHead><TableHead>{ar ? "الخطة" : "Plan"}</TableHead><TableHead>{ar ? "حالة الاشتراك" : "Subscription"}</TableHead><TableHead>{t("actions")}</TableHead></TableRow></TableHeader>
                   <TableBody>{isLoading ? <TableRow><TableCell colSpan={6}>{t("loading")}</TableCell></TableRow> : filteredCompanies.length === 0 ? <TableRow><TableCell colSpan={6} className="py-12 text-center text-muted-foreground">{t("empty")}</TableCell></TableRow> : filteredCompanies.map((company) => {
                     const subscription = subscriptionFor(company.id);
                     const disabled = savingCompany === company.id;
@@ -131,13 +218,16 @@ function AdminPage() {
                       <TableCell><div className="font-medium">{company.name}</div><div className="text-xs text-muted-foreground">{company.industry ?? "—"}</div></TableCell>
                       <TableCell>{company.city ?? "—"}</TableCell>
                       <TableCell><Badge variant={company.status === "active" ? "default" : "secondary"}>{company.status === "active" ? t("active") : t("inactive")}</Badge></TableCell>
-                      <TableCell><Select disabled={disabled} value={subscription?.plan_id ?? "none"} onValueChange={(value) => updateSubscription(company.id, value === "none" ? null : value, (subscription?.status as SubscriptionStatus | undefined) ?? "trialing")}><SelectTrigger className="min-w-36"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">{locale === "ar" ? "بدون خطة" : "No plan"}</SelectItem>{(data?.plans ?? []).map((plan) => <SelectItem key={plan.id} value={plan.id}>{locale === "ar" ? plan.name_ar : plan.name_en}</SelectItem>)}</SelectContent></Select></TableCell>
+                      <TableCell><Select disabled={disabled} value={subscription?.plan_id ?? "none"} onValueChange={(value) => updateSubscription(company.id, value === "none" ? null : value, (subscription?.status as SubscriptionStatus | undefined) ?? "trialing")}><SelectTrigger className="min-w-36"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">{ar ? "بدون خطة" : "No plan"}</SelectItem>{(data?.plans ?? []).map((plan) => <SelectItem key={plan.id} value={plan.id}>{ar ? plan.name_ar : plan.name_en}</SelectItem>)}</SelectContent></Select></TableCell>
                       <TableCell><Select disabled={disabled} value={subscription?.status ?? "trialing"} onValueChange={(value) => updateSubscription(company.id, subscription?.plan_id ?? null, value as SubscriptionStatus)}><SelectTrigger className="min-w-32"><SelectValue /></SelectTrigger><SelectContent>{(["trialing", "active", "past_due", "canceled"] as const).map((status) => <SelectItem key={status} value={status}>{statusText[status]}</SelectItem>)}</SelectContent></Select></TableCell>
                       <TableCell><Button disabled={disabled} variant="ghost" size="sm" onClick={() => toggleStatus(company.id, company.status)}>{company.status === "active" ? t("suspend") : t("activate")}</Button></TableCell>
                     </TableRow>;
                   })}</TableBody></Table>
               </CardContent>
             </Card>
+          </TabsContent>
+          <TabsContent value="whatsapp">
+            <WhatsappTab data={data} metaConfigured={!!metaConfig?.configured} metaAppId={metaConfig?.appId ?? null} metaConfigId={metaConfig?.configId ?? null} graphVersion={metaConfig?.graphVersion ?? "v21.0"} refetch={refetch} ar={ar} />
           </TabsContent>
           <TabsContent value="requests">
             <Card>
@@ -208,9 +298,243 @@ function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
-          <TabsContent value="events"><Card><CardHeader><CardTitle className="text-base">{t("navWebhooks")}</CardTitle></CardHeader><CardContent className="overflow-x-auto p-0"><Table><TableHeader><TableRow><TableHead>{t("provider")}</TableHead><TableHead>{t("status")}</TableHead><TableHead>{t("date")}</TableHead></TableRow></TableHeader><TableBody>{(data?.webhooks ?? []).length === 0 ? <TableRow><TableCell colSpan={3} className="py-12 text-center text-muted-foreground">{t("empty")}</TableCell></TableRow> : data?.webhooks.map((event) => <TableRow key={event.id}><TableCell className="font-medium">{event.provider}</TableCell><TableCell><Badge variant={event.status === "failed" ? "destructive" : "secondary"}>{event.status}</Badge></TableCell><TableCell>{new Date(event.created_at).toLocaleString(locale === "ar" ? "ar-SA" : "en-US")}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
+          <TabsContent value="events"><Card><CardHeader><CardTitle className="text-base">{t("navWebhooks")}</CardTitle></CardHeader><CardContent className="overflow-x-auto p-0"><Table><TableHeader><TableRow><TableHead>{t("provider")}</TableHead><TableHead>{t("status")}</TableHead><TableHead>{t("date")}</TableHead></TableRow></TableHeader><TableBody>{(data?.webhooks ?? []).length === 0 ? <TableRow><TableCell colSpan={3} className="py-12 text-center text-muted-foreground">{t("empty")}</TableCell></TableRow> : data?.webhooks.map((event) => <TableRow key={event.id}><TableCell className="font-medium">{event.provider}</TableCell><TableCell><Badge variant={event.status === "failed" ? "destructive" : "secondary"}>{event.status}</Badge></TableCell><TableCell>{new Date(event.created_at).toLocaleString(ar ? "ar-SA" : "en-US")}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
         </Tabs>
       </main>
+    </div>
+  );
+}
+
+// ============= WhatsApp management tab =============
+
+type Overview = Awaited<ReturnType<typeof getPlatformOverview>>;
+
+function WhatsappTab({
+  data,
+  metaConfigured,
+  metaAppId,
+  metaConfigId,
+  graphVersion,
+  refetch,
+  ar,
+}: {
+  data: Overview | undefined;
+  metaConfigured: boolean;
+  metaAppId: string | null;
+  metaConfigId: string | null;
+  graphVersion: string;
+  refetch: () => Promise<unknown>;
+  ar: boolean;
+}) {
+  const [busy, setBusy] = useState<string | null>(null);
+  const [detailCompany, setDetailCompany] = useState<string | null>(null);
+
+  const accountFor = useCallback(
+    (companyId: string) => (data?.whatsappAccounts ?? []).find((account) => account.company_id === companyId),
+    [data?.whatsappAccounts],
+  );
+  const agentsFor = useCallback(
+    (companyId: string) => (data?.agents ?? []).filter((agent) => agent.company_id === companyId),
+    [data?.agents],
+  );
+
+  async function run(key: string, action: () => Promise<unknown>, successText: string) {
+    setBusy(key);
+    try {
+      await action();
+      toast.success(successText);
+      await refetch();
+    } catch (error) {
+      toast.error(metaErrorText(error instanceof Error ? error.message : String(error), ar));
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  function startConnect(companyId: string, companyName: string) {
+    if (!metaConfigured) {
+      toast.error(metaErrorText("meta_not_configured", ar));
+      return;
+    }
+    setBusy(companyId);
+    loadFbSdk(metaAppId!, graphVersion)
+      .then(
+        (FB) =>
+          new Promise<void>((resolve) => {
+            FB.login(async (response) => {
+              const code = response?.authResponse?.code;
+              resolve();
+              if (!code) {
+                toast.error(ar ? "أُلغيت خطوات الربط مع Meta" : "Meta signup was canceled");
+                setBusy(null);
+                return;
+              }
+              await run(companyId, () => completeWhatsappConnect({ data: { companyId, code } }), ar ? `تم ربط واتساب ${companyName}` : `WhatsApp connected for ${companyName}`);
+            }, {
+              config_id: metaConfigId,
+              response_type: "code",
+              override_default_response_type: true,
+              extras: { setup: {} },
+            });
+          }),
+      )
+      .catch(() => {
+        toast.error(ar ? "تعذر تحميل Meta — تحقق من الاتصال" : "Could not load Meta SDK");
+        setBusy(null);
+      });
+  }
+
+  async function assignAgent(companyId: string, agentId: string | null) {
+    await run(companyId, () => assignWhatsappAgent({ data: { companyId, agentId } }), ar ? "تم تحديث الوكيل" : "Agent updated");
+  }
+
+  const detail = detailCompany ? data?.companies.find((company) => company.id === detailCompany) : null;
+  const detailAccount = detailCompany ? accountFor(detailCompany) : null;
+  const detailAgent = detailAccount?.agent_id ? (data?.agents ?? []).find((agent) => agent.id === detailAccount.agent_id) : null;
+  const detailKb = detailAgent?.knowledge_base_id ? (data?.knowledgeBases ?? []).find((kb) => kb.id === detailAgent.knowledge_base_id) : null;
+  const detailWebhook = detailCompany
+    ? (data?.webhooks ?? []).find((event) => event.company_id === detailCompany && event.provider === "whatsapp")
+    : null;
+
+  return (
+    <div className="space-y-4">
+      {!metaConfigured && (
+        <Card className="border-dashed">
+          <CardContent className="flex items-start gap-3 py-4">
+            <AlertTriangle className="mt-0.5 size-5 text-amber-500" />
+            <div className="text-sm">
+              <p className="font-medium">{ar ? "Meta WhatsApp غير مُهيأ بعد" : "Meta WhatsApp is not configured yet"}</p>
+              <p className="mt-1 text-muted-foreground">
+                {ar
+                  ? "لتفعيل الربط أضف مفاتيح Meta (META_APP_ID و META_APP_SECRET و META_CONFIG_ID) من إعدادات المشروع. لن تظهر أي شركة كـ «متصل» قبل ربط حقيقي عبر Meta."
+                  : "Add META_APP_ID, META_APP_SECRET and META_CONFIG_ID in project settings. No company shows as connected before a real Meta connection."}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base"><MessageCircle className="size-4" />{ar ? "ربط واتساب العملاء" : "Customer WhatsApp connections"}</CardTitle>
+        </CardHeader>
+        <CardContent className="overflow-x-auto p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{ar ? "الشركة" : "Company"}</TableHead>
+                <TableHead>{ar ? "الحالة" : "Status"}</TableHead>
+                <TableHead>{ar ? "الرقم" : "Number"}</TableHead>
+                <TableHead>{ar ? "حساب الأعمال" : "Business"}</TableHead>
+                <TableHead>{ar ? "الوكيل الذكي" : "AI agent"}</TableHead>
+                <TableHead>{ar ? "تاريخ الربط" : "Connected"}</TableHead>
+                <TableHead>{ar ? "الإجراءات" : "Actions"}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(data?.companies ?? []).length === 0 ? (
+                <TableRow><TableCell colSpan={7} className="py-12 text-center text-muted-foreground">{ar ? "لا توجد شركات بعد" : "No companies yet"}</TableCell></TableRow>
+              ) : (
+                (data?.companies ?? []).map((company) => {
+                  const account = accountFor(company.id);
+                  const connected = account?.status === "connected" && account.is_active;
+                  const errored = account?.status === "error";
+                  const busyNow = busy === company.id;
+                  return (
+                    <TableRow key={company.id}>
+                      <TableCell className="font-medium">{company.name}</TableCell>
+                      <TableCell>
+                        <Badge variant={connected ? "default" : errored ? "destructive" : "secondary"}>
+                          {connected ? (ar ? "متصل ✓" : "Connected ✓") : errored ? (ar ? "يحتاج إجراء" : "Needs action") : ar ? "غير متصل" : "Not connected"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell dir="ltr">{account?.phone_number ?? "—"}</TableCell>
+                      <TableCell>{account?.verified_name ?? (account?.business_account_id ? <span dir="ltr" className="text-xs">{account.business_account_id}</span> : "—")}</TableCell>
+                      <TableCell>
+                        <Select
+                          disabled={!connected || busyNow}
+                          value={account?.agent_id ?? "none"}
+                          onValueChange={(value) => assignAgent(company.id, value === "none" ? null : value)}
+                        >
+                          <SelectTrigger className="min-w-40"><SelectValue placeholder={ar ? "اختر وكيلاً" : "Pick an agent"} /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">{ar ? "بدون وكيل" : "No agent"}</SelectItem>
+                            {agentsFor(company.id).map((agent) => (
+                              <SelectItem key={agent.id} value={agent.id}>{agent.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {account?.created_at ? new Date(account.created_at).toLocaleDateString(ar ? "ar-SA" : "en-US") : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1.5">
+                          <Button size="sm" variant={connected ? "outline" : "default"} disabled={busyNow} onClick={() => startConnect(company.id, company.name)}>
+                            <Link2 className="size-3.5" />{connected ? (ar ? "إعادة الربط" : "Reconnect") : ar ? "ربط WhatsApp" : "Connect"}
+                          </Button>
+                          <Button size="sm" variant="ghost" disabled={!account || busyNow} onClick={() => setDetailCompany(company.id)}>
+                            <Settings2 className="size-3.5" />{ar ? "إدارة" : "Manage"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            disabled={!connected || busyNow}
+                            onClick={() => run(`${company.id}-test`, () => testWhatsappConnection({ data: { companyId: company.id } }), ar ? "الاتصال سليم ✓" : "Connection OK ✓")}
+                          >
+                            <ShieldCheck className="size-3.5" />{ar ? "اختبار الاتصال" : "Test"}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            disabled={!connected || busyNow}
+                            onClick={() => run(company.id, () => disconnectWhatsapp({ data: { companyId: company.id } }), ar ? "تم فصل واتساب — المحادثات محفوظة" : "WhatsApp disconnected — history kept")}
+                          >
+                            <Unplug className="size-3.5" />{ar ? "فصل" : "Disconnect"}
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Dialog open={!!detailCompany} onOpenChange={(open) => !open && setDetailCompany(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2"><Phone className="size-4" />{detail?.name ?? ""}</DialogTitle>
+          </DialogHeader>
+              {detail && detailAccount ? (
+            <div className="space-y-2 text-sm">
+              <Row label={ar ? "حالة الاتصال" : "Status"} value={detailAccount.status === "connected" && detailAccount.is_active ? (ar ? "متصل ✓" : "Connected ✓") : ar ? "غير متصل" : "Not connected"} />
+              <Row label={ar ? "حساب Meta Business" : "Meta Business account"} value={<span dir="ltr">{detailAccount.business_account_id ?? "—"}</span>} />
+              <Row label={ar ? "معرّف رقم الهاتف" : "Phone number ID"} value={<span dir="ltr">{detailAccount.phone_number_id ?? "—"}</span>} />
+              <Row label={ar ? "الرقم" : "Number"} value={<span dir="ltr">{detailAccount.phone_number ?? "—"}</span>} />
+              <Row label={ar ? "الاسم الموثق" : "Verified name"} value={detailAccount.verified_name ?? "—"} />
+              <Row label={ar ? "الوكيل الذكي" : "AI agent"} value={detailAgent?.name ?? (ar ? "بدون وكيل" : "No agent")} />
+              <Row label={ar ? "قاعدة المعرفة" : "Knowledge base"} value={detailKb?.name ?? (ar ? "بدون" : "None")} />
+              <Row label={ar ? "رسائل اليوم" : "Messages today"} value={String(data?.waStats?.messagesTodayByCompany?.[detail.id] ?? 0)} />
+              <Row label={ar ? "محادثات اليوم" : "Conversations today"} value={String(data?.waStats?.conversationsTodayByCompany?.[detail.id] ?? 0)} />
+              <Row label={ar ? "آخر حدث ويب هوك" : "Last webhook"} value={detailWebhook ? `${detailWebhook.status} · ${new Date(detailWebhook.created_at).toLocaleString(ar ? "ar-SA" : "en-US")}` : "—"} />
+              <Row label={ar ? "أخطاء" : "Errors"} value={String((data?.webhooks ?? []).filter((event) => event.company_id === detail.id && event.status === "failed").length)} />
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">{ar ? "لم يتم ربط واتساب لهذه الشركة بعد." : "WhatsApp is not connected for this company yet."}</p>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-4 border-b pb-1.5 last:border-b-0">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="font-medium">{value}</span>
     </div>
   );
 }
