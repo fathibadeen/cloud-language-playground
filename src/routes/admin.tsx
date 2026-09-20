@@ -15,7 +15,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useIsSuperAdmin } from "@/lib/tenant";
-import { getPlatformOverview, setCompanyStatus, updateCompanySubscription } from "@/lib/admin.functions";
+import { getPlatformOverview, reviewConnectionRequest, setCompanyStatus, updateCompanySubscription } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -118,7 +118,7 @@ function AdminPage() {
         </div>
 
         <Tabs defaultValue="companies" className="space-y-4">
-          <TabsList><TabsTrigger value="companies">{locale === "ar" ? "العملاء والاشتراكات" : "Customers & subscriptions"}</TabsTrigger><TabsTrigger value="events">{t("navWebhooks")}</TabsTrigger></TabsList>
+          <TabsList><TabsTrigger value="companies">{locale === "ar" ? "العملاء والاشتراكات" : "Customers & subscriptions"}</TabsTrigger><TabsTrigger value="requests">{t("connectRequests")}</TabsTrigger><TabsTrigger value="events">{t("navWebhooks")}</TabsTrigger></TabsList>
           <TabsContent value="companies">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-4"><CardTitle className="text-base">{t("navCompanies")}</CardTitle><div className="relative w-full max-w-xs"><Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={locale === "ar" ? "ابحث باسم الشركة أو المدينة" : "Search company or city"} className="ps-9" /></div></CardHeader>
