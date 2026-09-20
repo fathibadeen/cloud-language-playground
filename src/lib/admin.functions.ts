@@ -127,3 +127,65 @@ export const setCompanyStatus = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+export const reviewConnectionRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        requestId: z.string().uuid(),
+        action: z.enum(["approved", "rejected"]),
+        note: z.string().max(500).optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: request, error: fetchError } = await supabaseAdmin
+      .from("connection_requests")
+      .select("id, company_id, channel, payload, status")
+      .eq("id", data.requestId)
+      .single();
+    if (fetchError || !request) throw new Error("request_not_found");
+    if (request.status !== "pending") throw new Error("request_already_reviewed");
+
+    const { error } = await supabaseAdmin
+      .from("connection_requests")
+      .update({
+        status: data.action,
+        admin_note: data.note ?? null,
+        reviewed_by: context.userId,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", data.requestId);
+    if (error) throw new Error(error.message);
+
+    // On approval of a WhatsApp request, create the account shell so ingest can match it.
+    if (data.action === "approved" && request.channel === "whatsapp") {
+      const payload = (request.payload ?? {}) as { phone_number?: string };
+      if (payload.phone_number) {
+        await supabaseAdmin.from("whatsapp_accounts").insert({
+          company_id: request.company_id,
+          provider: "meta_cloud",
+          phone_number: payload.phone_number,
+          status: "connected",
+        });
+        await supabaseAdmin
+          .from("companies")
+          .update({ whatsapp_enabled: true })
+          .eq("id", request.company_id);
+      }
+    }
+
+    await supabaseAdmin.from("audit_logs").insert({
+      company_id: request.company_id,
+      user_id: context.userId,
+      action: `connection_request.${data.action}`,
+      entity: "connection_requests",
+      entity_id: data.requestId,
+      metadata: { channel: request.channel, note: data.note },
+    });
+    return { ok: true };
+  });
