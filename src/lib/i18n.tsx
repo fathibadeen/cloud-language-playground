@@ -240,7 +240,6 @@ export const dict: Dict = {
   totalMinutes: { ar: "إجمالي الدقائق", en: "Total minutes" },
   transferRate: { ar: "نسبة التحويل لموظف", en: "Human transfer rate" },
   endedReason: { ar: "سبب الإنهاء", en: "End reason" },
-  search: { ar: "بحث", en: "Search" },
   pending: { ar: "بانتظار الربط", en: "Pending" },
   allChannels: { ar: "كل القنوات", en: "All channels" },
   allStatuses: { ar: "كل الحالات", en: "All statuses" },
