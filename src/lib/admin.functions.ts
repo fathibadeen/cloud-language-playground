@@ -50,6 +50,7 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
         webhookErrors: (webhooks.data ?? []).filter((w) => w.status === "failed").length,
       },
       webhooks: webhooks.data ?? [],
+      connectionRequests: requests.data ?? [],
     };
   });
 
