@@ -52,6 +52,7 @@ function KnowledgePage() {
   const { data: docs, isLoading } = useCompanyTable<Doc>("knowledge_documents", companyId);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", source_type: "text", content: "", source_url: "" });
+  const process = useServerFn(processKnowledgeDocument);
 
   async function createDoc() {
     if (!companyId) return;
