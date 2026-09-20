@@ -26,6 +26,7 @@ import { EmptyState } from "@/components/StatCard";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
+import { humanizeDbError } from "@/lib/errors";
 import { saveProviderCredentials, testProviderConnection } from "@/lib/credentials.functions";
 
 export const Route = createFileRoute("/dashboard/numbers")({
@@ -62,7 +63,7 @@ function NumbersPage() {
   async function addNumber() {
     if (!companyId) return;
     const { error } = await supabase.from("phone_numbers").insert({ company_id: companyId, ...form });
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(humanizeDbError(error.message, t)); return; }
     toast.success(t("saved"));
     setOpen(false);
     qc.invalidateQueries({ queryKey: ["phone_numbers"] });
@@ -73,7 +74,7 @@ function NumbersPage() {
       .from("phone_numbers")
       .update({ agent_id: agentId === "none" ? null : agentId })
       .eq("id", id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(humanizeDbError(error.message, t)); return; }
     qc.invalidateQueries({ queryKey: ["phone_numbers"] });
   }
 
