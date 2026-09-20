@@ -1348,9 +1348,11 @@ export type Database = {
           id: string
           is_active: boolean
           phone_number: string | null
+          phone_number_id: string | null
           provider: string
           status: Database["public"]["Enums"]["connection_status"]
           updated_at: string
+          verified_name: string | null
           webhook_verify_token: string | null
         }
         Insert: {
@@ -1361,9 +1363,11 @@ export type Database = {
           id?: string
           is_active?: boolean
           phone_number?: string | null
+          phone_number_id?: string | null
           provider?: string
           status?: Database["public"]["Enums"]["connection_status"]
           updated_at?: string
+          verified_name?: string | null
           webhook_verify_token?: string | null
         }
         Update: {
@@ -1374,9 +1378,11 @@ export type Database = {
           id?: string
           is_active?: boolean
           phone_number?: string | null
+          phone_number_id?: string | null
           provider?: string
           status?: Database["public"]["Enums"]["connection_status"]
           updated_at?: string
+          verified_name?: string | null
           webhook_verify_token?: string | null
         }
         Relationships: [
