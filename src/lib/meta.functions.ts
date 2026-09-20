@@ -32,11 +32,12 @@ async function assertSuperAdmin(context: { supabase: any; userId: string }) {
   if (!data) throw new Error("Forbidden");
 }
 
-/** Public (any signed-in admin page can call): is Meta configured + SDK params. */
+/** Any signed-in admin page can read whether Meta is configured + SDK params. */
 export const getMetaConfig = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async () => {
-    const env = await import("@/lib/meta.server").then((m) => m.getMetaEnv());
+    const meta = await import("@/lib/meta.server");
+    const env = meta.getMetaEnv();
     return {
       configured: metaConfigured(),
       appId: env.appId || null,
@@ -87,14 +88,20 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
     const wabaList = wabas.data?.data ?? [];
     if (wabaList.length === 0) throw new Error("meta_no_waba");
 
-    // 3) register webhooks (best effort, reported back)
+    // 3) register the app-level webhook (best effort, reported back)
     const requestUrl = new URL(getRequest().url);
-    const callbackBase =
-      (await import("@/lib/meta.server").then((m) => m.getMetaEnv())).redirectUri ||
-      requestUrl.origin;
-    const webhook = await meta.configureAppWebhook(`${callbackBase.replace(/\/$/, "")}${WHATSAPP_WEBHOOK_PATH}`);
+    const callbackBase = meta.getMetaEnv().redirectUri || requestUrl.origin;
+    const webhook = await meta.configureAppWebhook(
+      `${callbackBase.replace(/\/$/, "")}${WHATSAPP_WEBHOOK_PATH}`,
+    );
 
-    const connected: { wabaId: string; wabaName: string; phoneNumber: string; phoneNumberId: string; verifiedName: string | null }[] = [];
+    const connected: {
+      wabaId: string;
+      wabaName: string;
+      phoneNumber: string;
+      phoneNumberId: string;
+      verifiedName: string | null;
+    }[] = [];
 
     for (const waba of wabaList) {
       const phones = await meta.fetchWabaPhoneNumbers(token, waba.id);
@@ -169,7 +176,11 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
       company_id: data.companyId,
       channel: "whatsapp",
       status: "approved",
-      payload: { source: "embedded_signup", numbers: connected.map((c) => c.phoneNumber), waba: connected[0]?.wabaName ?? "" },
+      payload: {
+        source: "embedded_signup",
+        numbers: connected.map((c) => c.phoneNumber),
+        waba: connected[0]?.wabaName ?? "",
+      },
       reviewed_by: context.userId,
       reviewed_at: new Date().toISOString(),
     });
@@ -220,7 +231,7 @@ export const testWhatsappConnection = createServerFn({ method: "POST" })
     };
   });
 
-/** Disconnect: disable accounts, remove token, keep all history. */
+/** Disconnect: disable accounts, remove the token, keep all history. */
 export const disconnectWhatsapp = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data: unknown) => z.object({ companyId: z.string().uuid() }).parse(data))
@@ -232,7 +243,7 @@ export const disconnectWhatsapp = createServerFn({ method: "POST" })
     const { data: accounts } = await supabaseAdmin
       .from("whatsapp_accounts")
       .select("id, business_account_id")
-      .eq("company_id", data.companyId asum: undefined as never)
+      .eq("company_id", data.companyId)
       .limit(1);
     if (!accounts?.length) throw new Error("whatsapp_not_connected");
 
