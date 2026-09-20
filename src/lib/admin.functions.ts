@@ -17,7 +17,7 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
     await assertSuperAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [companies, subs, plans, agents, calls, conversations, webhooks] = await Promise.all([
+    const [companies, subs, plans, agents, calls, conversations, webhooks, requests] = await Promise.all([
       supabaseAdmin.from("companies").select("id, name, status, created_at, city, industry"),
       supabaseAdmin.from("subscriptions").select("id, status, plan_id, company_id, current_period_end, created_at, plans(id, name_ar, name_en, price_sar)").order("created_at", { ascending: false }),
       supabaseAdmin.from("plans").select("id, code, name_ar, name_en, price_sar, is_active").eq("is_active", true).order("sort_order"),
@@ -25,6 +25,7 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
       supabaseAdmin.from("voice_calls").select("id, duration_seconds"),
       supabaseAdmin.from("conversations").select("id, channel"),
       supabaseAdmin.from("webhook_events").select("id, status, provider, created_at").limit(50),
+      supabaseAdmin.from("connection_requests").select("id, company_id, channel, payload, status, admin_note, created_at").order("created_at", { ascending: false }).limit(100),
     ]);
 
     const companyRows = companies.data ?? [];
