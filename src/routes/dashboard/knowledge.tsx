@@ -52,7 +52,7 @@ function KnowledgePage() {
   const { data: docs, isLoading } = useCompanyTable<Doc>("knowledge_documents", companyId);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", source_type: "text", content: "", source_url: "" });
-  const process = useServerFn(processKnowledgeDocument);
+  const processDoc = useServerFn(processKnowledgeDocument);
 
   async function createDoc() {
     if (!companyId) return;
@@ -89,7 +89,7 @@ function KnowledgePage() {
     qc.invalidateQueries({ queryKey: ["knowledge_documents"] });
     qc.invalidateQueries({ queryKey: ["knowledge_bases"] });
     try {
-      const res = await process({ data: { documentId: created.id } });
+      const res = await processDoc({ data: { documentId: created.id } });
       if (res.ok) toast.success(t("documentProcessed"));
     } catch (e) {
       toast.error(humanizeDbError((e as Error).message, t));
