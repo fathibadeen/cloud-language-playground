@@ -481,6 +481,53 @@ export type Database = {
           },
         ]
       }
+      connection_requests: {
+        Row: {
+          admin_note: string | null
+          channel: Database["public"]["Enums"]["channel_type"]
+          company_id: string
+          created_at: string
+          id: string
+          payload: Json
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          admin_note?: string | null
+          channel: Database["public"]["Enums"]["channel_type"]
+          company_id: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          admin_note?: string | null
+          channel?: Database["public"]["Enums"]["channel_type"]
+          company_id?: string
+          created_at?: string
+          id?: string
+          payload?: Json
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "connection_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       conversations: {
         Row: {
           agent_id: string | null
