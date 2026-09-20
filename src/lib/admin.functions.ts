@@ -17,7 +17,7 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
     await assertSuperAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [companies, subs, plans, agents, calls, conversations, webhooks] = await Promise.all([
+    const [companies, subs, plans, agents, calls, conversations, webhooks, requests] = await Promise.all([
       supabaseAdmin.from("companies").select("id, name, status, created_at, city, industry"),
       supabaseAdmin.from("subscriptions").select("id, status, plan_id, company_id, current_period_end, created_at, plans(id, name_ar, name_en, price_sar)").order("created_at", { ascending: false }),
       supabaseAdmin.from("plans").select("id, code, name_ar, name_en, price_sar, is_active").eq("is_active", true).order("sort_order"),
@@ -25,6 +25,7 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
       supabaseAdmin.from("voice_calls").select("id, duration_seconds"),
       supabaseAdmin.from("conversations").select("id, channel"),
       supabaseAdmin.from("webhook_events").select("id, status, provider, created_at").limit(50),
+      supabaseAdmin.from("connection_requests").select("id, company_id, channel, payload, status, admin_note, created_at").order("created_at", { ascending: false }).limit(100),
     ]);
 
     const companyRows = companies.data ?? [];
@@ -49,6 +50,7 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
         webhookErrors: (webhooks.data ?? []).filter((w) => w.status === "failed").length,
       },
       webhooks: webhooks.data ?? [],
+      connectionRequests: requests.data ?? [],
     };
   });
 
@@ -122,6 +124,68 @@ export const setCompanyStatus = createServerFn({ method: "POST" })
       entity: "companies",
       entity_id: data.companyId,
       metadata: { status: data.status },
+    });
+    return { ok: true };
+  });
+
+export const reviewConnectionRequest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z
+      .object({
+        requestId: z.string().uuid(),
+        action: z.enum(["approved", "rejected"]),
+        note: z.string().max(500).optional(),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: request, error: fetchError } = await supabaseAdmin
+      .from("connection_requests")
+      .select("id, company_id, channel, payload, status")
+      .eq("id", data.requestId)
+      .single();
+    if (fetchError || !request) throw new Error("request_not_found");
+    if (request.status !== "pending") throw new Error("request_already_reviewed");
+
+    const { error } = await supabaseAdmin
+      .from("connection_requests")
+      .update({
+        status: data.action,
+        admin_note: data.note ?? null,
+        reviewed_by: context.userId,
+        reviewed_at: new Date().toISOString(),
+      })
+      .eq("id", data.requestId);
+    if (error) throw new Error(error.message);
+
+    // On approval of a WhatsApp request, create the account shell so ingest can match it.
+    if (data.action === "approved" && request.channel === "whatsapp") {
+      const payload = (request.payload ?? {}) as { phone_number?: string };
+      if (payload.phone_number) {
+        await supabaseAdmin.from("whatsapp_accounts").insert({
+          company_id: request.company_id,
+          provider: "meta_cloud",
+          phone_number: payload.phone_number,
+          status: "connected",
+        });
+        await supabaseAdmin
+          .from("companies")
+          .update({ whatsapp_enabled: true })
+          .eq("id", request.company_id);
+      }
+    }
+
+    await supabaseAdmin.from("audit_logs").insert({
+      company_id: request.company_id,
+      user_id: context.userId,
+      action: `connection_request.${data.action}`,
+      entity: "connection_requests",
+      entity_id: data.requestId,
+      metadata: { channel: request.channel, note: data.note },
     });
     return { ok: true };
   });

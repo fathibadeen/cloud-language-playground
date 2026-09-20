@@ -15,7 +15,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useIsSuperAdmin } from "@/lib/tenant";
-import { getPlatformOverview, setCompanyStatus, updateCompanySubscription } from "@/lib/admin.functions";
+import { getPlatformOverview, reviewConnectionRequest, setCompanyStatus, updateCompanySubscription } from "@/lib/admin.functions";
 
 export const Route = createFileRoute("/admin")({
   ssr: false,
@@ -118,7 +118,7 @@ function AdminPage() {
         </div>
 
         <Tabs defaultValue="companies" className="space-y-4">
-          <TabsList><TabsTrigger value="companies">{locale === "ar" ? "العملاء والاشتراكات" : "Customers & subscriptions"}</TabsTrigger><TabsTrigger value="events">{t("navWebhooks")}</TabsTrigger></TabsList>
+          <TabsList><TabsTrigger value="companies">{locale === "ar" ? "العملاء والاشتراكات" : "Customers & subscriptions"}</TabsTrigger><TabsTrigger value="requests">{t("connectRequests")}</TabsTrigger><TabsTrigger value="events">{t("navWebhooks")}</TabsTrigger></TabsList>
           <TabsContent value="companies">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-4"><CardTitle className="text-base">{t("navCompanies")}</CardTitle><div className="relative w-full max-w-xs"><Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={locale === "ar" ? "ابحث باسم الشركة أو المدينة" : "Search company or city"} className="ps-9" /></div></CardHeader>
@@ -136,6 +136,75 @@ function AdminPage() {
                       <TableCell><Button disabled={disabled} variant="ghost" size="sm" onClick={() => toggleStatus(company.id, company.status)}>{company.status === "active" ? t("suspend") : t("activate")}</Button></TableCell>
                     </TableRow>;
                   })}</TableBody></Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+          <TabsContent value="requests">
+            <Card>
+              <CardHeader><CardTitle className="text-base">{t("connectRequests")}</CardTitle></CardHeader>
+              <CardContent className="overflow-x-auto p-0">
+                <Table>
+                  <TableHeader><TableRow><TableHead>{t("companyName")}</TableHead><TableHead>{t("provider")}</TableHead><TableHead>{t("phoneNumber")}</TableHead><TableHead>{t("status")}</TableHead><TableHead>{t("actions")}</TableHead></TableRow></TableHeader>
+                  <TableBody>
+                    {(data?.connectionRequests ?? []).length === 0 ? (
+                      <TableRow><TableCell colSpan={5} className="py-12 text-center text-muted-foreground">{t("noRequests")}</TableCell></TableRow>
+                    ) : (
+                      data?.connectionRequests.map((request) => {
+                        const payload = (request.payload ?? {}) as { phone_number?: string; business_name?: string };
+                        const companyName = data?.companies.find((company) => company.id === request.company_id)?.name ?? "—";
+                        return (
+                          <TableRow key={request.id}>
+                            <TableCell className="font-medium">{companyName}</TableCell>
+                            <TableCell>{request.channel}</TableCell>
+                            <TableCell dir="ltr">{payload.phone_number ?? "—"}</TableCell>
+                            <TableCell>
+                              <Badge variant={request.status === "approved" ? "default" : request.status === "rejected" ? "destructive" : "secondary"}>
+                                {t(request.status === "approved" ? "requestApproved" : request.status === "rejected" ? "requestRejected" : "requestPending")}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {request.status === "pending" ? (
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    onClick={async () => {
+                                      try {
+                                        await reviewConnectionRequest({ data: { requestId: request.id, action: "approved" } });
+                                        toast.success(t("saved"));
+                                        await refetch();
+                                      } catch (error) {
+                                        toast.error(error instanceof Error ? error.message : String(error));
+                                      }
+                                    }}
+                                  >
+                                    {t("approve")}
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={async () => {
+                                      try {
+                                        await reviewConnectionRequest({ data: { requestId: request.id, action: "rejected" } });
+                                        toast.success(t("saved"));
+                                        await refetch();
+                                      } catch (error) {
+                                        toast.error(error instanceof Error ? error.message : String(error));
+                                      }
+                                    }}
+                                  >
+                                    {t("reject")}
+                                  </Button>
+                                </div>
+                              ) : (
+                                <span className="text-xs text-muted-foreground">{request.admin_note ?? "—"}</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
               </CardContent>
             </Card>
           </TabsContent>

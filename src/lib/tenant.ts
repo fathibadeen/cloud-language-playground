@@ -82,6 +82,7 @@ export function usePlans() {
 export function useCompanyTable<T = unknown>(
   table:
     | "ai_agents"
+    | "connection_requests"
     | "conversations"
     | "voice_calls"
     | "knowledge_documents"

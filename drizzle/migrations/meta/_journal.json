@@ -29,6 +29,13 @@
       "when": 1789879174641,
       "tag": "0003_trial_limits_use_recommended_plan",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789880122156,
+      "tag": "0004_connection_requests",
+      "breakpoints": true
     }
   ]
 }
