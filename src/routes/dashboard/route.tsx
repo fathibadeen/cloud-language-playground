@@ -52,6 +52,7 @@ function DashboardLayout() {
   const { user, loading } = useAuth();
   const { data: membership, isLoading: memberLoading } = useMembership();
   const { data: isAdmin } = useIsSuperAdmin();
+  const { data: subscription } = useSubscription(membership?.company_id ?? null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
 
