@@ -22,7 +22,7 @@ import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { useIsSuperAdmin, useMembership } from "@/lib/tenant";
+import { useIsSuperAdmin, useMembership, useSubscription } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
@@ -52,6 +52,7 @@ function DashboardLayout() {
   const { user, loading } = useAuth();
   const { data: membership, isLoading: memberLoading } = useMembership();
   const { data: isAdmin } = useIsSuperAdmin();
+  const { data: subscription } = useSubscription(membership?.company_id ?? null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
 
@@ -76,7 +77,39 @@ function DashboardLayout() {
     return <div className="grid min-h-screen place-items-center text-muted-foreground">{t("loading")}</div>;
   }
 
-  const company = membership.companies as { name: string } | null;
+  const company = membership.companies as { name: string; status?: string } | null;
+  const sub = subscription as { status?: string; current_period_end?: string } | null;
+  const expired =
+    !!sub &&
+    (sub.status === "canceled" ||
+      (["trialing", "past_due"].includes(sub.status ?? "") &&
+        !!sub.current_period_end &&
+        new Date(sub.current_period_end) < new Date()));
+  const blocked = company?.status === "suspended" || expired;
+
+  if (blocked) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-secondary/30 p-4">
+        <div className="max-w-md space-y-4 rounded-lg border bg-background p-8 text-center">
+          <h1 className="text-xl font-bold">
+            {company?.status === "suspended" ? t("accountSuspended") : t("trialEnded")}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {company?.status === "suspended" ? t("accountSuspendedDesc") : t("trialEndedDesc")}
+          </p>
+          <div className="flex justify-center gap-2">
+            <Button asChild variant="outline">
+              <a href="mailto:support@sawti-ai.com">{t("contactSupport")}</a>
+            </Button>
+            <Button variant="ghost" onClick={signOut}>
+              {t("logout")}
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
 
   return (
     <div className="flex min-h-screen bg-secondary/30">

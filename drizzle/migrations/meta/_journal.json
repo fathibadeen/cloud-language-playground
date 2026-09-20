@@ -15,6 +15,20 @@
       "when": 1789862672786,
       "tag": "0001_voice_calls_retell_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789878858035,
+      "tag": "0002_saas_limits_invitations_guards",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789879174641,
+      "tag": "0003_trial_limits_use_recommended_plan",
+      "breakpoints": true
     }
   ]
 }

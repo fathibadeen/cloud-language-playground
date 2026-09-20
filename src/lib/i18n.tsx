@@ -286,6 +286,56 @@ export const dict: Dict = {
   suspend: { ar: "تعليق", en: "Suspend" },
   activate: { ar: "تفعيل", en: "Activate" },
   noAccess: { ar: "لا تملك صلاحية الوصول", en: "You don't have access" },
+  accountSuspended: { ar: "الحساب موقوف", en: "Account suspended" },
+  accountSuspendedDesc: {
+    ar: "تم إيقاف حساب شركتك مؤقتًا. تواصل معنا لإعادة التفعيل.",
+    en: "Your company account is suspended. Contact us to reactivate it.",
+  },
+  trialEnded: { ar: "انتهت الفترة التجريبية", en: "Trial ended" },
+  trialEndedDesc: {
+    ar: "انتهت فترتك التجريبية. تواصل معنا لتفعيل باقة مناسبة لك.",
+    en: "Your trial has ended. Contact us to activate a plan.",
+  },
+  contactSupport: { ar: "تواصل مع الدعم", en: "Contact support" },
+  inviteSent: { ar: "تم إنشاء الدعوة", en: "Invitation created" },
+  inviteLink: { ar: "رابط الدعوة", en: "Invitation link" },
+  copyLink: { ar: "نسخ الرابط", en: "Copy link" },
+  copied: { ar: "تم النسخ", en: "Copied" },
+  pendingInvites: { ar: "دعوات معلّقة", en: "Pending invitations" },
+  revoke: { ar: "إلغاء", en: "Revoke" },
+  expires: { ar: "تنتهي في", en: "Expires" },
+  noInvites: { ar: "لا توجد دعوات معلّقة", en: "No pending invitations" },
+  planLimitReached: {
+    ar: "وصلت إلى حد باقتك الحالية. رقّ باقتك للمتابعة.",
+    en: "You reached your plan limit. Upgrade to continue.",
+  },
+  companyInactive: {
+    ar: "الحساب موقوف أو انتهت فترته، لا يمكن إتمام العملية.",
+    en: "The account is suspended or expired; the action is blocked.",
+  },
+  cannotChangeOwnRole: { ar: "لا يمكنك تغيير دورك بنفسك", en: "You cannot change your own role" },
+  lastOwnerRequired: {
+    ar: "يجب أن يبقى مالك واحد للشركة على الأقل",
+    en: "The company must keep at least one owner",
+  },
+  acceptInvite: { ar: "قبول الدعوة", en: "Accept invitation" },
+  acceptInviteDesc: {
+    ar: "تمت دعوتك للانضمام إلى فريق العمل",
+    en: "You have been invited to join a team",
+  },
+  invitationInvalid: { ar: "الدعوة غير صالحة أو منتهية", en: "Invitation is invalid or expired" },
+  invitationAccepted: { ar: "تم الانضمام للفريق", en: "You joined the team" },
+  signInToAccept: { ar: "سجّل الدخول بنفس البريد لقبول الدعوة", en: "Sign in with the invited email to accept" },
+  processDocument: { ar: "معالجة المستند", en: "Process document" },
+  documentProcessed: { ar: "تمت معالجة المستند", en: "Document processed" },
+  messagesUsed: { ar: "الرسائل المستهلكة", en: "Messages used" },
+  documentsUsed: { ar: "المستندات", en: "Documents" },
+  membersUsed: { ar: "أعضاء الفريق", en: "Team members" },
+  agentsUsed: { ar: "الوكلاء", en: "Agents" },
+  usageWarning: {
+    ar: "اقتربت من حد باقتك في هذا البند",
+    en: "You are close to your plan limit for this item",
+  },
 };
 
 type I18nValue = {

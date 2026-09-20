@@ -28,6 +28,7 @@ import { EmptyState } from "@/components/StatCard";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
+import { humanizeDbError } from "@/lib/errors";
 
 export const Route = createFileRoute("/dashboard/agents")({
   component: AgentsPage,
@@ -68,7 +69,7 @@ function AgentsPage() {
       channel: form.channel as "voice" | "whatsapp",
       language: form.language as "ar" | "en",
     });
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(humanizeDbError(error.message, t)); return; }
     toast.success(t("saved"));
     setOpen(false);
     qc.invalidateQueries({ queryKey: ["ai_agents"] });
@@ -79,7 +80,7 @@ function AgentsPage() {
       .from("ai_agents")
       .update({ is_active: !agent.is_active })
       .eq("id", agent.id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(humanizeDbError(error.message, t)); return; }
     qc.invalidateQueries({ queryKey: ["ai_agents"] });
   }
 
