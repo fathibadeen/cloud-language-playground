@@ -328,7 +328,6 @@ export const dict: Dict = {
   signInToAccept: { ar: "سجّل الدخول بنفس البريد لقبول الدعوة", en: "Sign in with the invited email to accept" },
   processDocument: { ar: "معالجة المستند", en: "Process document" },
   documentProcessed: { ar: "تمت معالجة المستند", en: "Document processed" },
-  minutesUsed: { ar: "الدقائق المستهلكة", en: "Minutes used" },
   messagesUsed: { ar: "الرسائل المستهلكة", en: "Messages used" },
   documentsUsed: { ar: "المستندات", en: "Documents" },
   membersUsed: { ar: "أعضاء الفريق", en: "Team members" },
