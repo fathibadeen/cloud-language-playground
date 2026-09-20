@@ -432,7 +432,7 @@ function WhatsappTab({
             </TableHeader>
             <TableBody>
               {(data?.companies ?? []).length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="py-12 text-center text-muted-foreground">{t("empty")}</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="py-12 text-center text-muted-foreground">{ar ? "لا توجد شركات بعد" : "No companies yet"}</TableCell></TableRow>
               ) : (
                 (data?.companies ?? []).map((company) => {
                   const account = accountFor(company.id);
