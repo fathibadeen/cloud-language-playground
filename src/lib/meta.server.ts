@@ -329,8 +329,9 @@ export async function sendMetaText(
     messages?: { id: string }[];
     error?: { message?: string };
   };
+  const providerId = payload?.messages?.[0]?.id;
   if (!res.ok) {
     return { ok: false, status: res.status, error: payload?.error?.message ?? `HTTP ${res.status}` };
   }
-  return { ok: true, providerId: payload?.messages?.[0]?.id };
+  return providerId ? { ok: true, providerId } : { ok: true };
 }

@@ -4,7 +4,6 @@
  * meta.server.ts and is loaded inside handlers.
  */
 import { createServerFn } from "@tanstack/react-start";
-import { getRequest } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import {
@@ -89,11 +88,10 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
     if (wabaList.length === 0) throw new Error("meta_no_waba");
 
     // 3) register the app-level webhook (best effort, reported back)
-    const requestUrl = new URL(getRequest().url);
-    const callbackBase = meta.getMetaEnv().redirectUri || requestUrl.origin;
-    const webhook = await meta.configureAppWebhook(
-      `${callbackBase.replace(/\/$/, "")}${WHATSAPP_WEBHOOK_PATH}`,
-    );
+    const redirectBase = meta.getMetaEnv().redirectUri.replace(/\/$/, "");
+    const webhook = redirectBase
+      ? await meta.configureAppWebhook(`${redirectBase}${WHATSAPP_WEBHOOK_PATH}`)
+      : ({ ok: false as const, error: { kind: "meta_webhook_error" as const } });
 
     const connected: {
       wabaId: string;
@@ -245,12 +243,13 @@ export const disconnectWhatsapp = createServerFn({ method: "POST" })
       .select("id, business_account_id")
       .eq("company_id", data.companyId)
       .limit(1);
-    if (!accounts?.length) throw new Error("whatsapp_not_connected");
+    const account = accounts?.[0];
+    if (!account) throw new Error("whatsapp_not_connected");
 
     // best-effort unsubscribe with the still-stored token
     const token = await meta.loadCompanyWhatsappToken(data.companyId);
-    if (token && accounts[0].business_account_id) {
-      await meta.unsubscribeWaba(token, accounts[0].business_account_id);
+    if (token && account.business_account_id) {
+      await meta.unsubscribeWaba(token, account.business_account_id);
     }
 
     await supabaseAdmin

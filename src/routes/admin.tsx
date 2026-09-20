@@ -318,7 +318,7 @@ function WhatsappTab({
   refetch,
   ar,
 }: {
-  data?: Overview;
+  data: Overview | undefined;
   metaConfigured: boolean;
   metaAppId: string | null;
   metaConfigId: string | null;
@@ -427,7 +427,7 @@ function WhatsappTab({
                 <TableHead>{ar ? "حساب الأعمال" : "Business"}</TableHead>
                 <TableHead>{ar ? "الوكيل الذكي" : "AI agent"}</TableHead>
                 <TableHead>{ar ? "تاريخ الربط" : "Connected"}</TableHead>
-                <TableHead>{t("actions")}</TableHead>
+                <TableHead>{ar ? "الإجراءات" : "Actions"}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -507,7 +507,7 @@ function WhatsappTab({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2"><Phone className="size-4" />{detail?.name ?? ""}</DialogTitle>
           </DialogHeader>
-          {detailAccount ? (
+              {detail && detailAccount ? (
             <div className="space-y-2 text-sm">
               <Row label={ar ? "حالة الاتصال" : "Status"} value={detailAccount.status === "connected" && detailAccount.is_active ? (ar ? "متصل ✓" : "Connected ✓") : ar ? "غير متصل" : "Not connected"} />
               <Row label={ar ? "حساب Meta Business" : "Meta Business account"} value={<span dir="ltr">{detailAccount.business_account_id ?? "—"}</span>} />
