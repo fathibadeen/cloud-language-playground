@@ -112,6 +112,23 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
           return Response.json({ ok: true, processed: result.ok });
         }
 
+        // WhatsApp Cloud messages become conversations + AI replies.
+        if (provider === "whatsapp" && payload["entry"]) {
+          const { ingestWhatsappMessage } = await import("@/lib/whatsapp-ingest.server");
+          const result = await ingestWhatsappMessage(payload);
+          await supabaseAdmin
+            .from("webhook_events")
+            .update({
+              status: result.ok ? "processed" : "failed",
+              company_id: result.companyId ?? null,
+              error: result.ok ? null : (result.reason ?? "unknown_error"),
+              processed_at: new Date().toISOString(),
+            })
+            .eq("id", eventRow.id);
+          return Response.json({ ok: true, processed: result.ok });
+        }
+
+
         return Response.json({ ok: true });
       },
     },
