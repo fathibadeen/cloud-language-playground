@@ -17,16 +17,44 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
     await assertSuperAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [companies, subs, plans, agents, calls, conversations, webhooks, requests] = await Promise.all([
-      supabaseAdmin.from("companies").select("id, name, status, created_at, city, industry"),
-      supabaseAdmin.from("subscriptions").select("id, status, plan_id, company_id, current_period_end, created_at, plans(id, name_ar, name_en, price_sar)").order("created_at", { ascending: false }),
-      supabaseAdmin.from("plans").select("id, code, name_ar, name_en, price_sar, is_active").eq("is_active", true).order("sort_order"),
-      supabaseAdmin.from("ai_agents").select("id, is_active, company_id, provider_agent_id"),
-      supabaseAdmin.from("voice_calls").select("id, duration_seconds"),
-      supabaseAdmin.from("conversations").select("id, channel"),
-      supabaseAdmin.from("webhook_events").select("id, status, provider, created_at").limit(50),
-      supabaseAdmin.from("connection_requests").select("id, company_id, channel, payload, status, admin_note, created_at").order("created_at", { ascending: false }).limit(100),
-    ]);
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const [companies, subs, plans, agents, calls, conversations, webhooks, requests, waAccounts, kbases, waMessagesToday] =
+      await Promise.all([
+        supabaseAdmin.from("companies").select("id, name, status, created_at, city, industry"),
+        supabaseAdmin
+          .from("subscriptions")
+          .select("id, status, plan_id, company_id, current_period_end, created_at, plans(id, name_ar, name_en, price_sar)")
+          .order("created_at", { ascending: false }),
+        supabaseAdmin.from("plans").select("id, code, name_ar, name_en, price_sar, is_active").eq("is_active", true).order("sort_order"),
+        supabaseAdmin.from("ai_agents").select("id, is_active, company_id, name, provider_agent_id"),
+        supabaseAdmin.from("voice_calls").select("id, duration_seconds"),
+        supabaseAdmin.from("conversations").select("id, channel, company_id, created_at"),
+        supabaseAdmin
+          .from("webhook_events")
+          .select("id, status, provider, created_at, company_id")
+          .order("created_at", { ascending: false })
+          .limit(200),
+        supabaseAdmin
+          .from("connection_requests")
+          .select("id, company_id, channel, payload, status, admin_note, created_at")
+          .order("created_at", { ascending: false })
+          .limit(100),
+        supabaseAdmin
+          .from("whatsapp_accounts")
+          .select(
+            "id, company_id, phone_number, phone_number_id, verified_name, business_account_id, status, agent_id, is_active, created_at",
+          )
+          .order("created_at", { ascending: false }),
+        supabaseAdmin.from("knowledge_bases").select("id, company_id, name"),
+        supabaseAdmin
+          .from("messages")
+          .select("company_id, channel, created_at")
+          .eq("channel", "whatsapp")
+          .gte("created_at", todayStart.toISOString())
+          .limit(5000),
+      ]);
 
     const companyRows = companies.data ?? [];
     const subRows = (subs.data ?? []) as { status: string; plans: { price_sar: number } | null }[];
@@ -35,6 +63,15 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
       companies: companyRows,
       subscriptions: subs.data ?? [],
       plans: plans.data ?? [],
+      agents: agents.data ?? [],
+      whatsappAccounts: waAccounts.data ?? [],
+      knowledgeBases: kbases.data ?? [],
+      waStats: {
+        messagesToday: (waMessagesToday.data ?? []).length,
+        conversationsToday: (conversations.data ?? []).filter(
+          (c) => c.channel === "whatsapp" && new Date(c.created_at).getTime() >= todayStart.getTime(),
+        ).length,
+      },
       totals: {
         companies: companyRows.length,
         activeCompanies: companyRows.filter((c) => c.status === "active").length,
@@ -43,9 +80,7 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
           .filter((s) => s.status === "active")
           .reduce((sum, s) => sum + Number(s.plans?.price_sar ?? 0), 0),
         activeAgents: (agents.data ?? []).filter((a) => a.is_active).length,
-        minutes: Math.round(
-          (calls.data ?? []).reduce((s, c) => s + (c.duration_seconds ?? 0), 0) / 60,
-        ),
+        minutes: Math.round((calls.data ?? []).reduce((s, c) => s + (c.duration_seconds ?? 0), 0) / 60),
         whatsappConversations: (conversations.data ?? []).filter((c) => c.channel === "whatsapp").length,
         webhookErrors: (webhooks.data ?? []).filter((w) => w.status === "failed").length,
       },
@@ -162,23 +197,8 @@ export const reviewConnectionRequest = createServerFn({ method: "POST" })
       .eq("id", data.requestId);
     if (error) throw new Error(error.message);
 
-    // On approval of a WhatsApp request, create the account shell so ingest can match it.
-    if (data.action === "approved" && request.channel === "whatsapp") {
-      const payload = (request.payload ?? {}) as { phone_number?: string };
-      if (payload.phone_number) {
-        await supabaseAdmin.from("whatsapp_accounts").insert({
-          company_id: request.company_id,
-          provider: "meta_cloud",
-          phone_number: payload.phone_number,
-          status: "connected",
-        });
-        await supabaseAdmin
-          .from("companies")
-          .update({ whatsapp_enabled: true })
-          .eq("id", request.company_id);
-      }
-    }
-
+    // Real WhatsApp connection happens via Meta Embedded Signup
+    // (completeWhatsappConnect) — approval here only records the decision.
     await supabaseAdmin.from("audit_logs").insert({
       company_id: request.company_id,
       user_id: context.userId,
