@@ -28,7 +28,7 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
           .select("id, status, plan_id, company_id, current_period_end, created_at, plans(id, name_ar, name_en, price_sar)")
           .order("created_at", { ascending: false }),
         supabaseAdmin.from("plans").select("id, code, name_ar, name_en, price_sar, is_active").eq("is_active", true).order("sort_order"),
-        supabaseAdmin.from("ai_agents").select("id, is_active, company_id, name, provider_agent_id"),
+        supabaseAdmin.from("ai_agents").select("id, is_active, company_id, name, provider_agent_id, knowledge_base_id"),
         supabaseAdmin.from("voice_calls").select("id, duration_seconds"),
         supabaseAdmin.from("conversations").select("id, channel, company_id, created_at"),
         supabaseAdmin
@@ -59,6 +59,15 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
     const companyRows = companies.data ?? [];
     const subRows = (subs.data ?? []) as { status: string; plans: { price_sar: number } | null }[];
 
+    const countByCompany = (rows: { company_id: string | null }[]) => {
+      const counts: Record<string, number> = {};
+      for (const row of rows) if (row.company_id) counts[row.company_id] = (counts[row.company_id] ?? 0) + 1;
+      return counts;
+    };
+    const waConversationsToday = (conversations.data ?? []).filter(
+      (c) => c.channel === "whatsapp" && new Date(c.created_at).getTime() >= todayStart.getTime(),
+    );
+
     return {
       companies: companyRows,
       subscriptions: subs.data ?? [],
@@ -68,9 +77,9 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
       knowledgeBases: kbases.data ?? [],
       waStats: {
         messagesToday: (waMessagesToday.data ?? []).length,
-        conversationsToday: (conversations.data ?? []).filter(
-          (c) => c.channel === "whatsapp" && new Date(c.created_at).getTime() >= todayStart.getTime(),
-        ).length,
+        conversationsToday: waConversationsToday.length,
+        messagesTodayByCompany: countByCompany(waMessagesToday.data ?? []),
+        conversationsTodayByCompany: countByCompany(waConversationsToday),
       },
       totals: {
         companies: companyRows.length,
