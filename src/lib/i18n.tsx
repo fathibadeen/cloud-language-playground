@@ -215,6 +215,40 @@ export const dict: Dict = {
   businessAccountId: { ar: "معرّف حساب الأعمال", en: "Business account ID" },
   accessToken: { ar: "رمز الوصول", en: "Access token" },
 
+  // simplified connection UX
+  getReadyNumber: { ar: "أبغى رقم جاهز من المنصة", en: "Get a ready number" },
+  getReadyNumberDesc: {
+    ar: "نجهّز لك رقمًا تلقائيًا خلال ثوانٍ — بدون أي إعدادات تقنية.",
+    en: "We provision a number for you automatically in seconds — no technical setup.",
+  },
+  haveOwnNumber: { ar: "عندي رقم أو مزوّد خاص", en: "I have my own number/provider" },
+  haveOwnNumberDesc: {
+    ar: "اربط رقمك الحالي عبر مزوّدك — للمختصين فقط.",
+    en: "Connect your existing number via your provider — for advanced users.",
+  },
+  requestNumber: { ar: "جهّز رقمي", en: "Set up my number" },
+  numberReady: { ar: "رقمك جاهز ويستقبل المكالمات", en: "Your number is live and receiving calls" },
+  numberPreparing: { ar: "رقمك قيد التجهيز", en: "Your number is being prepared" },
+  numberNeedsSetup: { ar: "يحتاج إعدادًا", en: "Needs setup" },
+  numberFailed: { ar: "تعذّر تجهيز الرقم — حاول مجددًا أو تواصل معنا", en: "Couldn't prepare the number — retry or contact us" },
+  advancedSettings: { ar: "إعدادات متقدمة (للمختصين)", en: "Advanced settings (for specialists)" },
+  whatsappConnectTitle: { ar: "اربط واتساب أعمالك", en: "Connect your business WhatsApp" },
+  whatsappConnectDesc: {
+    ar: "أدخل رقم واتساب أعمالك واسم نشاطك، وفريقنا يفعّل الخدمة لك — بدون أي إعدادات تقنية.",
+    en: "Enter your business WhatsApp number and business name, and our team activates it for you — no technical setup.",
+  },
+  businessName: { ar: "اسم النشاط التجاري", en: "Business name" },
+  requestWhatsappConnect: { ar: "اطلب الربط", en: "Request connection" },
+  requestSent: { ar: "وصلنا طلبك — نفعّل الخدمة ونبلّغك", en: "Request received — we'll activate and notify you" },
+  requestPending: { ar: "طلبك بانتظار التفعيل من فريقنا", en: "Your request is pending activation by our team" },
+  requestApproved: { ar: "تم تفعيل الخدمة", en: "Service activated" },
+  requestRejected: { ar: "تعذّر تنفيذ الطلب", en: "Request could not be completed" },
+  connectRequests: { ar: "طلبات الربط", en: "Connection requests" },
+  approve: { ar: "تفعيل", en: "Approve" },
+  reject: { ar: "رفض", en: "Reject" },
+  noRequests: { ar: "لا توجد طلبات معلّقة", en: "No pending requests" },
+  whatsappNumberLabel: { ar: "رقم واتساب الأعمال", en: "Business WhatsApp number" },
+
   // conversations
   inbox: { ar: "صندوق الوارد الموحد", en: "Unified inbox" },
   customer: { ar: "العميل", en: "Customer" },
