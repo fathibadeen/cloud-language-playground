@@ -121,6 +121,17 @@ function Onboarding() {
         status: "trialing",
       });
 
+      // ربط الوكيل الصوتي تلقائيًا مع Retell (لا يمنع دخول العميل إن فشل)
+      if (channels.includes("voice") && typeof companyId === "string") {
+        try {
+          const res = await provision({ data: { companyId } });
+          if (res.status === "connected") toast.success(t("voiceConnected"));
+          else toast.message(t("voicePending"), { description: res.reason ?? undefined });
+        } catch {
+          toast.message(t("voicePending"));
+        }
+      }
+
       await qc.invalidateQueries();
       toast.success(t("saved"));
       navigate({ to: "/dashboard" });
