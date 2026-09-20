@@ -27,6 +27,9 @@ import { EmptyState } from "@/components/StatCard";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { processKnowledgeDocument } from "@/lib/knowledge.functions";
+import { humanizeDbError } from "@/lib/errors";
 
 export const Route = createFileRoute("/dashboard/knowledge")({
   component: KnowledgePage,
@@ -65,21 +68,34 @@ function KnowledgePage() {
       if (error) { toast.error(error.message); return; }
       baseId = data.id;
     }
-    const { error } = await supabase.from("knowledge_documents").insert({
-      company_id: companyId,
-      knowledge_base_id: baseId,
-      title: form.title,
-      source_type: form.source_type,
-      content: form.content || null,
-      source_url: form.source_url || null,
-    });
-    if (error) { toast.error(error.message); return; }
+    const { data: created, error } = await supabase
+      .from("knowledge_documents")
+      .insert({
+        company_id: companyId,
+        knowledge_base_id: baseId,
+        title: form.title,
+        source_type: form.source_type,
+        content: form.content || null,
+        source_url: form.source_url || null,
+        status: "processing",
+      })
+      .select("id")
+      .single();
+    if (error) { toast.error(humanizeDbError(error.message, t)); return; }
     toast.success(t("saved"));
     setOpen(false);
     setForm({ title: "", source_type: "text", content: "", source_url: "" });
     qc.invalidateQueries({ queryKey: ["knowledge_documents"] });
     qc.invalidateQueries({ queryKey: ["knowledge_bases"] });
+    try {
+      const res = await process({ data: { documentId: created.id } });
+      if (res.ok) toast.success(t("documentProcessed"));
+    } catch (e) {
+      toast.error(humanizeDbError((e as Error).message, t));
+    }
+    qc.invalidateQueries({ queryKey: ["knowledge_documents"] });
   }
+
 
   async function remove(id: string) {
     const { error } = await supabase.from("knowledge_documents").delete().eq("id", id);
