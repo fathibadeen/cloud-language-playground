@@ -79,15 +79,37 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
           return Response.json({ ok: true, duplicate: true });
         }
 
-        const { error } = await supabaseAdmin.from("webhook_events").insert({
-          provider,
-          event_type: eventType,
-          external_event_id: externalId,
-          status: "received",
-          payload: payload as never,
-        });
+        const { data: eventRow, error } = await supabaseAdmin
+          .from("webhook_events")
+          .insert({
+            provider,
+            event_type: eventType,
+            external_event_id: externalId,
+            status: "received",
+            payload: payload as never,
+          })
+          .select("id")
+          .single();
         if (error) {
           return Response.json({ error: error.message }, { status: 500 });
+        }
+
+        // Retell call events become real call records.
+        if (provider === "retell" && payload["call"]) {
+          const { ingestRetellCall } = await import("@/lib/retell-ingest.server");
+          const result = await ingestRetellCall(
+            payload["call"] as Parameters<typeof ingestRetellCall>[0],
+          );
+          await supabaseAdmin
+            .from("webhook_events")
+            .update({
+              status: result.ok ? "processed" : "failed",
+              company_id: result.companyId ?? null,
+              error: result.ok ? null : (result.reason ?? "unknown_error"),
+              processed_at: new Date().toISOString(),
+            })
+            .eq("id", eventRow.id);
+          return Response.json({ ok: true, processed: result.ok });
         }
 
         return Response.json({ ok: true });
