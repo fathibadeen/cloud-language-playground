@@ -11,8 +11,8 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
-  --font-sans: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
-  --font-display: "IBM Plex Sans Arabic", "Inter", system-ui, sans-serif;
+  --font-sans: "Manrope", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-display: "Sora", "IBM Plex Sans Arabic", system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -49,6 +49,13 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-landing: var(--landing);
+  --color-landing-foreground: var(--landing-foreground);
+  --color-landing-muted: var(--landing-muted);
+  --color-saudi: var(--saudi);
+  --color-saudi-bright: var(--saudi-bright);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
   --shadow-card: 0 1px 2px oklch(0.2 0.03 180 / 0.06), 0 8px 24px oklch(0.2 0.03 180 / 0.06);
 }
 
@@ -90,6 +97,13 @@
   --sidebar-accent-foreground: oklch(0.97 0.01 180);
   --sidebar-border: oklch(0.32 0.03 193);
   --sidebar-ring: oklch(0.62 0.11 175);
+  --landing: #020806;
+  --landing-foreground: #f7f5ef;
+  --landing-muted: #a7b3ad;
+  --saudi: #0b3d2e;
+  --saudi-bright: #147a55;
+  --gold: #d6b66c;
+  --gold-foreground: #211b0d;
 }
 
 .dark {
@@ -142,8 +156,18 @@
   h2,
   h3 {
     font-family: var(--font-display);
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
   }
+}
+
+@keyframes voice-bar {
+  0%, 100% { transform: scaleY(0.35); }
+  50% { transform: scaleY(1); }
+}
+
+@utility voice-bar {
+  animation: voice-bar 1.15s ease-in-out infinite;
+  transform-origin: center;
 }
 
 @utility surface {

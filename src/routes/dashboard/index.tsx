@@ -16,6 +16,16 @@ import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership, useSubscription } from "@/lib/tenant";
 
 export const Route = createFileRoute("/dashboard/")({
+  head: () => ({
+    meta: [
+      { title: "لوحة التحكم | موظفك" },
+      { name: "description", content: "ملخص أداء موظفيك الأذكياء والمكالمات والمحادثات." },
+      { property: "og:title", content: "لوحة التحكم | موظفك" },
+      { property: "og:description", content: "ملخص أداء موظفيك الأذكياء والمكالمات والمحادثات." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: Overview,
 });
 
@@ -58,9 +68,10 @@ function Overview() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">{company?.name}</h1>
-        <p className="text-sm text-muted-foreground">{t("navHome")}</p>
+      <div className="rounded-lg bg-sidebar px-6 py-7 text-sidebar-foreground md:px-8">
+        <p className="text-sm text-sidebar-primary">{locale === "ar" ? "حيّاك الله، هذه آخر المستجدات" : "Welcome back, here is the latest"}</p>
+        <h1 className="mt-2 font-display text-2xl font-bold md:text-3xl">{company?.name}</h1>
+        <p className="mt-2 text-sm text-sidebar-foreground/70">{locale === "ar" ? "أرقامك واضحة، وفريقك الذكي تحت النظر." : "Clear numbers and your AI team in view."}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

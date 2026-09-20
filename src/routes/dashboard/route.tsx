@@ -86,12 +86,12 @@ function DashboardLayout() {
         }`}
       >
         <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-4">
-          <span className="grid size-8 place-items-center rounded-lg bg-sidebar-primary font-bold text-sidebar-primary-foreground">
-            ذ
+          <span className="grid size-9 place-items-center rounded-lg border border-sidebar-primary/40 bg-sidebar-primary/15 font-display text-lg font-bold text-sidebar-primary">
+            م
           </span>
           <span className="truncate font-semibold">{company?.name ?? t("brandFull")}</span>
         </div>
-        <nav className="space-y-1 p-3">
+        <nav className="space-y-1 overflow-y-auto p-3">
           {nav.map((item) => {
             const active = "exact" in item && item.exact ? pathname === item.to : pathname.startsWith(item.to);
             return (
@@ -123,7 +123,7 @@ function DashboardLayout() {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-16 items-center justify-between gap-2 border-b bg-background px-4">
+         <header className="flex h-16 items-center justify-between gap-2 border-b bg-background/90 px-4 backdrop-blur">
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen((o) => !o)}>
             <Menu className="size-5" />
           </Button>

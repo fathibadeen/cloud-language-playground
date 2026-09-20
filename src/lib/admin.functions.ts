@@ -17,9 +17,10 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
     await assertSuperAdmin(context);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const [companies, subs, agents, calls, conversations, webhooks] = await Promise.all([
+    const [companies, subs, plans, agents, calls, conversations, webhooks] = await Promise.all([
       supabaseAdmin.from("companies").select("id, name, status, created_at, city, industry"),
-      supabaseAdmin.from("subscriptions").select("id, status, plan_id, company_id, plans(price_sar)"),
+      supabaseAdmin.from("subscriptions").select("id, status, plan_id, company_id, current_period_end, created_at, plans(id, name_ar, name_en, price_sar)").order("created_at", { ascending: false }),
+      supabaseAdmin.from("plans").select("id, code, name_ar, name_en, price_sar, is_active").eq("is_active", true).order("sort_order"),
       supabaseAdmin.from("ai_agents").select("id, is_active, company_id, provider_agent_id"),
       supabaseAdmin.from("voice_calls").select("id, duration_seconds"),
       supabaseAdmin.from("conversations").select("id, channel"),
@@ -31,6 +32,8 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
 
     return {
       companies: companyRows,
+      subscriptions: subs.data ?? [],
+      plans: plans.data ?? [],
       totals: {
         companies: companyRows.length,
         activeCompanies: companyRows.filter((c) => c.status === "active").length,
@@ -47,6 +50,51 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
       },
       webhooks: webhooks.data ?? [],
     };
+  });
+
+export const updateCompanySubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({
+      companyId: z.string().uuid(),
+      planId: z.string().uuid().nullable(),
+      status: z.enum(["trialing", "active", "past_due", "canceled"]),
+    }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: existing, error: lookupError } = await supabaseAdmin
+      .from("subscriptions")
+      .select("id")
+      .eq("company_id", data.companyId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (lookupError) throw new Error(lookupError.message);
+
+    const now = new Date();
+    const periodEnd = new Date(now);
+    periodEnd.setMonth(periodEnd.getMonth() + 1);
+    const payload = {
+      plan_id: data.planId,
+      status: data.status,
+      current_period_start: now.toISOString(),
+      current_period_end: periodEnd.toISOString(),
+    };
+    const result = existing
+      ? await supabaseAdmin.from("subscriptions").update(payload).eq("id", existing.id)
+      : await supabaseAdmin.from("subscriptions").insert({ company_id: data.companyId, ...payload });
+    if (result.error) throw new Error(result.error.message);
+
+    await supabaseAdmin.from("audit_logs").insert({
+      company_id: data.companyId,
+      user_id: context.userId,
+      action: "subscription.updated",
+      entity: "subscriptions",
+      metadata: { plan_id: data.planId, status: data.status },
+    });
+    return { ok: true };
   });
 
 export const setCompanyStatus = createServerFn({ method: "POST" })
