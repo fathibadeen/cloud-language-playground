@@ -8,7 +8,10 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { testProviderConnection } from "@/lib/credentials.functions";
+import { provisionCompanyVoice, retellStatus } from "@/lib/retell.functions";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useState } from "react";
 
 export const Route = createFileRoute("/dashboard/voice")({
   component: VoicePage,
@@ -42,12 +45,29 @@ function VoicePage() {
     qc.invalidateQueries({ queryKey: ["membership"] });
   }
 
-  async function test() {
+  const status = useServerFn(retellStatus);
+  const provision = useServerFn(provisionCompanyVoice);
+  const [busy, setBusy] = useState(false);
+
+  const { data: retell } = useQuery({
+    queryKey: ["retell-status", companyId],
+    enabled: !!companyId,
+    queryFn: () => status({ data: { companyId: companyId! } }),
+  });
+
+  async function retryProvision() {
     if (!companyId) return;
-    const res = await testProviderConnection({ data: { companyId, scope: "voice_provider" } });
-    toast.message(res.status === "not_connected" ? t("notConnected") : t("testing"), {
-      description: res.reason,
-    });
+    setBusy(true);
+    try {
+      const res = await provision({ data: { companyId } });
+      if (res.status === "connected") toast.success(t("voiceConnected"));
+      else toast.message(t("voicePending"), { description: res.reason ?? undefined });
+      qc.invalidateQueries();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -67,12 +87,24 @@ function VoicePage() {
         <CardContent className="space-y-3">
           <div className="flex items-center justify-between text-sm">
             <span>Retell AI</span>
-            <Badge variant="secondary">{t("notConnected")}</Badge>
+            <Badge variant={retell?.status === "connected" ? "default" : "secondary"}>
+              {retell?.status === "connected"
+                ? t("connected")
+                : retell?.status === "pending"
+                  ? t("pending")
+                  : t("notConnected")}
+            </Badge>
           </div>
-          <p className="text-sm text-muted-foreground">{t("integrationsHint")}</p>
-          <Button variant="outline" size="sm" onClick={test}>
-            {t("testConnection")}
-          </Button>
+          {retell && retell.status !== "connected" && "reason" in retell && retell.reason ? (
+            <p className="text-sm text-muted-foreground">{retell.reason}</p>
+          ) : (
+            <p className="text-sm text-muted-foreground">{t("integrationsHint")}</p>
+          )}
+          {retell?.status !== "connected" ? (
+            <Button variant="outline" size="sm" onClick={retryProvision} disabled={busy}>
+              {t("retryProvision")}
+            </Button>
+          ) : null}
         </CardContent>
       </Card>
 

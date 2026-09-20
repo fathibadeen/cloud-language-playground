@@ -76,6 +76,9 @@ export type Database = {
           personality: string | null
           provider: string | null
           provider_agent_id: string | null
+          provider_error: string | null
+          provider_llm_id: string | null
+          provider_status: string
           system_instructions: string | null
           transfer_number: string | null
           updated_at: string
@@ -97,6 +100,9 @@ export type Database = {
           personality?: string | null
           provider?: string | null
           provider_agent_id?: string | null
+          provider_error?: string | null
+          provider_llm_id?: string | null
+          provider_status?: string
           system_instructions?: string | null
           transfer_number?: string | null
           updated_at?: string
@@ -118,6 +124,9 @@ export type Database = {
           personality?: string | null
           provider?: string | null
           provider_agent_id?: string | null
+          provider_error?: string | null
+          provider_llm_id?: string | null
+          provider_status?: string
           system_instructions?: string | null
           transfer_number?: string | null
           updated_at?: string
@@ -1091,11 +1100,13 @@ export type Database = {
           direction: string
           duration_seconds: number
           ended_at: string | null
+          ended_reason: string | null
           from_number: string | null
           id: string
           phone_number_id: string | null
           provider: string | null
           provider_call_id: string | null
+          recording_url: string | null
           started_at: string | null
           status: Database["public"]["Enums"]["call_status"]
           to_number: string | null
@@ -1111,11 +1122,13 @@ export type Database = {
           direction?: string
           duration_seconds?: number
           ended_at?: string | null
+          ended_reason?: string | null
           from_number?: string | null
           id?: string
           phone_number_id?: string | null
           provider?: string | null
           provider_call_id?: string | null
+          recording_url?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["call_status"]
           to_number?: string | null
@@ -1131,11 +1144,13 @@ export type Database = {
           direction?: string
           duration_seconds?: number
           ended_at?: string | null
+          ended_reason?: string | null
           from_number?: string | null
           id?: string
           phone_number_id?: string | null
           provider?: string | null
           provider_call_id?: string | null
+          recording_url?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["call_status"]
           to_number?: string | null
