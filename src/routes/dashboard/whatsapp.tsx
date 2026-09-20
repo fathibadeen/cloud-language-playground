@@ -207,7 +207,7 @@ function WhatsappPage() {
       {account?.status === "connected" ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <CheckCircle2 className="size-4 text-primary" />
-          {t("numberReady")}
+          {t("whatsappActive")}
         </div>
       ) : null}
     </div>

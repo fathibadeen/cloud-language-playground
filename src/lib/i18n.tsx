@@ -248,6 +248,7 @@ export const dict: Dict = {
   reject: { ar: "رفض", en: "Reject" },
   noRequests: { ar: "لا توجد طلبات معلّقة", en: "No pending requests" },
   whatsappNumberLabel: { ar: "رقم واتساب الأعمال", en: "Business WhatsApp number" },
+  whatsappActive: { ar: "واتساب أعمالك مفعّل ويستقبل الرسائل", en: "Your business WhatsApp is active and receiving messages" },
 
   // conversations
   inbox: { ar: "صندوق الوارد الموحد", en: "Unified inbox" },
