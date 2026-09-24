@@ -6,6 +6,7 @@ import {
   Check,
   Headphones,
   MessageSquare,
+  Menu,
   Phone,
   ShieldCheck,
   Sparkles,
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { SawtiLogo } from "@/components/SawtiLogo";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/lib/i18n";
 import { usePlans } from "@/lib/tenant";
 import { useAuth } from "@/lib/auth";
@@ -152,6 +154,18 @@ function Landing() {
               <Link to={user ? "/dashboard" : "/auth"}>{user ? t("navHome") : t("login")}</Link>
             </Button>
             {!user ? <Button asChild size="sm" className="bg-saudi-bright text-primary-foreground hover:bg-saudi-bright/90"><Link to="/auth" search={{ mode: "signup" }}>{copy.try}</Link></Button> : null}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-landing-foreground hover:bg-landing-foreground/10 lg:hidden" aria-label={ar ? "فتح القائمة" : "Open menu"}><Menu /></Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem asChild><a href="#services" className="text-base">{t("features")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><a href="#how" className="text-base">{t("howItWorks")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><a href="#pricing" className="text-base">{t("pricing")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><a href="#faq" className="text-base">{t("faq")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/contact" className="text-base">{t("contact")}</Link></DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
