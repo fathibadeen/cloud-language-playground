@@ -7,6 +7,7 @@ import { useCompanyId } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard/usage")({
+  head: () => ({ meta: [{ title: "الاستخدام | صوتي" }, { name: "description", content: "متابعة استخدام شركتك وحدود خطتها في صوتي." }, { property: "og:title", content: "الاستخدام | صوتي" }, { property: "og:description", content: "متابعة استخدام شركتك وحدود خطتها في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: UsagePage,
 });
 

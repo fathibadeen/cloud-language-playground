@@ -14,6 +14,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 
 export const Route = createFileRoute("/dashboard/voice")({
+  head: () => ({ meta: [{ title: "الوكيل الصوتي | صوتي" }, { name: "description", content: "متابعة ربط وحالة الوكيل الصوتي لشركتك." }, { property: "og:title", content: "الوكيل الصوتي | صوتي" }, { property: "og:description", content: "متابعة ربط وحالة الوكيل الصوتي لشركتك." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: VoicePage,
 });
 

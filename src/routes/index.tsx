@@ -6,17 +6,50 @@ import {
   Check,
   Headphones,
   MessageSquare,
+  Menu,
   Phone,
   ShieldCheck,
   Sparkles,
   Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { SawtiLogo } from "@/components/SawtiLogo";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/lib/i18n";
 import { usePlans } from "@/lib/tenant";
 import { useAuth } from "@/lib/auth";
 import heroImage from "@/assets/saudi-ai-hero.jpg";
+import socialImage from "@/assets/sawti-social-share.jpg";
+
+const siteUrl = "https://www.sawti-ai.com";
+const socialImageUrl = `${siteUrl}/sawti-social-share.jpg`;
+const faqAr = [
+  ["ما هي منصة صوتي؟", "صوتي منصة تواصل ذكية للشركات تدير المكالمات ومحادثات واتساب، وتجيب العملاء اعتمادًا على معلومات شركتك."],
+  ["هل تدعم العربية والإنجليزية؟", "نعم، يستطيع وكلاء صوتي التواصل بالعربية والإنجليزية بما يناسب عملاء شركتك."],
+  ["كيف يتعلم الوكيل معلومات الشركة؟", "تضيف ملفاتك وسياساتك وروابطك وأسئلتك الشائعة إلى قاعدة معرفة شركتك، ويستخدمها الوكيل لتقديم إجابات مرتبطة بنشاطك."],
+  ["هل تعمل المنصة مع المكالمات وواتساب؟", "نعم، تدعم صوتي الوكيل الصوتي ومحادثات واتساب ضمن لوحة تحكم موحدة، بعد ربط كل قناة وتفعيلها."],
+  ["متى يتحول التواصل إلى موظف؟", "يمكن للوكيل إحالة المحادثة أو المكالمة إلى فريقك عندما يحتاج العميل تدخلًا بشريًا أو حسب القواعد التي تضبطها."],
+  ["هل بيانات كل شركة منفصلة وآمنة؟", "نعم، ترتبط البيانات بحساب الشركة وتُطبق صلاحيات تمنع مستخدمي الشركات الأخرى من الوصول إليها."],
+  ["كم يستغرق الإعداد؟", "يمكن إنشاء الشركة وإضافة المعرفة وتجهيز الوكيل خلال دقائق، بينما يعتمد تفعيل أرقام الاتصال وواتساب على اكتمال ربط المزود ومراجعته."],
+  ["هل أحتاج خبرة تقنية؟", "لا. صُممت خطوات الإعداد والإدارة لتكون واضحة، ويمكن لفريق صوتي مساعدتك في ربط القنوات التي تتطلب موافقات خارجية."],
+  ["هل يمكنني متابعة المكالمات والمحادثات؟", "نعم، تعرض لوحة التحكم السجلات والمحادثات وحالة التحويل للموظف والاستخدام المتاح لشركتك."],
+  ["كيف تعمل التجربة والخطط حاليًا؟", "تظهر الخطط للمقارنة وتعمل الحسابات بفترة تجريبية. الدفع الإلكتروني غير مفعّل حاليًا، لذلك لن تُخصم أي رسوم إلكترونية."],
+] as const;
+
+const faqEn = [
+  ["What is Sawti?", "Sawti is an intelligent communications platform for businesses that handles calls and WhatsApp conversations using your company knowledge."],
+  ["Does Sawti support Arabic and English?", "Yes. Sawti agents can communicate in Arabic and English to match your customers."],
+  ["How does the agent learn about my company?", "Add files, policies, links, and FAQs to your company knowledge base. The agent uses them to answer in your business context."],
+  ["Does it work with calls and WhatsApp?", "Yes. Sawti supports voice agents and WhatsApp conversations in one dashboard once each channel is connected and activated."],
+  ["When is a conversation handed to a person?", "The agent can hand a call or conversation to your team when human help is needed or according to rules you configure."],
+  ["Is each company's data separate and secure?", "Yes. Data is tied to its company account, with access controls that prevent users from other companies from viewing it."],
+  ["How long does setup take?", "You can create your company, add knowledge, and prepare an agent in minutes. Phone and WhatsApp activation depends on provider connection and approval."],
+  ["Do I need technical experience?", "No. Setup and management are designed to be clear, and the Sawti team can help with channels that require external approval."],
+  ["Can I review calls and conversations?", "Yes. The dashboard shows records, conversations, human handoff status, and your company's usage."],
+  ["How do the trial and plans work today?", "Plans are displayed for comparison and accounts run on a trial. Online payments are currently disabled, so no online charge is made."],
+] as const;
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -26,7 +59,26 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "صوتي | تواصل سعودي ذكي يخدم عملاءك 24/7" },
       { property: "og:description", content: "تواصل ذكي للمكالمات وواتساب، بصوت طبيعي وإدارة مركزية." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: siteUrl },
+      { property: "og:image", content: socialImageUrl },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "صوتي | تواصل سعودي ذكي يخدم عملاءك 24/7" },
+      { name: "twitter:description", content: "تواصل ذكي للمكالمات وواتساب، بصوت طبيعي وإدارة مركزية." },
+      { name: "twitter:image", content: socialImageUrl },
+    ],
+    links: [{ rel: "canonical", href: siteUrl }],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            { "@type": "Organization", name: "صوتي", alternateName: "Sawti", url: siteUrl, email: "support@sawti-ai.com" },
+            { "@type": "WebSite", name: "صوتي", alternateName: "Sawti", url: siteUrl, inLanguage: ["ar", "en"] },
+            { "@type": "FAQPage", mainEntity: faqAr.map(([question, answer]) => ({ "@type": "Question", name: question, acceptedAnswer: { "@type": "Answer", text: answer } })) },
+          ],
+        }),
+      },
     ],
   }),
   component: Landing,
@@ -83,19 +135,18 @@ function Landing() {
     { icon: BookOpen, title: ar ? "يعرف شغلك زين" : "Knows your business", text: ar ? "يتعلم من خدماتك وسياساتك وملفاتك، عشان تكون إجابته في محلها." : "Learns from your services, policies, and documents." },
     { icon: BarChart3, title: ar ? "الصورة عندك واضحة" : "Clarity at a glance", text: ar ? "مكالمات ومحادثات واستخدام وفريقك؛ كلها في لوحة مرتبة." : "Calls, conversations, usage, and team activity in one view." },
   ];
+  const faqs = ar ? faqAr : faqEn;
 
   return (
     <div className="min-h-screen bg-landing text-landing-foreground">
       <header className="fixed inset-x-0 top-0 z-40 border-b border-landing-foreground/10 bg-landing/80 backdrop-blur-xl">
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 md:px-8">
-          <Link to="/" className="flex items-center gap-3">
-            <span className="grid size-10 place-items-center rounded-lg border border-gold/50 bg-saudi font-display text-xl font-bold text-saudi-bright">ص</span>
-            <div><div className="font-display text-xl font-bold">صوتي</div><div className="text-sm text-landing-muted">Sawti</div></div>
-          </Link>
+          <Link to="/" aria-label={ar ? "صوتي — الرئيسية" : "Sawti — Home"}><SawtiLogo /></Link>
           <nav className="hidden items-center gap-7 text-sm text-landing-muted lg:flex">
             <a href="#services" className="transition-colors hover:text-landing-foreground">{t("features")}</a>
             <a href="#how" className="transition-colors hover:text-landing-foreground">{t("howItWorks")}</a>
             <a href="#pricing" className="transition-colors hover:text-landing-foreground">{t("pricing")}</a>
+            <a href="#faq" className="transition-colors hover:text-landing-foreground">{t("faq")}</a>
           </nav>
           <div className="flex items-center gap-2">
             <LanguageToggle />
@@ -103,6 +154,18 @@ function Landing() {
               <Link to={user ? "/dashboard" : "/auth"}>{user ? t("navHome") : t("login")}</Link>
             </Button>
             {!user ? <Button asChild size="sm" className="bg-saudi-bright text-primary-foreground hover:bg-saudi-bright/90"><Link to="/auth" search={{ mode: "signup" }}>{copy.try}</Link></Button> : null}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-landing-foreground hover:bg-landing-foreground/10 lg:hidden" aria-label={ar ? "فتح القائمة" : "Open menu"}><Menu /></Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-52">
+                <DropdownMenuItem asChild><a href="#services" className="text-base">{t("features")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><a href="#how" className="text-base">{t("howItWorks")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><a href="#pricing" className="text-base">{t("pricing")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><a href="#faq" className="text-base">{t("faq")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/contact" className="text-base">{t("contact")}</Link></DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -137,9 +200,34 @@ function Landing() {
 
         <section id="pricing" className="py-24"><div className="mx-auto max-w-7xl px-4 md:px-8"><div className="text-center"><h2 className="font-display text-3xl font-bold md:text-5xl">{copy.pricingTitle}</h2><p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-landing-muted">{copy.pricingSub}</p></div><div className="mt-14 grid gap-5 md:grid-cols-3">{(plans ?? []).map((plan, index) => <div key={plan.id} className={`rounded-lg border p-7 ${index === 1 ? 'border-gold bg-saudi/45' : 'border-landing-foreground/10 bg-landing-foreground/[0.03]'}`}><div className="flex items-center justify-between"><h3 className="text-2xl font-semibold">{ar ? plan.name_ar : plan.name_en}</h3>{index === 1 ? <span className="rounded-full bg-gold px-3 py-1 text-sm font-semibold text-gold-foreground">{ar ? 'الأكثر طلبًا' : 'Popular'}</span> : null}</div><p className="mt-7 font-display text-4xl font-bold">{Number(plan.price_sar).toFixed(0)} <span className="font-sans text-base font-normal text-landing-muted">{t('perMonth')}</span></p><ul className="mt-7 space-y-3 text-base text-landing-muted">{[[plan.voice_minutes, t('voiceMinutes')], [plan.whatsapp_messages, t('whatsappMessages')], [plan.max_agents, t('navAgents')]].map(([value, label]) => <li key={String(label)} className="flex items-center gap-2"><Check className="size-5 text-saudi-bright" />{value} {label}</li>)}</ul><Button asChild className="mt-8 w-full" variant={index === 1 ? 'default' : 'outline'}><Link to="/auth" search={{ mode: 'signup' }}>{copy.try}</Link></Button></div>)}</div></div></section>
 
+        <section id="faq" className="border-y border-landing-foreground/10 bg-saudi/30 py-24">
+          <div className="mx-auto grid max-w-7xl gap-12 px-4 md:grid-cols-[0.8fr_1.2fr] md:px-8">
+            <div>
+              <span className="text-base font-semibold text-gold">{ar ? "قبل ما تبدأ" : "BEFORE YOU START"}</span>
+              <h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">{ar ? "أسئلة تتكرر.. وإجابات واضحة" : "Common questions, clear answers"}</h2>
+              <p className="mt-5 text-lg leading-8 text-landing-muted">{ar ? "إذا بقي عندك سؤال، فريق صوتي قريب منك." : "If you still have a question, the Sawti team is here to help."}</p>
+              <Button asChild variant="outline" className="mt-7"><Link to="/contact">{ar ? "تواصل معنا" : "Contact us"}</Link></Button>
+            </div>
+            <Accordion type="single" collapsible className="border-t border-landing-foreground/15">
+              {faqs.map(([question, answer], index) => (
+                <AccordionItem key={question} value={`faq-${index}`} className="border-landing-foreground/15">
+                  <AccordionTrigger className="py-6 text-start text-lg hover:no-underline">{question}</AccordionTrigger>
+                  <AccordionContent className="pb-6 text-base leading-8 text-landing-muted">{answer}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
+
+        <section className="py-16">
+          <div className="mx-auto max-w-7xl px-4 md:px-8">
+            <img src={socialImage} alt={ar ? "صوتي — صوت أعمالك حاضر لعملائك" : "Sawti — your business voice, always present"} loading="lazy" width={1200} height={630} className="w-full rounded-lg border border-landing-foreground/10 object-cover" />
+          </div>
+        </section>
+
         <section className="border-t border-landing-foreground/10 bg-saudi py-20"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-4 md:flex-row md:items-center md:px-8"><div><h2 className="font-display text-3xl font-bold md:text-4xl">{copy.closing}</h2><p className="mt-3 max-w-2xl text-lg leading-8 text-landing-muted">{copy.closingSub}</p></div><Button asChild size="lg" className="shrink-0 bg-gold text-gold-foreground hover:bg-gold/90"><Link to="/auth" search={{ mode: 'signup' }}>{copy.try}<ArrowLeft className="size-4 rtl:rotate-0 ltr:rotate-180" /></Link></Button></div></section>
       </main>
-      <footer className="border-t border-landing-foreground/10 py-10"><div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 px-4 text-base text-landing-muted md:flex-row md:px-8"><span className="font-display text-lg font-semibold text-landing-foreground">صوتي — Sawti</span><span>{ar ? "تقنية تخدم الناس.. مثل ما ينبغي" : "Technology that serves people properly"}</span><span>© {new Date().getFullYear()}</span></div></footer>
+      <footer className="border-t border-landing-foreground/10 py-10"><div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 text-base text-landing-muted md:px-8"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-center"><SawtiLogo compact className="text-landing-foreground" /><nav className="flex flex-wrap gap-x-6 gap-y-2"><a href="#faq" className="hover:text-landing-foreground">{t("faq")}</a><Link to="/contact" className="hover:text-landing-foreground">{t("contact")}</Link><Link to="/privacy" className="hover:text-landing-foreground">{ar ? "سياسة الخصوصية" : "Privacy"}</Link><Link to="/terms" className="hover:text-landing-foreground">{ar ? "الشروط والأحكام" : "Terms"}</Link></nav></div><div className="flex flex-col justify-between gap-2 border-t border-landing-foreground/10 pt-5 md:flex-row"><span>{ar ? "تقنية تخدم الناس.. مثل ما ينبغي" : "Technology that serves people properly"}</span><span>© {new Date().getFullYear()} Sawti</span></div></div></footer>
     </div>
   );
 }

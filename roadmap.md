@@ -13,7 +13,8 @@
 ## Phase 3 — product maturity (open)
 - [ ] In-app notifications and operational emails
 - [ ] Invoices with 15% VAT and payment history (ready for payments later)
-- [ ] Data export and account deletion, terms and privacy pages
+- [x] Public terms and privacy pages
+- [ ] Data export and account deletion
 - [ ] Admin: per-customer detail page and plan management
 - [ ] Multiple companies per user
 

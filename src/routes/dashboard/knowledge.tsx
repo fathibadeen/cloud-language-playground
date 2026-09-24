@@ -32,6 +32,7 @@ import { processKnowledgeDocument } from "@/lib/knowledge.functions";
 import { humanizeDbError } from "@/lib/errors";
 
 export const Route = createFileRoute("/dashboard/knowledge")({
+  head: () => ({ meta: [{ title: "قاعدة المعرفة | صوتي" }, { name: "description", content: "إدارة معرفة شركتك التي يعتمد عليها وكلاء صوتي." }, { property: "og:title", content: "قاعدة المعرفة | صوتي" }, { property: "og:description", content: "إدارة معرفة شركتك التي يعتمد عليها وكلاء صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: KnowledgePage,
 });
 

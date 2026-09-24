@@ -32,6 +32,7 @@ import { saveProviderCredentials, testProviderConnection } from "@/lib/credentia
 import { provisionCompanyVoice } from "@/lib/retell.functions";
 
 export const Route = createFileRoute("/dashboard/numbers")({
+  head: () => ({ meta: [{ title: "أرقام الهاتف | صوتي" }, { name: "description", content: "إدارة أرقام الهاتف وقنوات الاتصال في صوتي." }, { property: "og:title", content: "أرقام الهاتف | صوتي" }, { property: "og:description", content: "إدارة أرقام الهاتف وقنوات الاتصال في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: NumbersPage,
 });
 

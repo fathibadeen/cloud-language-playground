@@ -15,6 +15,7 @@ import { useCompanyId, useCompanyTable, usePlans, useSubscription } from "@/lib/
 
 
 export const Route = createFileRoute("/dashboard/billing")({
+  head: () => ({ meta: [{ title: "الاشتراك والفوترة | صوتي" }, { name: "description", content: "عرض خطة شركتك وفواتيرها في صوتي." }, { property: "og:title", content: "الاشتراك والفوترة | صوتي" }, { property: "og:description", content: "عرض خطة شركتك وفواتيرها في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: BillingPage,
 });
 
