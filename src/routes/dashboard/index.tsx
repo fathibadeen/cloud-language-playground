@@ -18,10 +18,10 @@ import { useCompanyId, useCompanyTable, useMembership, useSubscription } from "@
 export const Route = createFileRoute("/dashboard/")({
   head: () => ({
     meta: [
-      { title: "لوحة التحكم | موظفك" },
-      { name: "description", content: "ملخص أداء موظفيك الأذكياء والمكالمات والمحادثات." },
-      { property: "og:title", content: "لوحة التحكم | موظفك" },
-      { property: "og:description", content: "ملخص أداء موظفيك الأذكياء والمكالمات والمحادثات." },
+      { title: "لوحة التحكم | صوتي" },
+      { name: "description", content: "ملخص أداء قنوات التواصل والمكالمات والمحادثات في صوتي." },
+      { property: "og:title", content: "لوحة التحكم | صوتي" },
+      { property: "og:description", content: "ملخص أداء قنوات التواصل والمكالمات والمحادثات في صوتي." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

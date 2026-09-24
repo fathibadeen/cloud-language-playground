@@ -15,10 +15,10 @@ export const Route = createFileRoute("/invite/$token")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "دعوة انضمام | موظفك" },
-      { name: "description", content: "انضم إلى فريق العمل على منصة موظفك الذكي." },
-      { property: "og:title", content: "دعوة انضمام | موظفك" },
-      { property: "og:description", content: "انضم إلى فريق العمل على منصة موظفك الذكي." },
+      { title: "دعوة انضمام | صوتي" },
+      { name: "description", content: "انضم إلى فريق العمل على منصة صوتي." },
+      { property: "og:title", content: "دعوة انضمام | صوتي" },
+      { property: "og:description", content: "انضم إلى فريق العمل على منصة صوتي." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
