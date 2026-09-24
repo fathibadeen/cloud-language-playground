@@ -11,8 +11,8 @@
   --radius-xl: calc(var(--radius) + 4px);
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
-  --font-sans: "Manrope", "IBM Plex Sans Arabic", system-ui, sans-serif;
-  --font-display: "Sora", "IBM Plex Sans Arabic", system-ui, sans-serif;
+  --font-sans: "Tajawal", "Manrope", system-ui, sans-serif;
+  --font-display: "Tajawal", "Sora", system-ui, sans-serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -97,13 +97,13 @@
   --sidebar-accent-foreground: oklch(0.97 0.01 180);
   --sidebar-border: oklch(0.32 0.03 193);
   --sidebar-ring: oklch(0.62 0.11 175);
-  --landing: #020806;
-  --landing-foreground: #f7f5ef;
-  --landing-muted: #a7b3ad;
-  --saudi: #0b3d2e;
-  --saudi-bright: #147a55;
-  --gold: #d6b66c;
-  --gold-foreground: #211b0d;
+  --landing: oklch(0.985 0.008 92);
+  --landing-foreground: oklch(0.3 0.035 160);
+  --landing-muted: oklch(0.48 0.025 165);
+  --saudi: oklch(0.91 0.035 145);
+  --saudi-bright: oklch(0.42 0.075 160);
+  --gold: oklch(0.68 0.075 82);
+  --gold-foreground: oklch(0.25 0.03 80);
 }
 
 .dark {

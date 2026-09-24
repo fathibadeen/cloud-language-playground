@@ -20,10 +20,10 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "تسجيل الدخول | منصة ذكاء" },
-      { name: "description", content: "سجّل الدخول أو أنشئ حساب شركتك على منصة ذكاء." },
-      { property: "og:title", content: "تسجيل الدخول | منصة ذكاء" },
-      { property: "og:description", content: "سجّل الدخول أو أنشئ حساب شركتك على منصة ذكاء." },
+      { title: "تسجيل الدخول | صوتي" },
+      { name: "description", content: "سجّل الدخول أو أنشئ حساب شركتك على صوتي." },
+      { property: "og:title", content: "تسجيل الدخول | صوتي" },
+      { property: "og:description", content: "سجّل الدخول أو أنشئ حساب شركتك على صوتي." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

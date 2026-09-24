@@ -20,10 +20,10 @@ export const Route = createFileRoute("/onboarding")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "إعداد الحساب | منصة ذكاء" },
-      { name: "description", content: "أنشئ شركتك واضبط وكيلك الذكي خلال دقائق." },
-      { property: "og:title", content: "إعداد الحساب | منصة ذكاء" },
-      { property: "og:description", content: "أنشئ شركتك واضبط وكيلك الذكي خلال دقائق." },
+      { title: "إعداد الحساب | صوتي" },
+      { name: "description", content: "أنشئ شركتك واضبط قنوات التواصل خلال دقائق." },
+      { property: "og:title", content: "إعداد الحساب | صوتي" },
+      { property: "og:description", content: "أنشئ شركتك واضبط قنوات التواصل خلال دقائق." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

@@ -43,10 +43,10 @@ export const Route = createFileRoute("/admin")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "إدارة المنصة | موظفك" },
-      { name: "description", content: "إدارة شركات واشتراكات منصة موظفك." },
-      { property: "og:title", content: "إدارة المنصة | موظفك" },
-      { property: "og:description", content: "إدارة شركات واشتراكات منصة موظفك." },
+      { title: "إدارة المنصة | صوتي" },
+      { name: "description", content: "إدارة شركات واشتراكات منصة صوتي." },
+      { property: "og:title", content: "إدارة المنصة | صوتي" },
+      { property: "og:description", content: "إدارة شركات واشتراكات منصة صوتي." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],

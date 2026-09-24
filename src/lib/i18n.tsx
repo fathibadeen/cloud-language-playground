@@ -13,15 +13,15 @@ export type Locale = "ar" | "en";
 type Dict = Record<string, { ar: string; en: string }>;
 
 export const dict: Dict = {
-  brand: { ar: "ذكاء", en: "Thakaa" },
-  brandFull: { ar: "منصة ذكاء", en: "Thakaa Platform" },
+  brand: { ar: "صوتي", en: "Sawti" },
+  brandFull: { ar: "منصة صوتي", en: "Sawti Platform" },
   tagline: {
-    ar: "موظفك الذكي للرد على عملائك 24/7",
-    en: "Your AI employee answering customers 24/7",
+    ar: "صوت أعمالك حاضر لعملائك 24/7",
+    en: "Your business voice, available 24/7",
   },
   heroSub: {
-    ar: "وكلاء ذكاء اصطناعي للرد على المكالمات والواتساب بلغة عملائك، مدعومون بقاعدة معرفة شركتك.",
-    en: "AI agents that answer calls and WhatsApp in your customers' language, powered by your own knowledge base.",
+    ar: "تواصل ذكي للمكالمات وواتساب بلغة عملائك، مدعوم بمعرفة شركتك.",
+    en: "Smart calls and WhatsApp in your customers' language, powered by your business knowledge.",
   },
   startNow: { ar: "ابدأ الآن", en: "Get started" },
   login: { ar: "تسجيل الدخول", en: "Sign in" },
