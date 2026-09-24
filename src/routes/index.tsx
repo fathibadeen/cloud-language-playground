@@ -78,7 +78,7 @@ function Landing() {
       };
 
   const services = [
-    { icon: Phone, title: ar ? "رد صوتي طبيعي" : "Natural voice", text: ar ? "يستقبل المكالمات، يفهم الطلب، ويحوّل لموظفك وقت الحاجة." : "Answers calls, understands intent, and hands off when needed." },
+    { icon: Phone, title: ar ? "رد صوتي طبيعي" : "Natural voice", text: ar ? "يستقبل المكالمات، يفهم الطلب، ويحوّل لفريقك وقت الحاجة." : "Answers calls, understands intent, and hands off when needed." },
     { icon: MessageSquare, title: ar ? "واتساب بلا انتظار" : "WhatsApp without waiting", text: ar ? "يرد على الأسئلة المتكررة ويتابع المحادثات بنفس أسلوب علامتك." : "Handles common questions in your brand's tone." },
     { icon: BookOpen, title: ar ? "يعرف شغلك زين" : "Knows your business", text: ar ? "يتعلم من خدماتك وسياساتك وملفاتك، عشان تكون إجابته في محلها." : "Learns from your services, policies, and documents." },
     { icon: BarChart3, title: ar ? "الصورة عندك واضحة" : "Clarity at a glance", text: ar ? "مكالمات ومحادثات واستخدام وفريقك؛ كلها في لوحة مرتبة." : "Calls, conversations, usage, and team activity in one view." },

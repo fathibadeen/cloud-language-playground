@@ -11,9 +11,9 @@ import { supabase } from "@/integrations/supabase/client";
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
     meta: [
-      { title: "إعادة تعيين كلمة المرور | منصة ذكاء" },
-      { name: "description", content: "اختر كلمة مرور جديدة لحسابك في منصة ذكاء." },
-      { property: "og:title", content: "إعادة تعيين كلمة المرور | منصة ذكاء" },
+      { title: "إعادة تعيين كلمة المرور | صوتي" },
+      { name: "description", content: "اختر كلمة مرور جديدة لحسابك في صوتي." },
+      { property: "og:title", content: "إعادة تعيين كلمة المرور | صوتي" },
       { property: "og:description", content: "اختر كلمة مرور جديدة لحسابك." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
