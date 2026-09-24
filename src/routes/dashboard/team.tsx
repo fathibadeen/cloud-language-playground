@@ -29,6 +29,7 @@ import { inviteTeamMember } from "@/lib/team.functions";
 import { humanizeDbError } from "@/lib/errors";
 
 export const Route = createFileRoute("/dashboard/team")({
+  head: () => ({ meta: [{ title: "فريق العمل | صوتي" }, { name: "description", content: "إدارة أعضاء فريق شركتك وصلاحياتهم في صوتي." }, { property: "og:title", content: "فريق العمل | صوتي" }, { property: "og:description", content: "إدارة أعضاء فريق شركتك وصلاحياتهم في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: TeamPage,
 });
 

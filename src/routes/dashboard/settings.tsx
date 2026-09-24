@@ -20,6 +20,7 @@ import { useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard/settings")({
+  head: () => ({ meta: [{ title: "إعدادات الشركة | صوتي" }, { name: "description", content: "تحديث بيانات وإعدادات شركتك في صوتي." }, { property: "og:title", content: "إعدادات الشركة | صوتي" }, { property: "og:description", content: "تحديث بيانات وإعدادات شركتك في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SettingsPage,
 });
 

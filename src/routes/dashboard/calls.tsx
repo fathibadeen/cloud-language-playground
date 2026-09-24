@@ -36,6 +36,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { syncRetellCalls } from "@/lib/retell.functions";
 
 export const Route = createFileRoute("/dashboard/calls")({
+  head: () => ({ meta: [{ title: "سجل المكالمات | صوتي" }, { name: "description", content: "متابعة مكالمات شركتك وتفاصيلها في صوتي." }, { property: "og:title", content: "سجل المكالمات | صوتي" }, { property: "og:description", content: "متابعة مكالمات شركتك وتفاصيلها في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CallsPage,
 });
 

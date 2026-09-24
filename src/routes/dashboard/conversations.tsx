@@ -19,6 +19,7 @@ import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard/conversations")({
+  head: () => ({ meta: [{ title: "المحادثات | صوتي" }, { name: "description", content: "متابعة محادثات العملاء والتحويل للموظف في صوتي." }, { property: "og:title", content: "المحادثات | صوتي" }, { property: "og:description", content: "متابعة محادثات العملاء والتحويل للموظف في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: ConversationsPage,
 });
 

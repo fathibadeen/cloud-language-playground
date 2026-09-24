@@ -27,6 +27,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
+  head: () => ({
+    meta: [
+      { title: "لوحة التحكم | صوتي" },
+      { name: "description", content: "إدارة قنوات التواصل والوكلاء الذكيين في صوتي." },
+      { property: "og:title", content: "لوحة التحكم | صوتي" },
+      { property: "og:description", content: "إدارة قنوات التواصل والوكلاء الذكيين في صوتي." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: DashboardLayout,
 });
 

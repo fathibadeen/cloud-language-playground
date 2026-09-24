@@ -31,6 +31,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { humanizeDbError } from "@/lib/errors";
 
 export const Route = createFileRoute("/dashboard/agents")({
+  head: () => ({ meta: [{ title: "الوكلاء الذكيون | صوتي" }, { name: "description", content: "إدارة وكلاء شركتك الذكيين في صوتي." }, { property: "og:title", content: "الوكلاء الذكيون | صوتي" }, { property: "og:description", content: "إدارة وكلاء شركتك الذكيين في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: AgentsPage,
 });
 

@@ -22,6 +22,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { humanizeDbError } from "@/lib/errors";
 
 export const Route = createFileRoute("/dashboard/whatsapp")({
+  head: () => ({ meta: [{ title: "واتساب الأعمال | صوتي" }, { name: "description", content: "متابعة ربط واتساب الأعمال والوكيل الذكي لشركتك." }, { property: "og:title", content: "واتساب الأعمال | صوتي" }, { property: "og:description", content: "متابعة ربط واتساب الأعمال والوكيل الذكي لشركتك." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: WhatsappPage,
 });
 
