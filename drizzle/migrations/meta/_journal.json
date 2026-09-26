@@ -43,6 +43,13 @@
       "when": 1789883189560,
       "tag": "0005_add_whatsapp_embedded_signup_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790434448319,
+      "tag": "0006_channel_products",
+      "breakpoints": true
     }
   ]
 }
