@@ -134,7 +134,7 @@ function DashboardLayout() {
       {open ? (
         <button
           type="button"
-          aria-label={t("close")}
+          aria-label={locale === "ar" ? "إغلاق القائمة" : "Close menu"}
           className="fixed inset-0 z-40 bg-foreground/40 md:hidden"
           onClick={() => setOpen(false)}
         />

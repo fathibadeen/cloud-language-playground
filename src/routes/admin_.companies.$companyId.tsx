@@ -157,7 +157,7 @@ function Overview({ data, ar, onDone }: P) {
     setBusy(true);
     try {
       const payload = Object.fromEntries(fields.map((f) => [f, f === "name" ? form[f] ?? "" : form[f]?.trim() ? form[f]!.trim() : null]));
-      await save({ data: { companyId: c.id, ...payload } as Parameters<typeof save>[0]["data"] });
+      await save({ data: { companyId: c.id, ...payload } as never });
       toast.success(ar ? "تم الحفظ" : "Saved");
       onDone();
     } catch (e) { toast.error(errMsg(e)); } finally { setBusy(false); }
