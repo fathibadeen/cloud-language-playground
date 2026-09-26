@@ -196,6 +196,7 @@ function Overview({ data, ar, onDone }: P) {
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
                 <SelectItem value="none">{ar ? "بدون باقة" : "No plan"}</SelectItem>
+                {sub?.plan_id && !(plans ?? []).some((p) => p.id === sub.plan_id) ? <SelectItem value={sub.plan_id}>{(ar ? (sub.plans as { name_ar?: string } | null)?.name_ar : (sub.plans as { name_en?: string } | null)?.name_en) ?? "—"} {ar ? "(باقة قديمة)" : "(legacy)"}</SelectItem> : null}
                 {(plans ?? []).map((p) => <SelectItem key={p.id} value={p.id}>{ar ? p.name_ar : p.name_en} — {Number(p.price_sar).toFixed(0)}</SelectItem>)}
               </SelectContent>
             </Select>
