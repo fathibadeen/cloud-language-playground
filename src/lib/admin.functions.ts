@@ -133,6 +133,17 @@ export const updateCompanySubscription = createServerFn({ method: "POST" })
       : await supabaseAdmin.from("subscriptions").insert({ company_id: data.companyId, ...payload });
     if (result.error) throw new Error(result.error.message);
 
+    if (data.planId) {
+      const { data: plan } = await supabaseAdmin.from("plans").select("product").eq("id", data.planId).maybeSingle();
+      const product = plan?.product;
+      if (product === "whatsapp" || product === "voice" || product === "bundle") {
+        await supabaseAdmin
+          .from("companies")
+          .update({ voice_enabled: product !== "whatsapp", whatsapp_enabled: product !== "voice" })
+          .eq("id", data.companyId);
+      }
+    }
+
     await supabaseAdmin.from("audit_logs").insert({
       company_id: data.companyId,
       user_id: context.userId,

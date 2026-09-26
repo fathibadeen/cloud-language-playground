@@ -17,12 +17,14 @@ import {
   Shield,
   LogOut,
   Menu,
+  Plus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { useIsSuperAdmin, useMembership, useSubscription } from "@/lib/tenant";
+import { useIsSuperAdmin, useMembership, usePlans, useSubscription } from "@/lib/tenant";
+import { addonPrice, companyProduct, productChannels, type PlanRow } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
@@ -56,13 +58,14 @@ const nav = [
 ] as const;
 
 function DashboardLayout() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const navigate = useNavigate();
   const qc = useQueryClient();
   const { user, loading } = useAuth();
   const { data: membership, isLoading: memberLoading } = useMembership();
   const { data: isAdmin } = useIsSuperAdmin();
   const { data: subscription } = useSubscription(membership?.company_id ?? null);
+  const { data: plans } = usePlans();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState(false);
 
@@ -87,7 +90,12 @@ function DashboardLayout() {
     return <div className="grid min-h-screen place-items-center text-muted-foreground">{t("loading")}</div>;
   }
 
-  const company = membership.companies as { name: string; status?: string } | null;
+  const company = membership.companies as { name: string; status?: string; voice_enabled?: boolean; whatsapp_enabled?: boolean } | null;
+  const product = companyProduct(company);
+  const channels = productChannels(product);
+  const addon = addonPrice(plans as PlanRow[] | undefined, product);
+  const ar = locale === "ar";
+  const voiceOnly: string[] = ["/dashboard/voice", "/dashboard/calls", "/dashboard/numbers"];
   const sub = subscription as { status?: string; current_period_end?: string } | null;
   const expired =
     !!sub &&
@@ -135,7 +143,11 @@ function DashboardLayout() {
           <span className="truncate font-semibold">{company?.name ?? t("brandFull")}</span>
         </div>
         <nav className="space-y-1 overflow-y-auto p-3">
-          {nav.map((item) => {
+          {nav.filter((item) => {
+            if (!channels.voice && voiceOnly.includes(item.to)) return false;
+            if (!channels.whatsapp && item.to === "/dashboard/whatsapp") return false;
+            return true;
+          }).map((item) => {
             const active = "exact" in item && item.exact ? pathname === item.to : pathname.startsWith(item.to);
             return (
               <Link
@@ -153,6 +165,23 @@ function DashboardLayout() {
               </Link>
             );
           })}
+          {product !== "bundle" ? (
+            <Link
+              to="/dashboard/billing"
+              onClick={() => setOpen(false)}
+              className="mt-3 block rounded-lg border border-dashed border-sidebar-border p-3 text-sm"
+            >
+              <span className="flex items-center gap-2 font-medium">
+                <Plus className="size-4" />
+                {product === "whatsapp" ? (ar ? "أضف المكالمات" : "Add calls") : ar ? "أضف واتساب" : "Add WhatsApp"}
+              </span>
+              {addon !== null ? (
+                <span className="mt-1 block text-xs text-sidebar-foreground/70">
+                  +{addon} {ar ? "ريال/شهر" : "SAR/month"}
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
           {isAdmin ? (
             <Link
               to="/admin"

@@ -340,6 +340,10 @@ export const dict: Dict = {
   revoke: { ar: "إلغاء", en: "Revoke" },
   expires: { ar: "تنتهي في", en: "Expires" },
   noInvites: { ar: "لا توجد دعوات معلّقة", en: "No pending invitations" },
+  channelNotEnabled: {
+    ar: "هذه القناة غير مشمولة في باقتك. أضفها من صفحة الاشتراك.",
+    en: "This channel isn't in your plan. Add it from the billing page.",
+  },
   planLimitReached: {
     ar: "وصلت إلى حد باقتك الحالية. رقّ باقتك للمتابعة.",
     en: "You reached your plan limit. Upgrade to continue.",
