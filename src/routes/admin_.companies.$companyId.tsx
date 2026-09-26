@@ -16,6 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
+import { AdminShell } from "@/components/AdminShell";
 import { useAuth } from "@/lib/auth";
 import { useIsSuperAdmin, usePlans } from "@/lib/tenant";
 import { companyProduct, productLabels } from "@/lib/products";
@@ -69,9 +70,9 @@ function CompanyDetailPage() {
   const product = companyProduct(c);
 
   return (
-    <div className="min-h-screen bg-secondary/30">
-      <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-8">
-        <Link to="/admin" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
+    <AdminShell active="companies">
+      <div className="space-y-6">
+        <Link to="/admin" search={{ section: "companies" }} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
           <ArrowRight className="size-4 ltr:rotate-180" />
           {ar ? "العودة للوحة المدير" : "Back to admin"}
         </Link>
@@ -120,7 +121,7 @@ function CompanyDetailPage() {
           </TabsContent>
         </Tabs>
       </div>
-    </div>
+    </AdminShell>
   );
 }
 
