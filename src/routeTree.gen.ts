@@ -32,6 +32,7 @@ import { Route as DashboardUsageRouteImport } from './routes/dashboard/usage'
 import { Route as DashboardVoiceRouteImport } from './routes/dashboard/voice'
 import { Route as DashboardWhatsappRouteImport } from './routes/dashboard/whatsapp'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
+import { Route as AdminCompaniesCompanyIdRouteImport } from './routes/admin_.companies.$companyId'
 import { Route as ApiPublicWebhooksProviderRouteImport } from './routes/api/public/webhooks/$provider'
 
 const IndexRoute = IndexRouteImport.update({
@@ -149,6 +150,11 @@ const InviteTokenRoute = InviteTokenRouteImport.update({
   path: '/invite/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminCompaniesCompanyIdRoute = AdminCompaniesCompanyIdRouteImport.update({
+  id: '/admin_/companies/$companyId',
+  path: '/admin/companies/$companyId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksProviderRoute =
   ApiPublicWebhooksProviderRouteImport.update({
     id: '/api/public/webhooks/$provider',
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/invite/$token': typeof InviteTokenRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/admin/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRoutesByTo {
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/invite/$token': typeof InviteTokenRoute
   '/dashboard': typeof DashboardIndexRoute
+  '/admin/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRoutesById {
@@ -232,6 +240,7 @@ export interface FileRoutesById {
   '/dashboard/whatsapp': typeof DashboardWhatsappRoute
   '/invite/$token': typeof InviteTokenRoute
   '/dashboard/': typeof DashboardIndexRoute
+  '/admin_/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRouteTypes {
@@ -260,6 +269,7 @@ export interface FileRouteTypes {
     | '/dashboard/whatsapp'
     | '/invite/$token'
     | '/dashboard/'
+    | '/admin/companies/$companyId'
     | '/api/public/webhooks/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/dashboard/whatsapp'
     | '/invite/$token'
     | '/dashboard'
+    | '/admin/companies/$companyId'
     | '/api/public/webhooks/$provider'
   id:
     | '__root__'
@@ -311,6 +322,7 @@ export interface FileRouteTypes {
     | '/dashboard/whatsapp'
     | '/invite/$token'
     | '/dashboard/'
+    | '/admin_/companies/$companyId'
     | '/api/public/webhooks/$provider'
   fileRoutesById: FileRoutesById
 }
@@ -326,6 +338,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
   InviteTokenRoute: typeof InviteTokenRoute
+  AdminCompaniesCompanyIdRoute: typeof AdminCompaniesCompanyIdRoute
   ApiPublicWebhooksProviderRoute: typeof ApiPublicWebhooksProviderRoute
 }
 
@@ -492,6 +505,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof InviteTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin_/companies/$companyId': {
+      id: '/admin_/companies/$companyId'
+      path: '/admin/companies/$companyId'
+      fullPath: '/admin/companies/$companyId'
+      preLoaderRoute: typeof AdminCompaniesCompanyIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/$provider': {
       id: '/api/public/webhooks/$provider'
       path: '/api/public/webhooks/$provider'
@@ -548,6 +568,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
   InviteTokenRoute: InviteTokenRoute,
+  AdminCompaniesCompanyIdRoute: AdminCompaniesCompanyIdRoute,
   ApiPublicWebhooksProviderRoute: ApiPublicWebhooksProviderRoute,
 }
 export const routeTree = rootRouteImport
