@@ -16,11 +16,11 @@ export function SawtiMark({ className }: { className?: string }) {
 
 export function SawtiLogo({ compact = false, className }: SawtiLogoProps) {
   return (
-    <span className={cn("inline-flex items-center", className)}>
+    <span className={cn("inline-flex items-center overflow-hidden rounded-lg border border-landing-foreground/10 bg-saudi/25 px-2 py-1 shadow-sm", className)}>
       <img
         src={sawtiLogoAsset.url}
         alt="صوتي Sawti AI — منتج من مسور"
-        className={cn("w-auto object-contain", compact ? "h-12" : "h-14 md:h-16")}
+        className={cn("w-auto object-contain mix-blend-multiply", compact ? "h-10" : "h-11 md:h-12")}
       />
     </span>
   );

@@ -200,23 +200,6 @@ function Landing() {
 
         <section className="border-y border-landing-foreground/10 bg-saudi/55 py-6"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-6 px-4 text-base text-landing-muted md:justify-between md:px-8"><span className="flex items-center gap-2 font-semibold text-landing-foreground"><Sparkles className="size-5 text-gold" />{copy.trusted}</span><span>رؤية أوضح</span><span>استجابة أسرع</span><span>تجربة أهدى لفريقك</span></div></section>
 
-        <section aria-labelledby="partners-title" className="border-b border-landing-foreground/10 py-20">
-          <div className="mx-auto max-w-7xl px-4 text-center md:px-8">
-            <span className="text-base font-semibold text-gold">{ar ? "نبنيها معًا" : "BUILT TOGETHER"}</span>
-            <h2 id="partners-title" className="mt-3 font-display text-3xl font-bold md:text-4xl">{copy.partnersTitle}</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-landing-muted">{copy.partnersSub}</p>
-            <div className="mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-2">
-              <div className="flex min-h-40 items-center justify-center overflow-hidden rounded-lg border border-landing-foreground/10 bg-primary p-6">
-                <img src={meswarLogo.url} alt={ar ? "مسور — الشركة المطورة لمنتج صوتي" : "Meswar — the company behind Sawti"} width={362} height={171} className="max-h-24 w-auto max-w-full object-contain" />
-              </div>
-              <div className="flex min-h-40 items-center justify-center overflow-hidden rounded-lg border border-landing-foreground/10 bg-landing p-5">
-                <img src={aiConsultingLogo.url} alt={ar ? "استشارات الذكاء — شريك المنصة" : "AI Consulting — platform partner"} width={916} height={508} className="max-h-28 w-auto max-w-full object-contain" />
-              </div>
-            </div>
-            <p className="mt-7 text-base font-semibold text-landing-foreground">{ar ? "صوتي — منتج من مسور" : "Sawti — A Meswar product"}</p>
-          </div>
-        </section>
-
         <section id="services" className="py-24"><div className="mx-auto max-w-7xl px-4 md:px-8"><div className="max-w-3xl"><span className="text-base font-semibold text-gold">{ar ? "وش نقدّم لك" : "WHAT YOU GET"}</span><h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">{copy.servicesTitle}</h2><p className="mt-5 text-xl leading-9 text-landing-muted">{copy.servicesSub}</p></div><div className="mt-14 grid gap-px overflow-hidden rounded-lg border border-landing-foreground/10 bg-landing-foreground/10 md:grid-cols-2">{services.map((service) => <div key={service.title} className="bg-landing p-7 transition-colors hover:bg-saudi/45 md:p-9"><service.icon className="size-8 text-saudi-bright" /><h3 className="mt-7 text-2xl font-semibold">{service.title}</h3><p className="mt-3 max-w-md text-lg leading-8 text-landing-muted">{service.text}</p></div>)}</div></div></section>
 
         <section id="how" className="border-y border-landing-foreground/10 bg-saudi/30 py-24"><div className="mx-auto max-w-7xl px-4 md:px-8"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><div><span className="text-base font-semibold text-gold">{ar ? "من التسجيل للتشغيل" : "FROM SIGNUP TO LIVE"}</span><h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">{copy.howTitle}</h2></div><p className="max-w-md text-lg leading-8 text-landing-muted">{ar ? "لا لف ولا دوران: عرّفنا على نشاطك، جهّز المعرفة، وصوتي يصير جاهزًا للاستقبال." : "Introduce your business, add its knowledge, and Sawti is ready to serve."}</p></div><div className="mt-14 grid gap-8 md:grid-cols-4">{[[Users, '01', ar ? 'عرّفنا بشركتك' : 'Add your company'], [BookOpen, '02', ar ? 'حمّل معلوماتك' : 'Share your knowledge'], [Headphones, '03', ar ? 'اضبط أسلوب الرد' : 'Shape the response'], [ShieldCheck, '04', ar ? 'تابع كل شيء' : 'Stay in control']].map(([Icon, n, label]) => { const StepIcon = Icon as typeof Users; return <div key={String(n)} className="border-t border-landing-foreground/15 pt-5"><div className="flex items-center justify-between"><StepIcon className="size-6 text-saudi-bright" /><span className="font-display text-base text-gold">{String(n)}</span></div><h3 className="mt-8 text-xl font-semibold">{String(label)}</h3></div>; })}</div></div></section>
@@ -249,8 +232,26 @@ function Landing() {
         </section>
 
         <section className="border-t border-landing-foreground/10 bg-saudi py-20"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-4 md:flex-row md:items-center md:px-8"><div><h2 className="font-display text-3xl font-bold md:text-4xl">{copy.closing}</h2><p className="mt-3 max-w-2xl text-lg leading-8 text-landing-muted">{copy.closingSub}</p></div><Button asChild size="lg" className="shrink-0 bg-gold text-gold-foreground hover:bg-gold/90"><Link to="/auth" search={{ mode: 'signup' }}>{copy.try}<ArrowLeft className="size-4 rtl:rotate-0 ltr:rotate-180" /></Link></Button></div></section>
+
+        <section aria-labelledby="partners-title" className="border-t border-landing-foreground/10 py-20">
+          <div className="mx-auto max-w-7xl px-4 text-center md:px-8">
+            <span className="text-base font-semibold text-gold">{ar ? "نبنيها معًا" : "BUILT TOGETHER"}</span>
+            <h2 id="partners-title" className="mt-3 font-display text-3xl font-bold md:text-4xl">{copy.partnersTitle}</h2>
+            <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-landing-muted">{copy.partnersSub}</p>
+            <div className="mx-auto mt-10 grid max-w-3xl gap-4 sm:grid-cols-2">
+              <a href="https://meswar.com/" target="_blank" rel="noreferrer" aria-label={ar ? "زيارة موقع مسور الرسمي" : "Visit Meswar's official website"} className="flex min-h-40 items-center justify-center overflow-hidden rounded-lg border border-landing-foreground/10 bg-primary p-6 transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <img src={meswarLogo.url} alt={ar ? "مسور — الشركة المطورة لمنتج صوتي" : "Meswar — the company behind Sawti"} width={362} height={171} className="max-h-24 w-auto max-w-full object-contain" />
+              </a>
+              <a href="https://www.meswar.com/Agent/" target="_blank" rel="noreferrer" aria-label={ar ? "زيارة موقع استشارات الذكاء الرسمي" : "Visit AI Consulting's official website"} className="flex min-h-40 items-center justify-center overflow-hidden rounded-lg border border-landing-foreground/10 bg-saudi/25 p-5 transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <img src={aiConsultingLogo.url} alt={ar ? "استشارات الذكاء — شريك المنصة" : "AI Consulting — platform partner"} width={916} height={508} className="max-h-28 w-auto max-w-full object-contain" />
+              </a>
+            </div>
+            <p className="mt-7 text-base font-semibold text-landing-foreground">{ar ? "صوتي — منتج من مسور" : "Sawti — A Meswar product"}</p>
+            <Button asChild variant="outline" className="mt-6"><Link to="/partners">{ar ? "تعرّف على شركائنا" : "Meet our partners"}</Link></Button>
+          </div>
+        </section>
       </main>
-       <footer className="border-t border-landing-foreground/10 py-10"><div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 text-base text-landing-muted md:px-8"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><SawtiLogo compact className="text-landing-foreground" /><p className="mt-1 text-sm">{ar ? "منتج من مسور" : "A Meswar product"}</p></div><nav className="flex flex-wrap gap-x-6 gap-y-2"><a href="#faq" className="hover:text-landing-foreground">{t("faq")}</a><Link to="/contact" className="hover:text-landing-foreground">{t("contact")}</Link><Link to="/privacy" className="hover:text-landing-foreground">{ar ? "سياسة الخصوصية" : "Privacy"}</Link><Link to="/terms" className="hover:text-landing-foreground">{ar ? "الشروط والأحكام" : "Terms"}</Link></nav></div><div className="flex flex-col justify-between gap-2 border-t border-landing-foreground/10 pt-5 md:flex-row"><span>{ar ? "تقنية تخدم الناس.. مثل ما ينبغي" : "Technology that serves people properly"}</span><span>© {new Date().getFullYear()} Sawti</span></div></div></footer>
+       <footer className="border-t border-landing-foreground/10 py-10"><div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 text-base text-landing-muted md:px-8"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><SawtiLogo compact className="text-landing-foreground" /><p className="mt-1 text-sm">{ar ? "منتج من مسور" : "A Meswar product"}</p></div><nav className="flex flex-wrap gap-x-6 gap-y-2"><a href="#faq" className="hover:text-landing-foreground">{t("faq")}</a><Link to="/partners" className="hover:text-landing-foreground">{ar ? "الشركاء" : "Partners"}</Link><Link to="/contact" className="hover:text-landing-foreground">{t("contact")}</Link><Link to="/privacy" className="hover:text-landing-foreground">{ar ? "سياسة الخصوصية" : "Privacy"}</Link><Link to="/terms" className="hover:text-landing-foreground">{ar ? "الشروط والأحكام" : "Terms"}</Link></nav></div><div className="flex flex-col justify-between gap-2 border-t border-landing-foreground/10 pt-5 md:flex-row"><span>{ar ? "تقنية تخدم الناس.. مثل ما ينبغي" : "Technology that serves people properly"}</span><span>© {new Date().getFullYear()} Sawti</span></div></div></footer>
     </div>
   );
 }
