@@ -199,6 +199,8 @@ function AdminPage() {
           <StatCard label={t("waToday")} value={totals?.whatsappConversations ?? 0} icon={Bot} />
           <StatCard label={t("webhookErrors")} value={totals?.webhookErrors ?? 0} icon={AlertTriangle} />
         </div>
+        </>) : null}
+
 
         <Tabs value={section === "overview" ? "companies" : section} className="space-y-4">
           <TabsContent value="companies">

@@ -20,9 +20,9 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
-    const [companies, subs, plans, agents, calls, conversations, webhooks, requests, waAccounts, kbases, waMessagesToday] =
+    const [companies, subs, plans, agents, calls, conversations, webhooks, requests, waAccounts, kbases, customerRows, docRows, waMessagesToday] =
       await Promise.all([
-        supabaseAdmin.from("companies").select("id, name, status, created_at, city, industry"),
+        supabaseAdmin.from("companies").select("id, name, status, created_at, city, industry, voice_enabled, whatsapp_enabled").order("created_at", { ascending: false }),
         supabaseAdmin
           .from("subscriptions")
           .select("id, status, plan_id, company_id, current_period_end, created_at, plans(id, name_ar, name_en, price_sar)")
@@ -48,6 +48,8 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
           )
           .order("created_at", { ascending: false }),
         supabaseAdmin.from("knowledge_bases").select("id, company_id, name"),
+        supabaseAdmin.from("customers").select("company_id").limit(20000),
+        supabaseAdmin.from("knowledge_documents").select("company_id").limit(20000),
         supabaseAdmin
           .from("messages")
           .select("company_id, channel, created_at")
@@ -68,7 +70,16 @@ export const getPlatformOverview = createServerFn({ method: "GET" })
       (c) => c.channel === "whatsapp" && new Date(c.created_at).getTime() >= todayStart.getTime(),
     );
 
+    const customerCounts = countByCompany(customerRows.data ?? []);
+    const docCounts = countByCompany(docRows.data ?? []);
+    const agentCounts = countByCompany(agents.data ?? []);
+    const companyCounts: Record<string, { customers: number; documents: number; agents: number }> = {};
+    for (const c of companyRows) {
+      companyCounts[c.id] = { customers: customerCounts[c.id] ?? 0, documents: docCounts[c.id] ?? 0, agents: agentCounts[c.id] ?? 0 };
+    }
+
     return {
+      companyCounts,
       companies: companyRows,
       subscriptions: subs.data ?? [],
       plans: plans.data ?? [],
