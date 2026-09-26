@@ -25,7 +25,10 @@ export function PublicPageShell({ children }: { children: ReactNode }) {
       <main>{children}</main>
       <footer className="border-t border-landing-foreground/10 py-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-5 px-4 text-base text-landing-muted md:flex-row md:items-center md:justify-between md:px-8">
-          <Link to="/"><SawtiLogo compact /></Link>
+          <div>
+            <Link to="/"><SawtiLogo compact /></Link>
+            <p className="mt-1 text-sm">{ar ? "منتج من مسور" : "A Meswar product"}</p>
+          </div>
           <nav className="flex flex-wrap gap-x-6 gap-y-2">
             <Link to="/" hash="faq" className="hover:text-landing-foreground">{ar ? "الأسئلة الشائعة" : "FAQ"}</Link>
             <Link to="/contact" className="hover:text-landing-foreground">{ar ? "تواصل معنا" : "Contact"}</Link>
