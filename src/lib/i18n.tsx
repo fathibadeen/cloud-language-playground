@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  type Context,
   type ReactNode,
 } from "react";
 
@@ -385,7 +386,11 @@ type I18nValue = {
   toggle: () => void;
 };
 
-const I18nContext = createContext<I18nValue | null>(null);
+// Keep one context instance across hot reloads, so editing this file never
+// leaves pages reading a different context than the mounted provider.
+const globalKey = "__sawtiI18nContext" as const;
+const g = globalThis as unknown as Record<string, React.Context<I18nValue | null> | undefined>;
+const I18nContext = g[globalKey] ?? (g[globalKey] = createContext<I18nValue | null>(null));
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("ar");
