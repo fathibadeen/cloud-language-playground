@@ -26,7 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { StatCard } from "@/components/StatCard";
-import { LanguageToggle } from "@/components/LanguageToggle";
+import { AdminShell, type AdminSection } from "@/components/AdminShell";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useIsSuperAdmin } from "@/lib/tenant";
@@ -51,6 +51,10 @@ export const Route = createFileRoute("/admin")({
       { name: "twitter:card", content: "summary" },
     ],
   }),
+  validateSearch: (search: Record<string, unknown>): { section?: AdminSection } => {
+    const v = search["section"];
+    return ["overview", "companies", "whatsapp", "requests", "events"].includes(String(v)) ? { section: v as AdminSection } : {};
+  },
   component: AdminPage,
 });
 
@@ -117,6 +121,9 @@ function AdminPage() {
   const [search, setSearch] = useState("");
   const [savingCompany, setSavingCompany] = useState<string | null>(null);
   const ar = locale === "ar";
+  const { section = "overview" } = Route.useSearch();
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [productFilter, setProductFilter] = useState("all");
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", replace: true });
@@ -136,11 +143,12 @@ function AdminPage() {
 
   const filteredCompanies = useMemo(() => {
     const term = search.trim().toLocaleLowerCase();
-    if (!term) return data?.companies ?? [];
     return (data?.companies ?? []).filter((company) =>
-      [company.name, company.city, company.industry].some((value) => value?.toLocaleLowerCase().includes(term)),
+      (!term || [company.name, company.city, company.industry].some((value) => value?.toLocaleLowerCase().includes(term))) &&
+      (statusFilter === "all" || company.status === statusFilter) &&
+      (productFilter === "all" || companyProduct(company) === productFilter),
     );
-  }, [data?.companies, search]);
+  }, [data?.companies, search, statusFilter, productFilter]);
 
   if (loading || adminLoading) return <div className="grid min-h-screen place-items-center text-muted-foreground">{t("loading")}</div>;
   if (!isAdmin) return <div className="grid min-h-screen place-items-center text-center"><div><p className="text-lg font-semibold">{t("noAccess")}</p><Button asChild variant="outline" className="mt-4"><Link to="/dashboard">{t("backToDashboard")}</Link></Button></div></div>;
@@ -178,15 +186,8 @@ function AdminPage() {
     : { trialing: "Trial", active: "Active", past_due: "Past due", canceled: "Canceled" };
 
   return (
-    <div className="min-h-screen bg-secondary/30">
-      <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-18 max-w-[1600px] items-center justify-between px-4 md:px-7">
-          <div className="flex items-center gap-3"><span className="grid size-9 place-items-center rounded-lg bg-sidebar font-display font-bold text-sidebar-primary">م</span><div><p className="font-display font-semibold">{t("navAdmin")}</p><p className="text-xs text-muted-foreground">{ar ? "مركز قيادة المنصة" : "Platform command center"}</p></div></div>
-          <div className="flex items-center gap-2"><LanguageToggle /><Button asChild variant="outline" size="sm"><Link to="/dashboard">{t("backToDashboard")}</Link></Button></div>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-[1600px] space-y-7 p-4 md:p-7">
+    <AdminShell active={section}>
+        
         <div><h1 className="font-display text-2xl font-bold md:text-3xl">{ar ? "نظرة شاملة على أعمالك" : "Your platform at a glance"}</h1><p className="mt-1 text-sm text-muted-foreground">{ar ? "تابع العملاء والاشتراكات والتشغيل من مكان واحد." : "Manage customers, subscriptions, and operations from one place."}</p></div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label={t("totalCompanies")} value={totals?.companies ?? 0} icon={Building2} />
@@ -300,8 +301,7 @@ function AdminPage() {
           </TabsContent>
           <TabsContent value="events"><Card><CardHeader><CardTitle className="text-base">{t("navWebhooks")}</CardTitle></CardHeader><CardContent className="overflow-x-auto p-0"><Table><TableHeader><TableRow><TableHead>{t("provider")}</TableHead><TableHead>{t("status")}</TableHead><TableHead>{t("date")}</TableHead></TableRow></TableHeader><TableBody>{(data?.webhooks ?? []).length === 0 ? <TableRow><TableCell colSpan={3} className="py-12 text-center text-muted-foreground">{t("empty")}</TableCell></TableRow> : data?.webhooks.map((event) => <TableRow key={event.id}><TableCell className="font-medium">{event.provider}</TableCell><TableCell><Badge variant={event.status === "failed" ? "destructive" : "secondary"}>{event.status}</Badge></TableCell><TableCell>{new Date(event.created_at).toLocaleString(ar ? "ar-SA" : "en-US")}</TableCell></TableRow>)}</TableBody></Table></CardContent></Card></TabsContent>
         </Tabs>
-      </main>
-    </div>
+    </AdminShell>
   );
 }
 
