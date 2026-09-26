@@ -215,7 +215,7 @@ function AdminPage() {
                     const subscription = subscriptionFor(company.id);
                     const disabled = savingCompany === company.id;
                     return <TableRow key={company.id}>
-                      <TableCell><div className="font-medium">{company.name}</div><div className="text-xs text-muted-foreground">{company.industry ?? "—"}</div></TableCell>
+                      <TableCell><Link to="/admin/companies/$companyId" params={{ companyId: company.id }} className="font-medium text-primary underline-offset-4 hover:underline">{company.name}</Link><div className="text-xs text-muted-foreground">{company.industry ?? "—"}</div></TableCell>
                       <TableCell>{company.city ?? "—"}</TableCell>
                       <TableCell><Badge variant={company.status === "active" ? "default" : "secondary"}>{company.status === "active" ? t("active") : t("inactive")}</Badge></TableCell>
                       <TableCell><Select disabled={disabled} value={subscription?.plan_id ?? "none"} onValueChange={(value) => updateSubscription(company.id, value === "none" ? null : value, (subscription?.status as SubscriptionStatus | undefined) ?? "trialing")}><SelectTrigger className="min-w-36"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">{ar ? "بدون خطة" : "No plan"}</SelectItem>{(data?.plans ?? []).map((plan) => <SelectItem key={plan.id} value={plan.id}>{ar ? plan.name_ar : plan.name_en}</SelectItem>)}</SelectContent></Select></TableCell>

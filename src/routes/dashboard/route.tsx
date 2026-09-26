@@ -131,9 +131,17 @@ function DashboardLayout() {
 
   return (
     <div className="flex min-h-screen bg-secondary/30">
+      {open ? (
+        <button
+          type="button"
+          aria-label={locale === "ar" ? "إغلاق القائمة" : "Close menu"}
+          className="fixed inset-0 z-40 bg-foreground/40 md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      ) : null}
       <aside
-        className={`fixed inset-y-0 z-50 w-64 shrink-0 bg-sidebar text-sidebar-foreground transition-transform md:static md:translate-x-0 ${
-          open ? "translate-x-0" : "rtl:translate-x-full ltr:-translate-x-full md:translate-x-0"
+        className={`w-64 shrink-0 bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:block md:h-screen md:overflow-y-auto ${
+          open ? "fixed inset-y-0 start-0 z-50 block overflow-y-auto" : "hidden"
         }`}
       >
         <div className="flex h-16 items-center gap-2 border-b border-sidebar-border px-4">
