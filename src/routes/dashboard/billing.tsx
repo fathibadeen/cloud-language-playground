@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -11,7 +12,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n";
-import { useCompanyId, useCompanyTable, usePlans, useSubscription } from "@/lib/tenant";
+import { useCompanyId, useCompanyTable, useMembership, usePlans, useSubscription } from "@/lib/tenant";
+import { ProductPlanCards, ProductToggle } from "@/components/ProductPlans";
+import { addonPrice, companyProduct, type PlanRow, type Product } from "@/lib/products";
+import { supabase } from "@/integrations/supabase/client";
 
 
 export const Route = createFileRoute("/dashboard/billing")({
@@ -29,13 +33,33 @@ type Invoice = {
 
 function BillingPage() {
   const { t, locale } = useI18n();
+  const ar = locale === "ar";
   const companyId = useCompanyId();
+  const { data: membership } = useMembership();
   const { data: subscription } = useSubscription(companyId);
   const { data: plans } = usePlans();
   const { data: invoices } = useCompanyTable<Invoice>("billing_records", companyId);
+  const own = companyProduct(membership?.companies as { voice_enabled?: boolean; whatsapp_enabled?: boolean } | null);
+  const [view, setView] = useState<Product>(own);
+  const [sending, setSending] = useState(false);
+  useEffect(() => setView(own), [own]);
 
   const currentPlanId = subscription?.plan_id;
+  const addon = addonPrice(plans as PlanRow[] | undefined, own);
 
+  async function requestAddon() {
+    if (!companyId) return;
+    setSending(true);
+    const channel = own === "whatsapp" ? "voice" : "whatsapp";
+    const { error } = await supabase.from("connection_requests").insert({
+      company_id: companyId,
+      channel,
+      payload: { type: "addon", note: ar ? "طلب إضافة قناة إلى الباقة" : "Channel add-on request" },
+    });
+    setSending(false);
+    if (error) toast.error(error.message);
+    else toast.success(ar ? "وصل طلبك، سنفعّل الإضافة قريبًا" : "Request sent, we'll enable it soon");
+  }
 
   return (
     <div className="space-y-6">
@@ -45,41 +69,24 @@ function BillingPage() {
         <CardContent className="p-5 text-sm text-muted-foreground">{t("paymentsSoon")}</CardContent>
       </Card>
 
-      <div className="grid gap-4 md:grid-cols-3">
-        {(plans ?? []).map((p) => {
-          const current = p.id === currentPlanId;
-          return (
-            <Card key={p.id} className={current ? "border-primary" : ""}>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between text-base">
-                  {locale === "ar" ? p.name_ar : p.name_en}
-                  {current ? <Badge>{t("currentPlan")}</Badge> : null}
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-2xl font-bold">
-                  {Number(p.price_sar).toFixed(0)}
-                  <span className="ms-2 text-sm font-normal text-muted-foreground">{t("perMonth")}</span>
-                </p>
-                <ul className="space-y-1 text-sm text-muted-foreground">
-                  <li>
-                    {p.voice_minutes} {t("voiceMinutes")}
-                  </li>
-                  <li>
-                    {p.whatsapp_messages} {t("whatsappMessages")}
-                  </li>
-                  <li>
-                    {p.max_agents} {t("navAgents")}
-                  </li>
-                </ul>
-                <Button className="w-full" variant="outline" disabled>
-                  {current ? t("currentPlan") : t("paymentsDisabled")}
-                </Button>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      {own !== "bundle" ? (
+        <Card className="border-primary/40">
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5">
+            <div>
+              <p className="font-semibold">
+                {own === "whatsapp" ? (ar ? "أضف وكيل المكالمات" : "Add the calls agent") : ar ? "أضف وكيل واتساب" : "Add the WhatsApp agent"}
+              </p>
+              {addon !== null ? (
+                <p className="text-sm text-muted-foreground">+{addon} {ar ? "ريال/شهر" : "SAR/month"}</p>
+              ) : null}
+            </div>
+            <Button onClick={requestAddon} disabled={sending}>{ar ? "اطلب الإضافة" : "Request add-on"}</Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <ProductToggle value={view} onChange={setView} ar={ar} />
+      <ProductPlanCards plans={plans as PlanRow[] | undefined} product={view} ar={ar} currentId={currentPlanId ?? null} perMonth={t("perMonth")} />
 
       <Card>
         <CardHeader>

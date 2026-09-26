@@ -14,6 +14,7 @@
 - [ ] In-app notifications and operational emails
 - [ ] Invoices with 15% VAT and payment history (ready for payments later)
 - [x] Public terms and privacy pages
+- [x] Channel products: WhatsApp / Calls / Bundle plans, signup choice, channel-aware dashboard
 - [ ] Data export and account deletion
 - [ ] Admin: per-customer detail page and plan management
 - [ ] Multiple companies per user

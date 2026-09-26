@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Check, Phone, MessageSquare, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { useMembership } from "@/lib/tenant";
+import { useMembership, usePlans } from "@/lib/tenant";
+import { ProductPlanCards, ProductToggle } from "@/components/ProductPlans";
+import { plansFor, type PlanRow, type Product } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 import { provisionCompanyVoice } from "@/lib/retell.functions";
 
@@ -55,6 +57,9 @@ function Onboarding() {
     contact_email: "",
   });
   const [service, setService] = useState<Service>("both");
+  const [planId, setPlanId] = useState<string | null>(null);
+  const { data: plans } = usePlans();
+  const product: Product = service === "both" ? "bundle" : service;
   const [knowledge, setKnowledge] = useState("");
   const [agentName, setAgentName] = useState("");
   const [greeting, setGreeting] = useState("");
@@ -118,10 +123,12 @@ function Onboarding() {
         });
       }
 
-      // لا توجد مدفوعات حاليًا — يبدأ الحساب بفترة تجريبية بدون باقة مدفوعة
+      // لا توجد مدفوعات حاليًا — يبدأ الحساب بفترة تجريبية على الباقة المختارة
+      const chosenPlan = planId ?? plansFor(plans as PlanRow[] | undefined, product)[0]?.id ?? null;
       await supabase.from("subscriptions").insert({
         company_id: companyId,
         status: "trialing",
+        plan_id: chosenPlan,
       });
 
       // ربط الوكيل الصوتي تلقائيًا مع Retell (لا يمنع دخول العميل إن فشل)
@@ -220,25 +227,24 @@ function Onboarding() {
             ) : null}
 
             {step === 2 ? (
-              <div className="grid gap-4 md:grid-cols-3">
-                {(
-                  [
-                    ["voice", Phone, t("featVoice")],
-                    ["whatsapp", MessageSquare, t("featWa")],
-                    ["both", Sparkles, t("both")],
-                  ] as const
-                ).map(([key, Icon, label]) => (
-                  <button
-                    key={key}
-                    onClick={() => setService(key)}
-                    className={`rounded-xl border p-6 text-center transition-colors ${
-                      service === key ? "border-primary bg-secondary" : "bg-card hover:bg-secondary/50"
-                    }`}
-                  >
-                    <Icon className="mx-auto size-6 text-primary" />
-                    <p className="mt-3 font-medium">{label}</p>
-                  </button>
-                ))}
+              <div className="space-y-5">
+                <p className="text-lg font-semibold">{locale === "ar" ? "وش تحتاج؟" : "What do you need?"}</p>
+                <ProductToggle
+                  value={product}
+                  onChange={(p) => { setService(p === "bundle" ? "both" : p); setPlanId(null); }}
+                  ar={locale === "ar"}
+                />
+                <ProductPlanCards
+                  plans={plans as PlanRow[] | undefined}
+                  product={product}
+                  ar={locale === "ar"}
+                  selectedId={planId ?? plansFor(plans as PlanRow[] | undefined, product)[0]?.id ?? null}
+                  onSelect={setPlanId}
+                  perMonth={t("perMonth")}
+                />
+                <p className="text-sm text-muted-foreground">
+                  {locale === "ar" ? "تبدأ بفترة تجريبية مجانية — بدون دفع الآن." : "You start with a free trial — no payment now."}
+                </p>
               </div>
             ) : null}
 

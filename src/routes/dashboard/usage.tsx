@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useI18n } from "@/lib/i18n";
-import { useCompanyId } from "@/lib/tenant";
+import { useCompanyId, useMembership } from "@/lib/tenant";
+import { companyProduct } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard/usage")({
@@ -16,6 +17,7 @@ type Row = { key: string; label: string; used: number; limit: number };
 function UsagePage() {
   const { t } = useI18n();
   const companyId = useCompanyId();
+  const { data: membership } = useMembership();
 
   const { data } = useQuery({
     queryKey: ["usage-summary", companyId],
@@ -73,11 +75,16 @@ function UsagePage() {
     },
   });
 
+  const product = companyProduct(membership?.companies as { voice_enabled?: boolean; whatsapp_enabled?: boolean } | null);
+  const rows = (data ?? []).filter(
+    (r) => !(r.key === "minutesUsed" && product === "whatsapp") && !(r.key === "messagesUsed" && product === "voice"),
+  );
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t("navUsage")}</h1>
       <div className="grid gap-4 md:grid-cols-3">
-        {(data ?? []).map((r) => {
+        {rows.map((r) => {
           const pct = r.limit ? Math.min(100, Math.round((r.used / r.limit) * 100)) : 0;
           return (
             <Card key={r.key}>

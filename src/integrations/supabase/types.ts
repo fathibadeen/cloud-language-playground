@@ -946,7 +946,9 @@ export type Database = {
           name_ar: string
           name_en: string
           price_sar: number
+          product: string
           sort_order: number
+          tier: string
           updated_at: string
           voice_minutes: number
           whatsapp_messages: number
@@ -965,7 +967,9 @@ export type Database = {
           name_ar: string
           name_en: string
           price_sar?: number
+          product?: string
           sort_order?: number
+          tier?: string
           updated_at?: string
           voice_minutes?: number
           whatsapp_messages?: number
@@ -984,7 +988,9 @@ export type Database = {
           name_ar?: string
           name_en?: string
           price_sar?: number
+          product?: string
           sort_order?: number
+          tier?: string
           updated_at?: string
           voice_minutes?: number
           whatsapp_messages?: number
