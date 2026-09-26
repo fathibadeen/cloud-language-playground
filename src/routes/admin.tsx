@@ -200,28 +200,34 @@ function AdminPage() {
           <StatCard label={t("webhookErrors")} value={totals?.webhookErrors ?? 0} icon={AlertTriangle} />
         </div>
 
-        <Tabs defaultValue="companies" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="companies">{ar ? "العملاء والاشتراكات" : "Customers & subscriptions"}</TabsTrigger>
-            <TabsTrigger value="whatsapp">{ar ? "WhatsApp" : "WhatsApp"}</TabsTrigger>
-            <TabsTrigger value="requests">{t("connectRequests")}</TabsTrigger>
-            <TabsTrigger value="events">{t("navWebhooks")}</TabsTrigger>
-          </TabsList>
+        <Tabs value={section === "overview" ? "companies" : section} className="space-y-4">
           <TabsContent value="companies">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between gap-4"><CardTitle className="text-base">{t("navCompanies")}</CardTitle><div className="relative w-full max-w-xs"><Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={ar ? "ابحث باسم الشركة أو المدينة" : "Search company or city"} className="ps-9" /></div></CardHeader>
+              <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-3">
+                <CardTitle className="text-base">{ar ? `الشركات (${filteredCompanies.length})` : `Companies (${filteredCompanies.length})`}</CardTitle>
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="relative w-full max-w-xs"><Search className="absolute start-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" /><Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={ar ? "ابحث باسم الشركة أو المدينة" : "Search company or city"} className="ps-9" /></div>
+                  <Select value={statusFilter} onValueChange={setStatusFilter}><SelectTrigger className="w-36"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{ar ? "كل الحالات" : "All statuses"}</SelectItem><SelectItem value="active">{ar ? "نشطة" : "Active"}</SelectItem><SelectItem value="suspended">{ar ? "موقوفة" : "Suspended"}</SelectItem></SelectContent></Select>
+                  <Select value={productFilter} onValueChange={setProductFilter}><SelectTrigger className="w-40"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="all">{ar ? "كل المنتجات" : "All products"}</SelectItem>{(["whatsapp", "voice", "bundle"] as const).map((p) => <SelectItem key={p} value={p}>{ar ? productLabels[p].ar : productLabels[p].en}</SelectItem>)}</SelectContent></Select>
+                </div>
+              </CardHeader>
               <CardContent className="overflow-x-auto p-0">
-                <Table><TableHeader><TableRow><TableHead>{t("companyName")}</TableHead><TableHead>{t("city")}</TableHead><TableHead>{t("status")}</TableHead><TableHead>{ar ? "الخطة" : "Plan"}</TableHead><TableHead>{ar ? "حالة الاشتراك" : "Subscription"}</TableHead><TableHead>{t("actions")}</TableHead></TableRow></TableHeader>
-                  <TableBody>{isLoading ? <TableRow><TableCell colSpan={6}>{t("loading")}</TableCell></TableRow> : filteredCompanies.length === 0 ? <TableRow><TableCell colSpan={6} className="py-12 text-center text-muted-foreground">{t("empty")}</TableCell></TableRow> : filteredCompanies.map((company) => {
+                <Table><TableHeader><TableRow><TableHead>{t("companyName")}</TableHead><TableHead>{t("city")}</TableHead><TableHead>{ar ? "المنتج" : "Product"}</TableHead><TableHead>{t("status")}</TableHead><TableHead>{ar ? "الخطة" : "Plan"}</TableHead><TableHead>{ar ? "حالة الاشتراك" : "Subscription"}</TableHead><TableHead>{ar ? "عملاء / مستندات / وكلاء" : "Customers / docs / agents"}</TableHead><TableHead>{ar ? "التسجيل" : "Joined"}</TableHead><TableHead>{t("actions")}</TableHead></TableRow></TableHeader>
+                  <TableBody>{isLoading ? <TableRow><TableCell colSpan={9}>{t("loading")}</TableCell></TableRow> : filteredCompanies.length === 0 ? <TableRow><TableCell colSpan={9} className="py-12 text-center text-muted-foreground">{t("empty")}</TableCell></TableRow> : filteredCompanies.map((company) => {
                     const subscription = subscriptionFor(company.id);
                     const disabled = savingCompany === company.id;
+                    const product = companyProduct(company);
+                    const counts = data?.companyCounts?.[company.id];
                     return <TableRow key={company.id}>
                       <TableCell><Link to="/admin/companies/$companyId" params={{ companyId: company.id }} className="font-medium text-primary underline-offset-4 hover:underline">{company.name}</Link><div className="text-xs text-muted-foreground">{company.industry ?? "—"}</div></TableCell>
                       <TableCell>{company.city ?? "—"}</TableCell>
+                      <TableCell><Badge variant="outline">{ar ? productLabels[product].ar : productLabels[product].en}</Badge></TableCell>
                       <TableCell><Badge variant={company.status === "active" ? "default" : "secondary"}>{company.status === "active" ? t("active") : t("inactive")}</Badge></TableCell>
-                      <TableCell><Select disabled={disabled} value={subscription?.plan_id ?? "none"} onValueChange={(value) => updateSubscription(company.id, value === "none" ? null : value, (subscription?.status as SubscriptionStatus | undefined) ?? "trialing")}><SelectTrigger className="min-w-36"><SelectValue /></SelectTrigger><SelectContent><SelectItem value="none">{ar ? "بدون خطة" : "No plan"}</SelectItem>{(data?.plans ?? []).map((plan) => <SelectItem key={plan.id} value={plan.id}>{ar ? plan.name_ar : plan.name_en}</SelectItem>)}</SelectContent></Select></TableCell>
+                      <TableCell><Select disabled={disabled} value={subscription?.plan_id ?? "none"} onValueChange={(value) => updateSubscription(company.id, value === "none" ? null : value, (subscription?.status as SubscriptionStatus | undefined) ?? "trialing")}><SelectTrigger className="min-w-36"><SelectValue placeholder={ar ? "باقة قديمة" : "Legacy plan"} /></SelectTrigger><SelectContent><SelectItem value="none">{ar ? "بدون خطة" : "No plan"}</SelectItem>{(data?.plans ?? []).map((plan) => <SelectItem key={plan.id} value={plan.id}>{ar ? plan.name_ar : plan.name_en}</SelectItem>)}</SelectContent></Select></TableCell>
                       <TableCell><Select disabled={disabled} value={subscription?.status ?? "trialing"} onValueChange={(value) => updateSubscription(company.id, subscription?.plan_id ?? null, value as SubscriptionStatus)}><SelectTrigger className="min-w-32"><SelectValue /></SelectTrigger><SelectContent>{(["trialing", "active", "past_due", "canceled"] as const).map((status) => <SelectItem key={status} value={status}>{statusText[status]}</SelectItem>)}</SelectContent></Select></TableCell>
-                      <TableCell><Button disabled={disabled} variant="ghost" size="sm" onClick={() => toggleStatus(company.id, company.status)}>{company.status === "active" ? t("suspend") : t("activate")}</Button></TableCell>
+                      <TableCell className="tabular-nums">{counts?.customers ?? 0} / {counts?.documents ?? 0} / {counts?.agents ?? 0}</TableCell>
+                      <TableCell className="whitespace-nowrap">{new Date(company.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell className="whitespace-nowrap"><Button asChild size="sm"><Link to="/admin/companies/$companyId" params={{ companyId: company.id }}>{ar ? "عرض وتعديل" : "View & edit"}</Link></Button><Button disabled={disabled} variant="ghost" size="sm" onClick={() => toggleStatus(company.id, company.status)}>{company.status === "active" ? t("suspend") : t("activate")}</Button></TableCell>
                     </TableRow>;
                   })}</TableBody></Table>
               </CardContent>
