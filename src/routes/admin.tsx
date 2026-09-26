@@ -187,7 +187,7 @@ function AdminPage() {
 
   return (
     <AdminShell active={section}>
-        
+        {section === "overview" ? (<>
         <div><h1 className="font-display text-2xl font-bold md:text-3xl">{ar ? "نظرة شاملة على أعمالك" : "Your platform at a glance"}</h1><p className="mt-1 text-sm text-muted-foreground">{ar ? "تابع العملاء والاشتراكات والتشغيل من مكان واحد." : "Manage customers, subscriptions, and operations from one place."}</p></div>
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label={t("totalCompanies")} value={totals?.companies ?? 0} icon={Building2} />
