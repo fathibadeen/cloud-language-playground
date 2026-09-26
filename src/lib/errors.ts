@@ -8,6 +8,7 @@ export function humanizeDbError(
 ): string {
   if (message.includes("plan_limit_reached")) return t("planLimitReached");
   if (message.includes("company_inactive")) return t("companyInactive");
+  if (message.includes("channel_not_enabled")) return t("channelNotEnabled");
   if (message.includes("cannot_change_own_role")) return t("cannotChangeOwnRole");
   if (message.includes("last_owner_required")) return t("lastOwnerRequired");
   if (message.includes("invitation_email_mismatch")) return t("signInToAccept");
