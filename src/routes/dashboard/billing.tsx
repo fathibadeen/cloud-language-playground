@@ -97,32 +97,50 @@ function BillingPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>{t("date")}</TableHead>
-                <TableHead>{t("amount")}</TableHead>
+                <TableHead>{ar ? "قبل الضريبة" : "Subtotal"}</TableHead>
+                <TableHead>{ar ? "ضريبة 15%" : "VAT 15%"}</TableHead>
+                <TableHead>{ar ? "الإجمالي" : "Total"}</TableHead>
                 <TableHead>{t("status")}</TableHead>
-                <TableHead>{t("provider")}</TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
               {(invoices ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     {t("empty")}
                   </TableCell>
                 </TableRow>
               ) : (
-                invoices!.map((inv) => (
-                  <TableRow key={inv.id}>
-                    <TableCell>{new Date(inv.issued_at).toLocaleDateString()}</TableCell>
-                    <TableCell>{Number(inv.amount_sar).toFixed(2)}</TableCell>
-                    <TableCell>{inv.status}</TableCell>
-                    <TableCell>{inv.provider ?? "—"}</TableCell>
-                  </TableRow>
-                ))
+                invoices!.map((inv) => {
+                  const net = Number(inv.amount_sar);
+                  const vat = net * 0.15;
+                  return (
+                    <TableRow key={inv.id}>
+                      <TableCell>{new Date(inv.issued_at).toLocaleDateString()}</TableCell>
+                      <TableCell>{net.toFixed(2)}</TableCell>
+                      <TableCell>{vat.toFixed(2)}</TableCell>
+                      <TableCell className="font-medium">{(net + vat).toFixed(2)}</TableCell>
+                      <TableCell>{inv.status}</TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="sm" onClick={() => printInvoice(inv)}>
+                          {ar ? "طباعة" : "Print"}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
+          <p className="p-4 text-xs text-muted-foreground">
+            {ar
+              ? "كل الأسعار بالريال السعودي، وتُضاف ضريبة القيمة المضافة 15%."
+              : "All prices in SAR; 15% VAT is added."}
+          </p>
         </CardContent>
       </Card>
+
     </div>
   );
 }
