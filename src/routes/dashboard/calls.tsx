@@ -33,7 +33,8 @@ import { EmptyState, StatCard } from "@/components/StatCard";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { syncNabrahCalls } from "@/lib/nabrah.functions";
+import { getNabrahCallDetail, syncNabrahCalls } from "@/lib/nabrah.functions";
+import { useQuery } from "@tanstack/react-query";
 
 export const Route = createFileRoute("/dashboard/calls")({
   head: () => ({ meta: [{ title: "سجل المكالمات | صوتي" }, { name: "description", content: "متابعة مكالمات شركتك وتفاصيلها في صوتي." }, { property: "og:title", content: "سجل المكالمات | صوتي" }, { property: "og:description", content: "متابعة مكالمات شركتك وتفاصيلها في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -104,13 +105,21 @@ function CallsPage() {
     ? Math.round((all.filter((c) => c.transferred).length / all.length) * 100)
     : 0;
 
+  const detailFn = useServerFn(getNabrahCallDetail);
+  const { data: detail, isFetching: detailLoading } = useQuery({
+    queryKey: ["nabrah-call-detail", selected?.id],
+    enabled: !!companyId && !!selected,
+    queryFn: () => detailFn({ data: { companyId: companyId!, callId: selected!.id } }),
+  });
+
   async function runSync() {
     if (!companyId) return;
     setBusy(true);
     try {
       const res = await sync({ data: { companyId } });
-      if (res.reason) toast.message("المكالمات تصل تلقائيًا من نبرة عبر الويب هوك");
-      else toast.success(`${t("syncCalls")}: ${res.imported}`);
+      if (res.reason === "no_linked_agent") toast.message("اربط وكيل نبرة من صفحة الوكيل الصوتي أولًا");
+      else if (res.reason) toast.error(String(res.reason));
+      else toast.success(`تمت المزامنة: ${res.imported} جديدة، ${res.updated} محدّثة`);
       await qc.invalidateQueries({ queryKey: ["voice_calls"] });
     } catch (err) {
       toast.error(err instanceof Error ? err.message : String(err));
@@ -118,6 +127,7 @@ function CallsPage() {
       setBusy(false);
     }
   }
+
 
   return (
     <div className="space-y-6">
@@ -257,12 +267,21 @@ function CallsPage() {
               />
               <div>
                 <p className="mb-2 font-medium">{t("recording")}</p>
-                {selected.recording_url ? (
-                  <audio controls className="w-full" src={selected.recording_url} />
+                {detail?.recordingUrl || selected.recording_url ? (
+                  <audio controls className="w-full" src={detail?.recordingUrl ?? selected.recording_url!} />
                 ) : (
                   <p className="text-muted-foreground">{t("noRecording")}</p>
                 )}
               </div>
+              <div>
+                <p className="mb-2 font-medium">نص المكالمة</p>
+                {detailLoading ? (
+                  <p className="text-muted-foreground">{t("loading")}</p>
+                ) : (
+                  <TranscriptView transcript={detail?.transcript ?? []} />
+                )}
+              </div>
+
             </div>
           )}
         </DialogContent>
@@ -270,6 +289,23 @@ function CallsPage() {
     </div>
   );
 }
+
+function TranscriptView({ transcript }: { transcript?: { role: string; text: string }[] }) {
+  const items = transcript ?? [];
+  if (items.length === 0) return <p className="text-muted-foreground">لا يوجد نص لهذه المكالمة</p>;
+  return (
+    <div className="max-h-60 space-y-2 overflow-y-auto rounded-md border p-3 text-sm">
+      {items.map((line, i) => (
+        <div key={i}>
+          <span className="text-muted-foreground">{line.role === "agent" ? "الوكيل" : "العميل"}: </span>
+          <span>{line.text}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+
 
 function Row({ label, value, ltr }: { label: string; value: string; ltr?: boolean }) {
   return (

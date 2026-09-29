@@ -1196,6 +1196,8 @@ export type Database = {
       voice_calls: {
         Row: {
           agent_id: string | null
+          analysis: Json | null
+          call_type: string | null
           company_id: string
           conversation_id: string | null
           created_at: string
@@ -1212,12 +1214,16 @@ export type Database = {
           recording_url: string | null
           started_at: string | null
           status: Database["public"]["Enums"]["call_status"]
+          synced_at: string | null
           to_number: string | null
+          transcript: Json | null
           transferred: boolean
           updated_at: string
         }
         Insert: {
           agent_id?: string | null
+          analysis?: Json | null
+          call_type?: string | null
           company_id: string
           conversation_id?: string | null
           created_at?: string
@@ -1234,12 +1240,16 @@ export type Database = {
           recording_url?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["call_status"]
+          synced_at?: string | null
           to_number?: string | null
+          transcript?: Json | null
           transferred?: boolean
           updated_at?: string
         }
         Update: {
           agent_id?: string | null
+          analysis?: Json | null
+          call_type?: string | null
           company_id?: string
           conversation_id?: string | null
           created_at?: string
@@ -1256,7 +1266,9 @@ export type Database = {
           recording_url?: string | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["call_status"]
+          synced_at?: string | null
           to_number?: string | null
+          transcript?: Json | null
           transferred?: boolean
           updated_at?: string
         }
