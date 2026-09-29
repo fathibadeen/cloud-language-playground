@@ -20,5 +20,5 @@
 - [ ] Multiple companies per user
 
 ## Blocked
-- [ ] Real Nabrah voice provisioning — the stored Nabrah API key is rejected ("Invalid API Key"); waiting for a valid key
+- [x] Nabrah voice: agent linking, call sync, outbound calls, SIP line linking, knowledge upload
 - [ ] Real WhatsApp connections — code is done (Meta Embedded Signup from the admin panel, per-company encrypted tokens, webhook auto-registration); waiting for META_APP_ID / META_APP_SECRET / META_CONFIG_ID (+ optional META_REDIRECT_URI, META_GRAPH_API_VERSION)
