@@ -65,8 +65,9 @@ export const linkNabrahAgent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => linkSchema.parse(d))
   .handler(async ({ data, context }) => {
-    const r = await role(context.supabase as never, data.companyId, context.userId);
-    if (!r || !["owner", "admin"].includes(r)) throw new Error("Forbidden");
+    // Nabrah is a shared platform account: only Sawti admins may bind an agent.
+    const { data: superAdmin } = await context.supabase.rpc("is_super_admin");
+    if (superAdmin !== true) throw new Error("Forbidden");
     const { error } = await context.supabase
       .from("ai_agents")
       .update({
@@ -105,8 +106,10 @@ export const listNabrahAgents = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => companySchema.parse(d))
   .handler(async ({ data, context }) => {
-    const r = await role(context.supabase as never, data.companyId, context.userId);
-    if (!r || !["owner", "admin"].includes(r)) throw new Error("Forbidden");
+    void data;
+    // The agent catalogue belongs to the shared Nabrah account — admins only.
+    const { data: superAdmin } = await context.supabase.rpc("is_super_admin");
+    if (superAdmin !== true) throw new Error("Forbidden");
     const nabrah = await import("./nabrah.server");
     if (!nabrah.nabrahConfigured()) return { configured: false, agents: [] };
     try {

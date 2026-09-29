@@ -21,6 +21,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { SawtiLogo } from "@/components/SawtiLogo";
+import { HeroVoiceCard } from "@/components/HeroVoiceCard";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/lib/i18n";
 import { usePlans } from "@/lib/tenant";
@@ -191,7 +192,7 @@ function Landing() {
         <section className="relative flex min-h-[760px] items-end overflow-hidden pt-24 md:min-h-[820px] md:items-center">
           <img src={heroImage} alt={ar ? "رائد أعمال سعودي يستخدم منصة صوتي" : "Saudi business leader using Sawti"} width={1536} height={1024} className="absolute inset-0 size-full object-cover object-[62%_center] opacity-90" />
            <div className="absolute inset-0 bg-linear-to-t from-landing via-landing/90 to-landing/20 md:bg-linear-to-r md:from-landing md:via-landing/95 md:to-landing/15" />
-          <div className="relative mx-auto w-full max-w-7xl px-4 pb-16 md:px-8 md:pb-12">
+          <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-4 pb-16 md:px-8 md:pb-12 lg:grid-cols-[1.15fr_0.85fr]">
             <div className="max-w-3xl">
               <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-saudi-bright/40 bg-saudi/40 px-4 py-2 text-sm text-saudi-bright backdrop-blur">
                 <span className="size-2 rounded-full bg-saudi-bright shadow-[0_0_16px_var(--saudi-bright)]" />{copy.badge}
@@ -206,6 +207,9 @@ function Landing() {
               <div className="mt-12 grid max-w-2xl grid-cols-3 border-t border-landing-foreground/10 pt-7">
                 {[['24/7', copy.stat1], ['AR / EN', copy.stat2], ['2×', copy.stat3]].map(([value, label]) => <div key={label} className="border-e border-landing-foreground/10 px-4 first:px-s-0 last:border-0"><div className="font-display text-2xl font-semibold text-landing-foreground">{value}</div><div className="mt-1 text-sm text-landing-muted md:text-base">{label}</div></div>)}
               </div>
+            </div>
+            <div className="hidden justify-center lg:flex">
+              <HeroVoiceCard ar={ar} onCall={() => { setVoiceDemoLoaded(false); setVoiceDemoOpen(true); }} />
             </div>
           </div>
         </section>

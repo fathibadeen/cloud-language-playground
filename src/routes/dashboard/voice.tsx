@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { linkNabrahAgent, listNabrahAgents, nabrahStatus, syncNabrahCallbacks } from "@/lib/nabrah.functions";
+import { nabrahStatus } from "@/lib/nabrah.functions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -52,66 +52,14 @@ function VoicePage() {
   }
 
   const status = useServerFn(nabrahStatus);
-  const link = useServerFn(linkNabrahAgent);
-  const listAgentsFn = useServerFn(listNabrahAgents);
-  const syncCallbacks = useServerFn(syncNabrahCallbacks);
-  const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState(false);
-  const [form, setForm] = useState<{ directLink: string; nabrahAgentId: string } | null>(null);
-
 
   const { data: nabrah } = useQuery({
     queryKey: ["nabrah-status", companyId],
     enabled: !!companyId,
     queryFn: () => status({ data: { companyId: companyId! } }),
   });
-  const isAdmin = ["owner", "admin"].includes(String(membership?.role ?? ""));
-  const { data: remoteAgents } = useQuery({
-    queryKey: ["nabrah-agents", companyId],
-    enabled: !!companyId && isAdmin,
-    queryFn: () => listAgentsFn({ data: { companyId: companyId! } }),
-  });
-  const current = form ?? {
-    directLink: nabrah?.directLink ?? "",
-    nabrahAgentId: nabrah?.nabrahAgentId ?? "",
-  };
 
-  async function connectWebhook() {
-    if (!companyId) return;
-    setBusy(true);
-    try {
-      const res = await syncCallbacks({ data: { companyId } });
-      if (res.ok) toast.success("تم توصيل الوكيل بالمنصة تلقائيًا");
-      else toast.error(res.reason === "no_linked_agent" ? "اختر وكيل نبرة واحفظه أولًا" : String(res.reason));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-
-  async function saveLink() {
-    if (!companyId || !nabrah?.agentId) return;
-    setBusy(true);
-    try {
-      await link({
-        data: {
-          companyId,
-          agentId: nabrah.agentId,
-          directLink: current.directLink.trim() || null,
-          nabrahAgentId: current.nabrahAgentId.trim() || null,
-        },
-      });
-      toast.success(t("saved"));
-      setForm(null);
-      qc.invalidateQueries();
-    } catch (err) {
-      toast.error(err instanceof Error && err.message.includes("https") ? "الرابط يجب أن يبدأ بـ https://" : String(err instanceof Error ? err.message : err));
-    } finally {
-      setBusy(false);
-    }
-  }
 
   return (
     <div className="space-y-6">
@@ -143,40 +91,11 @@ function VoicePage() {
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
-                اختر وكيل نبرة الخاص بشركتك، ثم اضغط «توصيل تلقائي» ليصل سجل المكالمات إلى لوحتك مباشرة.
+                {nabrah.status === "connected"
+                  ? "وكيلك الصوتي جاهز، وسجل المكالمات يصل إلى لوحتك تلقائيًا."
+                  : "وكيلك الصوتي قيد التجهيز من فريق صوتي. سنفعّله لحسابك ونبلغك فور جاهزيته."}
               </p>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>وكيل نبرة</Label>
-                  <select
-                    dir="ltr"
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-                    value={current.nabrahAgentId}
-                    onChange={(e) => setForm({ ...current, nabrahAgentId: e.target.value })}
-                  >
-                    <option value="">—</option>
-                    {(remoteAgents?.agents ?? []).map((a) => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
-                    ))}
-                    {current.nabrahAgentId &&
-                    !(remoteAgents?.agents ?? []).some((a) => a.id === current.nabrahAgentId) ? (
-                      <option value={current.nabrahAgentId}>{current.nabrahAgentId}</option>
-                    ) : null}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>الرابط المباشر (اختياري)</Label>
-                  <Input dir="ltr" placeholder="https://..." value={current.directLink}
-                    onChange={(e) => setForm({ ...current, directLink: e.target.value })} />
-                </div>
-              </div>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" onClick={saveLink} disabled={busy}>{t("save")}</Button>
-                {isAdmin ? (
-                  <Button size="sm" variant="secondary" onClick={connectWebhook} disabled={busy}>
-                    توصيل تلقائي
-                  </Button>
-                ) : null}
                 {nabrah.agentId ? (
                   <AgentTester
                     companyId={companyId}

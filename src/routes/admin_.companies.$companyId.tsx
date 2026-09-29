@@ -25,6 +25,7 @@ import {
   deleteCustomer, deleteKnowledgeDocument, getCompanyDetail, getConversationMessages, reprocessKnowledgeDocument,
   updateAgentByAdmin, updateCompanyInfo, upsertCustomer, upsertKnowledgeDocument,
 } from "@/lib/admin-company.functions";
+import { adminAssignNabrahAgent, adminNabrahOverview, adminUnassignNabrahAgent } from "@/lib/nabrah-admin.functions";
 
 export const Route = createFileRoute("/admin_/companies/$companyId")({
   ssr: false,
@@ -100,6 +101,7 @@ function CompanyDetailPage() {
             <TabsTrigger value="customers">{ar ? "العملاء" : "Customers"}</TabsTrigger>
             <TabsTrigger value="knowledge">{ar ? "قاعدة المعرفة" : "Knowledge"}</TabsTrigger>
             <TabsTrigger value="agents">{ar ? "الوكلاء الذكيون" : "Agents"}</TabsTrigger>
+            <TabsTrigger value="nabrah">{ar ? "الوكيل الصوتي (نبرة)" : "Voice agent"}</TabsTrigger>
             <TabsTrigger value="conversations">{ar ? "المحادثات والمكالمات" : "Conversations & calls"}</TabsTrigger>
             <TabsTrigger value="team">{ar ? "الفريق" : "Team"}</TabsTrigger>
             <TabsTrigger value="logs">{ar ? "السجل" : "Log"}</TabsTrigger>
@@ -108,6 +110,7 @@ function CompanyDetailPage() {
           <TabsContent value="customers"><Customers data={data} ar={ar} onDone={refresh} /></TabsContent>
           <TabsContent value="knowledge"><Knowledge data={data} ar={ar} onDone={refresh} /></TabsContent>
           <TabsContent value="agents"><Agents data={data} ar={ar} onDone={refresh} /></TabsContent>
+          <TabsContent value="nabrah"><NabrahAssign companyId={companyId} ar={ar} onDone={refresh} /></TabsContent>
           <TabsContent value="conversations"><Conversations data={data} ar={ar} /></TabsContent>
           <TabsContent value="team">
             <Card><CardContent className="overflow-x-auto p-0"><Table><TableHeader><TableRow><TableHead>{ar ? "الاسم" : "Name"}</TableHead><TableHead>{ar ? "البريد" : "Email"}</TableHead><TableHead>{ar ? "الدور" : "Role"}</TableHead><TableHead>{ar ? "انضم" : "Joined"}</TableHead></TableRow></TableHeader><TableBody>
@@ -423,6 +426,109 @@ function Conversations({ data, ar }: { data: Detail; ar: boolean }) {
           )}
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function NabrahAssign({ companyId, ar, onDone }: { companyId: string; ar: boolean; onDone: () => void }) {
+  const overview = useServerFn(adminNabrahOverview);
+  const assign = useServerFn(adminAssignNabrahAgent);
+  const unassign = useServerFn(adminUnassignNabrahAgent);
+  const qc = useQueryClient();
+  const key = ["admin-nabrah", companyId];
+  const { data, isLoading } = useQuery({ queryKey: key, queryFn: () => overview({ data: { companyId } }) });
+  const [picks, setPicks] = useState<Record<string, { nabrahAgentId: string; directLink: string }>>({});
+  const [busy, setBusy] = useState(false);
+  const reload = () => { qc.invalidateQueries({ queryKey: key }); onDone(); };
+
+  if (isLoading) return <Card><CardContent className="p-6 text-muted-foreground">{ar ? "جارِ التحميل…" : "Loading…"}</CardContent></Card>;
+
+  const agents = data?.companyAgents ?? [];
+  const remote = data?.nabrahAgents ?? [];
+
+  async function save(agentId: string, current: { nabrahAgentId: string; directLink: string }) {
+    if (!current.nabrahAgentId) { toast.error(ar ? "اختر وكيل نبرة أولًا" : "Pick a Nabrah agent"); return; }
+    setBusy(true);
+    try {
+      const res = await assign({ data: { companyId, agentId, nabrahAgentId: current.nabrahAgentId, directLink: current.directLink.trim() } });
+      if (!res.ok) {
+        toast.error(ar ? `هذا الوكيل مخصص لشركة أخرى (${res.companyName ?? "—"})` : `Already assigned to ${res.companyName ?? "another company"}`);
+      } else if (res.webhook && res.webhook !== "ok") {
+        toast.warning(ar ? "تم التخصيص، لكن ضبط الويب هوك لم ينجح" : "Assigned, but the callback could not be set");
+      } else {
+        toast.success(ar ? "تم تخصيص الوكيل وربط سجل المكالمات" : "Agent assigned and callbacks wired");
+      }
+      reload();
+    } catch (e) { toast.error(errMsg(e)); } finally { setBusy(false); }
+  }
+
+  async function clear(agentId: string) {
+    if (!confirm(ar ? "إلغاء تخصيص هذا الوكيل عن الشركة؟" : "Unassign this agent?")) return;
+    setBusy(true);
+    try { await unassign({ data: { companyId, agentId } }); toast.success(ar ? "تم الإلغاء" : "Unassigned"); reload(); }
+    catch (e) { toast.error(errMsg(e)); } finally { setBusy(false); }
+  }
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader><CardTitle className="text-base">{ar ? "تخصيص وكيل نبرة لهذه الشركة" : "Assign a Nabrah agent"}</CardTitle></CardHeader>
+        <CardContent className="space-y-5">
+          <p className="text-sm text-muted-foreground">
+            {ar
+              ? "قائمة وكلاء نبرة تظهر هنا للمدير فقط. الوكيل المخصص لشركة لا يمكن تخصيصه لشركة أخرى، والعميل يرى وكيله فقط."
+              : "Only admins see the Nabrah account agents. An agent can belong to one company at a time."}
+          </p>
+          {data?.error ? <p className="text-sm text-destructive">{data.error}</p> : null}
+          {agents.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{ar ? "لا يوجد وكيل صوتي لهذه الشركة بعد." : "This company has no voice agent yet."}</p>
+          ) : agents.map((a) => {
+            const current = picks[a.id] ?? { nabrahAgentId: a.provider_agent_id ?? "", directLink: a.direct_link ?? "" };
+            return (
+              <div key={a.id} className="space-y-3 rounded-lg border p-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-medium">{a.name}</span>
+                  <Badge variant={a.provider_agent_id ? "default" : "secondary"}>
+                    {a.provider_agent_id ? (ar ? "مخصص" : "Assigned") : ar ? "غير مخصص" : "Unassigned"}
+                  </Badge>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label>{ar ? "وكيل نبرة" : "Nabrah agent"}</Label>
+                    <select
+                      dir="ltr"
+                      className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
+                      value={current.nabrahAgentId}
+                      onChange={(e) => setPicks({ ...picks, [a.id]: { ...current, nabrahAgentId: e.target.value } })}
+                    >
+                      <option value="">—</option>
+                      {remote.map((r) => {
+                        const takenElsewhere = r.assignedCompanyId && r.assignedCompanyId !== companyId;
+                        return (
+                          <option key={r.id} value={r.id} disabled={!!takenElsewhere}>
+                            {r.name}{takenElsewhere ? ` — ${ar ? "محجوز لـ" : "taken by"} ${r.assignedCompanyName}` : ""}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>{ar ? "الرابط المباشر (اختياري)" : "Direct link (optional)"}</Label>
+                    <Input dir="ltr" placeholder="https://..." value={current.directLink}
+                      onChange={(e) => setPicks({ ...picks, [a.id]: { ...current, directLink: e.target.value } })} />
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button size="sm" disabled={busy} onClick={() => save(a.id, current)}>{ar ? "تخصيص وربط" : "Assign"}</Button>
+                  {a.provider_agent_id ? (
+                    <Button size="sm" variant="outline" disabled={busy} onClick={() => clear(a.id)}>{ar ? "إلغاء التخصيص" : "Unassign"}</Button>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </CardContent>
+      </Card>
     </div>
   );
 }
