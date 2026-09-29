@@ -57,6 +57,13 @@
       "when": 1790684657527,
       "tag": "0007_nabrah_direct_link",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790689434473,
+      "tag": "0008_nabrah_call_transcript",
+      "breakpoints": true
     }
   ]
 }
