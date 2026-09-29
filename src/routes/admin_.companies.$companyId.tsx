@@ -110,6 +110,7 @@ function CompanyDetailPage() {
           <TabsContent value="customers"><Customers data={data} ar={ar} onDone={refresh} /></TabsContent>
           <TabsContent value="knowledge"><Knowledge data={data} ar={ar} onDone={refresh} /></TabsContent>
           <TabsContent value="agents"><Agents data={data} ar={ar} onDone={refresh} /></TabsContent>
+          <TabsContent value="nabrah"><NabrahAssign companyId={companyId} ar={ar} onDone={refresh} /></TabsContent>
           <TabsContent value="conversations"><Conversations data={data} ar={ar} /></TabsContent>
           <TabsContent value="team">
             <Card><CardContent className="overflow-x-auto p-0"><Table><TableHeader><TableRow><TableHead>{ar ? "الاسم" : "Name"}</TableHead><TableHead>{ar ? "البريد" : "Email"}</TableHead><TableHead>{ar ? "الدور" : "Role"}</TableHead><TableHead>{ar ? "انضم" : "Joined"}</TableHead></TableRow></TableHeader><TableBody>
