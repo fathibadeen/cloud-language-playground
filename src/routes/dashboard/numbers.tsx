@@ -29,12 +29,22 @@ import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 import { humanizeDbError } from "@/lib/errors";
 import { saveProviderCredentials, testProviderConnection } from "@/lib/credentials.functions";
-import { linkNabrahSipLine, listNabrahSipLines, provisionCompanyVoice } from "@/lib/nabrah.functions";
+import {
+  linkNabrahSipLine,
+  listNabrahSipLines,
+  provisionCompanyVoice,
+  syncNabrahNumbers,
+  unlinkNabrahSipLine,
+} from "@/lib/nabrah.functions";
 import { useQuery } from "@tanstack/react-query";
 
 function NabrahSipCard({ companyId }: { companyId: string | null | undefined }) {
+  const qc = useQueryClient();
   const listFn = useServerFn(listNabrahSipLines);
   const linkFn = useServerFn(linkNabrahSipLine);
+  const unlinkFn = useServerFn(unlinkNabrahSipLine);
+  const importFn = useServerFn(syncNabrahNumbers);
+  const [busy, setBusy] = useState(false);
   const { data, isLoading } = useQuery({
     queryKey: ["nabrah-sip", companyId],
     enabled: !!companyId,
@@ -46,11 +56,35 @@ function NabrahSipCard({ companyId }: { companyId: string | null | undefined }) 
     if (res.ok) toast.success("تم ربط الخط بوكيل الشركة");
     else toast.error(res.reason === "no_linked_agent" ? "اربط وكيل نبرة من صفحة الوكيل الصوتي أولًا" : String(res.reason));
   }
+  async function unlink(id: string) {
+    const res = await unlinkFn({ data: { companyId: companyId!, inboundId: id } });
+    if (res.ok) toast.success("تم فصل الخط عن الوكيل");
+    else toast.error(res.reason === "no_linked_agent" ? "لا يوجد وكيل مرتبط" : String(res.reason));
+  }
+  async function importNumbers() {
+    setBusy(true);
+    try {
+      const res = await importFn({ data: { companyId: companyId! } });
+      if (res.reason === "no_numbers") toast.error("لا توجد أرقام في خطوط نبرة");
+      else if (res.reason) toast.error(String(res.reason));
+      else toast.success(res.imported > 0 ? `تمت إضافة ${res.imported} رقم` : "كل الأرقام موجودة مسبقًا");
+      qc.invalidateQueries({ queryKey: ["phone_numbers"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
   if (!companyId || (data?.error === "not_configured")) return null;
   return (
     <Card>
       <CardContent className="space-y-3 p-5">
-        <div className="font-semibold">خطوط الاتصال في نبرة</div>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="font-semibold">خطوط الاتصال في نبرة</div>
+          <Button size="sm" variant="outline" onClick={importNumbers} disabled={busy}>
+            مزامنة الأرقام
+          </Button>
+        </div>
         <p className="text-sm text-muted-foreground">
           اربط رقمك عبر SIP بعنوان pbx.nabrah.ai:5060، ثم اربط الخط بوكيل الشركة هنا.
         </p>
@@ -65,7 +99,10 @@ function NabrahSipCard({ companyId }: { companyId: string | null | undefined }) 
                 <div className="font-medium">{l.name}</div>
                 <div className="text-xs text-muted-foreground" dir="ltr">{l.numbers}</div>
               </div>
-              <Button size="sm" variant="outline" onClick={() => link(l.id)}>ربط بالوكيل</Button>
+              <div className="flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => link(l.id)}>ربط بالوكيل</Button>
+                <Button size="sm" variant="ghost" onClick={() => unlink(l.id)}>فصل</Button>
+              </div>
             </div>
           ))
         )}
@@ -73,6 +110,7 @@ function NabrahSipCard({ companyId }: { companyId: string | null | undefined }) 
     </Card>
   );
 }
+
 
 export const Route = createFileRoute("/dashboard/numbers")({
   head: () => ({ meta: [{ title: "أرقام الهاتف | صوتي" }, { name: "description", content: "إدارة أرقام الهاتف وقنوات الاتصال في صوتي." }, { property: "og:title", content: "أرقام الهاتف | صوتي" }, { property: "og:description", content: "إدارة أرقام الهاتف وقنوات الاتصال في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
