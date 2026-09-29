@@ -144,10 +144,15 @@ function AgentsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">{t("navAgents")}</h1>
 
+        <Button variant="outline" className="gap-2" onClick={syncWithNabrah} disabled={busy}>
+          <RefreshCw className={`size-4 ${busy ? "animate-spin" : ""}`} />
+          مزامنة مع نبرة
+        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
+
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="size-4" />
