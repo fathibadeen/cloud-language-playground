@@ -265,7 +265,31 @@ function AgentsPage() {
                 <Badge variant={a.provider_agent_id ? "default" : "secondary"}>
                   {a.provider_agent_id ? t("connected") : t("notConnected")}
                 </Badge>
+                <div className="flex flex-wrap items-center gap-2 border-t pt-3">
+                  <AgentTester
+                    companyId={companyId}
+                    agentId={a.id}
+                    agentName={a.name}
+                    greeting={a.greeting}
+                  />
+                  {a.provider_agent_id ? (
+                    <Button variant="ghost" size="sm" className="gap-2" onClick={() => unlinkAgent(a)}>
+                      <Unlink className="size-4" />
+                      فك الربط
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 text-destructive hover:text-destructive"
+                    onClick={() => remove(a)}
+                  >
+                    <Trash2 className="size-4" />
+                    حذف
+                  </Button>
+                </div>
               </CardContent>
+
             </Card>
           ))}
         </div>
