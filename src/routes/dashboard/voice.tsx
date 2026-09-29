@@ -209,6 +209,27 @@ function VoicePage() {
         </CardContent>
       </Card>
 
+      <Dialog open={preview} onOpenChange={setPreview}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>تجربة الاتصال الصوتي</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            اسمح للمتصفح باستخدام الميكروفون، ثم تحدث مع الوكيل للتأكد من ردوده ومعلوماته.
+          </p>
+          {nabrah?.directLink ? (
+            <iframe
+              title="تجربة الوكيل الصوتي"
+              src={nabrah.directLink}
+              allow="microphone; autoplay"
+              className="h-[60vh] w-full rounded-lg border"
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+
+
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
