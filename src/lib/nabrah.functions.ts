@@ -65,8 +65,9 @@ export const linkNabrahAgent = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => linkSchema.parse(d))
   .handler(async ({ data, context }) => {
-    const r = await role(context.supabase as never, data.companyId, context.userId);
-    if (!r || !["owner", "admin"].includes(r)) throw new Error("Forbidden");
+    // Nabrah is a shared platform account: only Sawti admins may bind an agent.
+    const { data: superAdmin } = await context.supabase.rpc("is_super_admin");
+    if (superAdmin !== true) throw new Error("Forbidden");
     const { error } = await context.supabase
       .from("ai_agents")
       .update({
