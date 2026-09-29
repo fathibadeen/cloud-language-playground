@@ -56,7 +56,9 @@ function VoicePage() {
   const listAgentsFn = useServerFn(listNabrahAgents);
   const syncCallbacks = useServerFn(syncNabrahCallbacks);
   const [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState(false);
   const [form, setForm] = useState<{ directLink: string; nabrahAgentId: string } | null>(null);
+
 
   const { data: nabrah } = useQuery({
     queryKey: ["nabrah-status", companyId],
