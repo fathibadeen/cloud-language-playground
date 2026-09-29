@@ -8,7 +8,9 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { provisionCompanyVoice, retellStatus } from "@/lib/retell.functions";
+import { linkNabrahAgent, nabrahStatus } from "@/lib/nabrah.functions";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -46,26 +48,38 @@ function VoicePage() {
     qc.invalidateQueries({ queryKey: ["membership"] });
   }
 
-  const status = useServerFn(retellStatus);
-  const provision = useServerFn(provisionCompanyVoice);
+  const status = useServerFn(nabrahStatus);
+  const link = useServerFn(linkNabrahAgent);
   const [busy, setBusy] = useState(false);
+  const [form, setForm] = useState<{ directLink: string; nabrahAgentId: string } | null>(null);
 
-  const { data: retell } = useQuery({
-    queryKey: ["retell-status", companyId],
+  const { data: nabrah } = useQuery({
+    queryKey: ["nabrah-status", companyId],
     enabled: !!companyId,
     queryFn: () => status({ data: { companyId: companyId! } }),
   });
+  const current = form ?? {
+    directLink: nabrah?.directLink ?? "",
+    nabrahAgentId: nabrah?.nabrahAgentId ?? "",
+  };
 
-  async function retryProvision() {
-    if (!companyId) return;
+  async function saveLink() {
+    if (!companyId || !nabrah?.agentId) return;
     setBusy(true);
     try {
-      const res = await provision({ data: { companyId } });
-      if (res.status === "connected") toast.success(t("voiceConnected"));
-      else toast.message(t("voicePending"), { description: res.reason ?? undefined });
+      await link({
+        data: {
+          companyId,
+          agentId: nabrah.agentId,
+          directLink: current.directLink.trim() || null,
+          nabrahAgentId: current.nabrahAgentId.trim() || null,
+        },
+      });
+      toast.success(t("saved"));
+      setForm(null);
       qc.invalidateQueries();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
+      toast.error(err instanceof Error && err.message.includes("https") ? "الرابط يجب أن يبدأ بـ https://" : String(err instanceof Error ? err.message : err));
     } finally {
       setBusy(false);
     }
@@ -85,29 +99,60 @@ function VoicePage() {
         <CardHeader>
           <CardTitle className="text-base">{t("integrations")}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-4">
           <div className="flex items-center justify-between text-sm">
-            <span>Retell AI</span>
-            <Badge variant={retell?.status === "connected" ? "default" : "secondary"}>
-              {retell?.status === "connected"
+            <span>Nabrah (نبرة)</span>
+            <Badge variant={nabrah?.status === "connected" ? "default" : "secondary"}>
+              {nabrah?.status === "connected"
                 ? t("connected")
-                : retell?.status === "pending"
+                : nabrah?.status === "pending"
                   ? t("pending")
                   : t("notConnected")}
             </Badge>
           </div>
-          {retell && retell.status !== "connected" && "reason" in retell && retell.reason ? (
-            <p className="text-sm text-muted-foreground">{retell.reason}</p>
+          {!nabrah?.agentId ? (
+            <p className="text-sm text-muted-foreground">أضف وكيلًا صوتيًا أولًا من صفحة الوكلاء.</p>
           ) : (
-            <p className="text-sm text-muted-foreground">{t("integrationsHint")}</p>
+            <>
+              <p className="text-sm text-muted-foreground">
+                أنشئ الوكيل في لوحة نبرة، ثم فعّل «الرابط المباشر» في أداة الاتصال والصقه هنا.
+              </p>
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>الرابط المباشر من نبرة</Label>
+                  <Input dir="ltr" placeholder="https://..." value={current.directLink}
+                    onChange={(e) => setForm({ ...current, directLink: e.target.value })} />
+                </div>
+                <div className="space-y-2">
+                  <Label>معرّف الوكيل في نبرة (اختياري)</Label>
+                  <Input dir="ltr" value={current.nabrahAgentId}
+                    onChange={(e) => setForm({ ...current, nabrahAgentId: e.target.value })} />
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={saveLink} disabled={busy}>{t("save")}</Button>
+                {nabrah.directLink ? (
+                  <Button asChild size="sm" variant="outline">
+                    <a href={nabrah.directLink} target="_blank" rel="noopener noreferrer">جرّب الاتصال بالوكيل</a>
+                  </Button>
+                ) : null}
+              </div>
+              {nabrah.webhookUrl ? (
+                <div className="space-y-2">
+                  <Label>رابط الويب هوك (ضعه في إعدادات الوكيل عند نبرة ← Webhooks)</Label>
+                  <div className="flex gap-2">
+                    <Input dir="ltr" readOnly value={nabrah.webhookUrl} className="text-xs" />
+                    <Button size="sm" variant="outline" onClick={() => { void navigator.clipboard.writeText(nabrah.webhookUrl!); toast.success("تم النسخ"); }}>
+                      نسخ
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </>
           )}
-          {retell?.status !== "connected" ? (
-            <Button variant="outline" size="sm" onClick={retryProvision} disabled={busy}>
-              {t("retryProvision")}
-            </Button>
-          ) : null}
         </CardContent>
       </Card>
+
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
