@@ -368,7 +368,14 @@ export const syncCompanyKnowledge = createServerFn({ method: "POST" })
     try {
       const kb = await nabrah.ensureCompanyKb(data.companyId, company?.name ?? "Sawti");
       const text = ready.map((d) => `# ${d.title}\n${d.content}`).join("\n\n").slice(0, 50000);
-      await nabrah.addTextDocument(kb.id, text);
+      try {
+        await nabrah.addTextDocument(kb.id, text);
+      } catch (e) {
+        if (nabrah.isUnsupported(e)) {
+          return { ok: false, synced: 0, reason: nabrah.NABRAH_READ_ONLY as string | null };
+        }
+        throw e;
+      }
       const agent = await linkedVoiceAgent(context.supabase, data.companyId);
       if (agent?.provider_agent_id) {
         try {
