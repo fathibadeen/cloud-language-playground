@@ -6,6 +6,7 @@ import {
   BarChart3,
   BookOpen,
   Check,
+  ExternalLink,
   Headphones,
   MessageSquare,
   Menu,
@@ -13,9 +14,11 @@ import {
   ShieldCheck,
   Sparkles,
   Users,
+  Volume2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { SawtiLogo } from "@/components/SawtiLogo";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -29,6 +32,7 @@ import aiConsultingLogo from "@/assets/brand/ai-consulting-logo.jpg.asset.json";
 
 const siteUrl = "https://www.sawti-ai.com";
 const socialImageUrl = `${siteUrl}/sawti-social-share.jpg`;
+const voiceDemoUrl = "https://app.nabrah.ai/call/wgt_S0L-5WWKeyrqTJmU2_vsyJd4";
 const faqAr = [
   ["ما هي منصة صوتي؟", "صوتي منصة تواصل ذكية للشركات تدير المكالمات ومحادثات واتساب، وتجيب العملاء اعتمادًا على معلومات شركتك."],
   ["هل تدعم العربية والإنجليزية؟", "نعم، يستطيع وكلاء صوتي التواصل بالعربية والإنجليزية بما يناسب عملاء شركتك."],
@@ -93,6 +97,8 @@ function Landing() {
   const { user } = useAuth();
   const { data: plans } = usePlans();
   const [product, setProduct] = useState<Product>("whatsapp");
+  const [voiceDemoOpen, setVoiceDemoOpen] = useState(false);
+  const [voiceDemoLoaded, setVoiceDemoLoaded] = useState(false);
   const ar = locale === "ar";
   const copy = ar
     ? {
@@ -102,6 +108,7 @@ function Landing() {
         intro: "خلّ التواصل علينا. صوتي يدير المكالمات وواتساب، يفهم سياق عملك ويتعامل مع عملائك باحتراف على مدار الساعة.",
         try: "ابدأ تجربتك",
         discover: "شوف وش يقدر يسوي",
+        voiceDemo: "جرّب مكالمة صوتية",
         stat1: "خدمة متواصلة",
         stat2: "عربي وإنجليزي",
         stat3: "صوت وواتساب",
@@ -123,6 +130,7 @@ function Landing() {
         intro: "Let Sawti handle every response across calls and WhatsApp, grounded in your business context and available around the clock.",
         try: "Start your experience",
         discover: "See what it can do",
+        voiceDemo: "Try a voice call",
         stat1: "Always available",
         stat2: "Arabic & English",
         stat3: "Voice & WhatsApp",
@@ -151,7 +159,7 @@ function Landing() {
       <header className="fixed inset-x-0 top-0 z-40 border-b border-landing-foreground/10 bg-landing/80 backdrop-blur-xl">
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 md:px-8">
           <Link to="/" aria-label={ar ? "صوتي — الرئيسية" : "Sawti — Home"}><SawtiLogo /></Link>
-          <nav className="hidden items-center gap-7 text-sm text-landing-muted lg:flex">
+          <nav className="hidden items-center gap-7 text-base font-semibold text-landing-foreground/80 lg:flex">
             <a href="#services" className="transition-colors hover:text-landing-foreground">{t("features")}</a>
             <a href="#how" className="transition-colors hover:text-landing-foreground">{t("howItWorks")}</a>
             <a href="#pricing" className="transition-colors hover:text-landing-foreground">{t("pricing")}</a>
@@ -168,11 +176,11 @@ function Landing() {
                 <Button variant="ghost" size="icon" className="text-landing-foreground hover:bg-landing-foreground/10 lg:hidden" aria-label={ar ? "فتح القائمة" : "Open menu"}><Menu /></Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
-                <DropdownMenuItem asChild><a href="#services" className="text-base">{t("features")}</a></DropdownMenuItem>
-                <DropdownMenuItem asChild><a href="#how" className="text-base">{t("howItWorks")}</a></DropdownMenuItem>
-                <DropdownMenuItem asChild><a href="#pricing" className="text-base">{t("pricing")}</a></DropdownMenuItem>
-                <DropdownMenuItem asChild><a href="#faq" className="text-base">{t("faq")}</a></DropdownMenuItem>
-                <DropdownMenuItem asChild><Link to="/contact" className="text-base">{t("contact")}</Link></DropdownMenuItem>
+                <DropdownMenuItem asChild><a href="#services" className="py-3 text-lg font-medium">{t("features")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><a href="#how" className="py-3 text-lg font-medium">{t("howItWorks")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><a href="#pricing" className="py-3 text-lg font-medium">{t("pricing")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><a href="#faq" className="py-3 text-lg font-medium">{t("faq")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/contact" className="py-3 text-lg font-medium">{t("contact")}</Link></DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -182,16 +190,17 @@ function Landing() {
       <main>
         <section className="relative flex min-h-[760px] items-end overflow-hidden pt-24 md:min-h-[820px] md:items-center">
           <img src={heroImage} alt={ar ? "رائد أعمال سعودي يستخدم منصة صوتي" : "Saudi business leader using Sawti"} width={1536} height={1024} className="absolute inset-0 size-full object-cover object-[62%_center] opacity-90" />
-          <div className="absolute inset-0 bg-linear-to-t from-landing via-landing/75 to-landing/10 md:bg-linear-to-r md:from-landing md:via-landing/80 md:to-landing/5" />
+           <div className="absolute inset-0 bg-linear-to-t from-landing via-landing/90 to-landing/20 md:bg-linear-to-r md:from-landing md:via-landing/95 md:to-landing/15" />
           <div className="relative mx-auto w-full max-w-7xl px-4 pb-16 md:px-8 md:pb-12">
             <div className="max-w-3xl">
               <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-saudi-bright/40 bg-saudi/40 px-4 py-2 text-sm text-saudi-bright backdrop-blur">
                 <span className="size-2 rounded-full bg-saudi-bright shadow-[0_0_16px_var(--saudi-bright)]" />{copy.badge}
               </div>
               <h1 className="font-display text-5xl font-bold leading-[1.16] md:text-7xl">{copy.title}<span className="mt-2 block text-gold">{copy.titleAccent}</span></h1>
-              <p className="mt-6 max-w-2xl text-xl font-medium leading-9 text-landing-muted md:text-2xl md:leading-10">{copy.intro}</p>
+               <p className="mt-6 max-w-2xl text-xl font-semibold leading-9 text-landing-foreground/85 md:text-2xl md:leading-10">{copy.intro}</p>
               <div className="mt-9 flex flex-wrap gap-3">
-                <Button asChild size="lg" className="bg-saudi-bright text-primary-foreground hover:bg-saudi-bright/90"><Link to="/auth" search={{ mode: "signup" }}>{copy.try}<ArrowLeft className="size-4 rtl:rotate-0 ltr:rotate-180" /></Link></Button>
+                 <Button asChild size="lg" className="bg-saudi-bright text-primary-foreground shadow-md hover:bg-saudi-bright/90"><Link to="/auth" search={{ mode: "signup" }}>{copy.try}<ArrowLeft className="size-5 stroke-[2.5] rtl:rotate-0 ltr:rotate-180" /></Link></Button>
+                 <Button size="lg" variant="outline" className="border-saudi-bright/60 bg-landing/85 text-landing-foreground shadow-sm backdrop-blur hover:bg-landing hover:text-landing-foreground" onClick={() => { setVoiceDemoLoaded(false); setVoiceDemoOpen(true); }}><Volume2 className="size-5 text-saudi-bright" />{copy.voiceDemo}</Button>
                 <Button asChild size="lg" variant="outline" className="border-landing-foreground/20 bg-landing-foreground/5 text-landing-foreground backdrop-blur hover:bg-landing-foreground/10 hover:text-landing-foreground"><a href="#services">{copy.discover}</a></Button>
               </div>
               <div className="mt-12 grid max-w-2xl grid-cols-3 border-t border-landing-foreground/10 pt-7">
@@ -200,6 +209,24 @@ function Landing() {
             </div>
           </div>
         </section>
+
+         <Dialog open={voiceDemoOpen} onOpenChange={setVoiceDemoOpen}>
+           <DialogContent className="max-h-[92vh] max-w-3xl overflow-y-auto p-4 sm:p-6" dir={ar ? "rtl" : "ltr"}>
+             <DialogHeader className="pe-8 text-start">
+               <DialogTitle className="text-2xl">{ar ? "تحدّث مع وكيل صوتي الآن" : "Talk to a voice agent now"}</DialogTitle>
+               <DialogDescription className="text-base leading-7">
+                 {ar ? "اسمح للمتصفح باستخدام الميكروفون، ثم ابدأ الحديث مع الوكيل التجريبي." : "Allow microphone access, then start talking with the demo agent."}
+               </DialogDescription>
+             </DialogHeader>
+             <div className="relative min-h-[520px] overflow-hidden rounded-lg border bg-muted/40">
+               {!voiceDemoLoaded ? <div className="absolute inset-0 grid place-items-center text-base font-medium text-muted-foreground">{ar ? "جارٍ تجهيز المكالمة…" : "Preparing your call…"}</div> : null}
+               <iframe title={ar ? "مكالمة مع وكيل صوتي تجريبي" : "Demo voice agent call"} src={voiceDemoUrl} allow="microphone; autoplay" onLoad={() => setVoiceDemoLoaded(true)} className="relative h-[65vh] min-h-[520px] w-full border-0" />
+             </div>
+             <Button asChild variant="outline" className="w-full sm:w-auto">
+               <a href={voiceDemoUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="size-4" />{ar ? "فتح التجربة في نافذة جديدة" : "Open the demo in a new window"}</a>
+             </Button>
+           </DialogContent>
+         </Dialog>
 
         <section className="border-y border-landing-foreground/10 bg-saudi/55 py-6"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-6 px-4 text-base text-landing-muted md:justify-between md:px-8"><span className="flex items-center gap-2 font-semibold text-landing-foreground"><Sparkles className="size-5 text-gold" />{copy.trusted}</span><span>رؤية أوضح</span><span>استجابة أسرع</span><span>تجربة أهدى لفريقك</span></div></section>
 
