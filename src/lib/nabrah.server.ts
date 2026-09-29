@@ -225,3 +225,15 @@ export function linkAgentToInbound(agentId: string, inboundId: string) {
     body: { agent_id: agentId, inbound_id: inboundId },
   });
 }
+
+/** Finds or creates the company's Nabrah knowledge base, then uploads text to it. */
+export async function pushCompanyKnowledge(companyId: string, companyName: string, text: string) {
+  if (!nabrahConfigured() || !text.trim()) return { ok: false as const, reason: "skipped" };
+  const key = `sawti-${companyId.slice(0, 8)}`;
+  const res = (await listKnowledgeBases()) as unknown;
+  const list = (Array.isArray(res) ? res : ((res as { items?: NabrahKb[] })?.items ?? [])) as NabrahKb[];
+  let kb = list.find((k) => k.key === key);
+  if (!kb) kb = await createKnowledgeBase({ name: `${companyName} - Sawti`.slice(0, 80), key, desc: "Sawti company knowledge" });
+  await addTextDocument(kb.id, text.slice(0, 50000));
+  return { ok: true as const, kbId: kb.id };
+}
