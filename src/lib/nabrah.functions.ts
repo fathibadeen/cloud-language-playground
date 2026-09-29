@@ -3,6 +3,14 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const companySchema = z.object({ companyId: z.string().uuid() });
+
+const CALL_STATUSES = ["completed", "failed", "in_progress", "ringing", "transferred"] as const;
+type CallStatus = (typeof CALL_STATUSES)[number];
+function mapStatus(s: string): CallStatus {
+  if ((CALL_STATUSES as readonly string[]).includes(s)) return s as CallStatus;
+  if (s === "queued" || s === "ongoing" || s === "in-progress") return "in_progress";
+  return "failed";
+}
 const SITE = "https://www.sawti-ai.com";
 
 async function role(supabase: { from: (t: string) => any }, companyId: string, userId: string) {
@@ -196,7 +204,7 @@ export const syncNabrahCalls = createServerFn({ method: "POST" })
         call_type: c.call_type,
         from_number: c.call_from && c.call_from !== "_" ? c.call_from : null,
         to_number: c.call_to && c.call_to !== "_" ? c.call_to : null,
-        status: c.status === "completed" ? "completed" : c.status,
+        status: mapStatus(c.status),
         duration_seconds: c.duration ?? 0,
         recording_url: recording,
         transcript: (detail?.transcript ?? null) as unknown as never,
@@ -216,6 +224,21 @@ export const syncNabrahCalls = createServerFn({ method: "POST" })
     return { imported, updated, reason: null };
   });
 
+type TranscriptLine = { role: string; text: string };
+
+function normalizeTranscript(raw: unknown): TranscriptLine[] {
+  if (!Array.isArray(raw)) return [];
+  const out: TranscriptLine[] = [];
+  for (const item of raw) {
+    const o = (item ?? {}) as Record<string, unknown>;
+    const text = String(o["content"] ?? o["text"] ?? o["message"] ?? "").trim();
+    if (!text) continue;
+    const who = String(o["role"] ?? o["speaker"] ?? o["source"] ?? "").toLowerCase();
+    out.push({ role: who.includes("agent") || who.includes("assistant") ? "agent" : "customer", text });
+  }
+  return out;
+}
+
 const callSchema = z.object({ companyId: z.string().uuid(), callId: z.string().uuid() });
 
 /** Fetches transcript + fresh recording link for one stored call. */
@@ -229,10 +252,11 @@ export const getNabrahCallDetail = createServerFn({ method: "POST" })
       .from("voice_calls").select("id, provider_call_id, transcript, analysis")
       .eq("id", data.callId).eq("company_id", data.companyId).maybeSingle();
     if (!row) throw new Error("not_found");
-    if (!row.provider_call_id) return { transcript: row.transcript ?? null, recordingUrl: null };
+    const stored = normalizeTranscript(row.transcript);
+    if (!row.provider_call_id) return { transcript: stored, recordingUrl: null };
 
     const nabrah = await import("./nabrah.server");
-    if (!nabrah.nabrahConfigured()) return { transcript: row.transcript ?? null, recordingUrl: null };
+    if (!nabrah.nabrahConfigured()) return { transcript: stored, recordingUrl: null };
     try {
       const detail = await nabrah.getCall(row.provider_call_id);
       const recordingUrl = detail.recording_file ? await nabrah.getRecordingLink(row.provider_call_id) : null;
@@ -243,9 +267,9 @@ export const getNabrahCallDetail = createServerFn({ method: "POST" })
         recording_url: recordingUrl,
         synced_at: new Date().toISOString(),
       }).eq("id", row.id);
-      return { transcript: (detail.transcript ?? null) as unknown, recordingUrl };
+      return { transcript: normalizeTranscript(detail.transcript), recordingUrl };
     } catch {
-      return { transcript: row.transcript ?? null, recordingUrl: null };
+      return { transcript: stored, recordingUrl: null };
     }
   });
 
