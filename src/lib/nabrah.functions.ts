@@ -273,3 +273,76 @@ export const getNabrahCallDetail = createServerFn({ method: "POST" })
     }
   });
 
+
+async function linkedVoiceAgent(supabase: any, companyId: string) {
+  const { data } = await supabase
+    .from("ai_agents").select("id, provider_agent_id")
+    .eq("company_id", companyId).eq("channel", "voice").limit(1).maybeSingle();
+  return data as { id: string; provider_agent_id: string | null } | null;
+}
+
+/** Lists Nabrah SIP inbound lines so an admin can link one to the company agent. */
+export const listNabrahSipLines = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => companySchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const r = await role(context.supabase as never, data.companyId, context.userId);
+    if (!r || !["owner", "admin"].includes(r)) throw new Error("Forbidden");
+    const nabrah = await import("./nabrah.server");
+    if (!nabrah.nabrahConfigured()) return { lines: [] as { id: string; name: string; numbers: string }[], error: "not_configured" };
+    try {
+      const res = await nabrah.listSipInbound();
+      const items = Array.isArray(res) ? res : (res?.items ?? []);
+      return {
+        lines: items.map((l: { id: string; name: string; numbers: string }) => ({ id: String(l.id), name: String(l.name ?? ""), numbers: String(l.numbers ?? "") })),
+        error: null as string | null,
+      };
+    } catch (e) {
+      return { lines: [], error: (e as Error).message };
+    }
+  });
+
+export const linkNabrahSipLine = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => companySchema.extend({ inboundId: z.string().min(1).max(100) }).parse(d))
+  .handler(async ({ data, context }) => {
+    const r = await role(context.supabase as never, data.companyId, context.userId);
+    if (!r || !["owner", "admin"].includes(r)) throw new Error("Forbidden");
+    const agent = await linkedVoiceAgent(context.supabase, data.companyId);
+    if (!agent?.provider_agent_id) return { ok: false, reason: "no_linked_agent" };
+    const nabrah = await import("./nabrah.server");
+    try {
+      await nabrah.linkAgentToInbound(agent.provider_agent_id, data.inboundId);
+      return { ok: true, reason: null as string | null };
+    } catch (e) {
+      return { ok: false, reason: (e as Error).message };
+    }
+  });
+
+/** Starts an outbound call from the company's Nabrah agent. Checks role and monthly minutes. */
+export const makeNabrahCall = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    companySchema.extend({
+      to: z.string().trim().regex(/^\+?[0-9]{8,15}$/),
+      from: z.string().trim().regex(/^\+?[0-9]{8,15}$/),
+    }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    const r = await role(context.supabase as never, data.companyId, context.userId);
+    if (!r || !["owner", "admin", "agent"].includes(r)) throw new Error("Forbidden");
+    const { data: active } = await context.supabase.rpc("company_is_active", { _company_id: data.companyId });
+    if (active === false) return { ok: false, reason: "company_inactive" };
+    const { data: limit } = await context.supabase.rpc("company_limit", { _company_id: data.companyId, _key: "voice_minutes" });
+    const { data: used } = await context.supabase.rpc("company_usage_this_month", { _company_id: data.companyId, _metric: "voice_minutes" });
+    if (typeof limit === "number" && limit > 0 && Number(used ?? 0) >= limit) return { ok: false, reason: "minutes_exhausted" };
+    const agent = await linkedVoiceAgent(context.supabase, data.companyId);
+    if (!agent?.provider_agent_id) return { ok: false, reason: "no_linked_agent" };
+    const nabrah = await import("./nabrah.server");
+    try {
+      await nabrah.makeCall({ agent_id: agent.provider_agent_id, call_from: data.from, call_to: data.to });
+      return { ok: true, reason: null as string | null };
+    } catch (e) {
+      return { ok: false, reason: (e as Error).message };
+    }
+  });

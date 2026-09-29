@@ -33,8 +33,52 @@ import { EmptyState, StatCard } from "@/components/StatCard";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { getNabrahCallDetail, syncNabrahCalls } from "@/lib/nabrah.functions";
+import { getNabrahCallDetail, makeNabrahCall, syncNabrahCalls } from "@/lib/nabrah.functions";
 import { useQuery } from "@tanstack/react-query";
+import { PhoneOutgoing } from "lucide-react";
+
+const CALL_ERRORS: Record<string, string> = {
+  no_linked_agent: "اربط وكيل نبرة من صفحة الوكيل الصوتي أولًا",
+  minutes_exhausted: "انتهت دقائق باقتك لهذا الشهر",
+  company_inactive: "الحساب موقوف حاليًا",
+};
+
+function OutboundCallButton({ companyId }: { companyId: string | null | undefined }) {
+  const callFn = useServerFn(makeNabrahCall);
+  const [open, setOpen] = useState(false);
+  const [to, setTo] = useState("");
+  const [from, setFrom] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function start() {
+    if (!companyId) return;
+    setBusy(true);
+    try {
+      const res = await callFn({ data: { companyId, to: to.replace(/\s/g, ""), from: from.replace(/\s/g, "") } });
+      if (res.ok) {
+        toast.success("بدأ الاتصال، ستظهر المكالمة في السجل بعد انتهائها");
+        setOpen(false);
+      } else toast.error(CALL_ERRORS[res.reason ?? ""] ?? String(res.reason));
+    } catch {
+      toast.error("تحقق من الأرقام: أرقام فقط مع رمز الدولة، مثل 966500000000+");
+    } finally {
+      setBusy(false);
+    }
+  }
+  if (!open)
+    return (
+      <Button size="sm" onClick={() => setOpen(true)}>
+        <PhoneOutgoing className="me-2 h-4 w-4" /> اتصال صادر
+      </Button>
+    );
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-md border p-2">
+      <Input className="h-8 w-40" dir="ltr" placeholder="الرقم المتصل به" value={to} onChange={(e) => setTo(e.target.value)} />
+      <Input className="h-8 w-40" dir="ltr" placeholder="رقم الشركة (من)" value={from} onChange={(e) => setFrom(e.target.value)} />
+      <Button size="sm" onClick={start} disabled={busy || !to || !from}>اتصل</Button>
+      <Button size="sm" variant="ghost" onClick={() => setOpen(false)}>إلغاء</Button>
+    </div>
+  );
+}
 
 export const Route = createFileRoute("/dashboard/calls")({
   head: () => ({ meta: [{ title: "سجل المكالمات | صوتي" }, { name: "description", content: "متابعة مكالمات شركتك وتفاصيلها في صوتي." }, { property: "og:title", content: "سجل المكالمات | صوتي" }, { property: "og:description", content: "متابعة مكالمات شركتك وتفاصيلها في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -133,10 +177,13 @@ function CallsPage() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-bold">{t("navCalls")}</h1>
-        <Button variant="outline" size="sm" onClick={runSync} disabled={busy}>
-          <RefreshCw className={`me-2 h-4 w-4 ${busy ? "animate-spin" : ""}`} />
-          {t("syncCalls")}
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <OutboundCallButton companyId={companyId} />
+          <Button variant="outline" size="sm" onClick={runSync} disabled={busy}>
+            <RefreshCw className={`me-2 h-4 w-4 ${busy ? "animate-spin" : ""}`} />
+            {t("syncCalls")}
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">

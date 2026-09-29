@@ -29,7 +29,50 @@ import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 import { humanizeDbError } from "@/lib/errors";
 import { saveProviderCredentials, testProviderConnection } from "@/lib/credentials.functions";
-import { provisionCompanyVoice } from "@/lib/nabrah.functions";
+import { linkNabrahSipLine, listNabrahSipLines, provisionCompanyVoice } from "@/lib/nabrah.functions";
+import { useQuery } from "@tanstack/react-query";
+
+function NabrahSipCard({ companyId }: { companyId: string | null | undefined }) {
+  const listFn = useServerFn(listNabrahSipLines);
+  const linkFn = useServerFn(linkNabrahSipLine);
+  const { data, isLoading } = useQuery({
+    queryKey: ["nabrah-sip", companyId],
+    enabled: !!companyId,
+    retry: false,
+    queryFn: () => listFn({ data: { companyId: companyId! } }),
+  });
+  async function link(id: string) {
+    const res = await linkFn({ data: { companyId: companyId!, inboundId: id } });
+    if (res.ok) toast.success("تم ربط الخط بوكيل الشركة");
+    else toast.error(res.reason === "no_linked_agent" ? "اربط وكيل نبرة من صفحة الوكيل الصوتي أولًا" : String(res.reason));
+  }
+  if (!companyId || (data?.error === "not_configured")) return null;
+  return (
+    <Card>
+      <CardContent className="space-y-3 p-5">
+        <div className="font-semibold">خطوط الاتصال في نبرة</div>
+        <p className="text-sm text-muted-foreground">
+          اربط رقمك عبر SIP بعنوان pbx.nabrah.ai:5060، ثم اربط الخط بوكيل الشركة هنا.
+        </p>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">جارٍ التحميل…</p>
+        ) : !data?.lines.length ? (
+          <p className="text-sm text-muted-foreground">لا توجد خطوط في حساب نبرة بعد.</p>
+        ) : (
+          data.lines.map((l) => (
+            <div key={l.id} className="flex items-center justify-between gap-3 rounded-md border p-3">
+              <div>
+                <div className="font-medium">{l.name}</div>
+                <div className="text-xs text-muted-foreground" dir="ltr">{l.numbers}</div>
+              </div>
+              <Button size="sm" variant="outline" onClick={() => link(l.id)}>ربط بالوكيل</Button>
+            </div>
+          ))
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 export const Route = createFileRoute("/dashboard/numbers")({
   head: () => ({ meta: [{ title: "أرقام الهاتف | صوتي" }, { name: "description", content: "إدارة أرقام الهاتف وقنوات الاتصال في صوتي." }, { property: "og:title", content: "أرقام الهاتف | صوتي" }, { property: "og:description", content: "إدارة أرقام الهاتف وقنوات الاتصال في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -278,6 +321,8 @@ function NumbersPage() {
           })}
         </div>
       )}
+
+      <NabrahSipCard companyId={companyId} />
 
       <Card>
         <button
