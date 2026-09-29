@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { linkNabrahAgent, listNabrahAgents, nabrahStatus, syncNabrahCallbacks } from "@/lib/nabrah.functions";
+import { nabrahStatus } from "@/lib/nabrah.functions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
