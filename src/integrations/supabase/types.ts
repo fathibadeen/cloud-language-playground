@@ -65,6 +65,7 @@ export type Database = {
           company_id: string
           created_at: string
           description: string | null
+          direct_link: string | null
           fallback_response: string | null
           greeting: string | null
           handoff_rules: Json
@@ -89,6 +90,7 @@ export type Database = {
           company_id: string
           created_at?: string
           description?: string | null
+          direct_link?: string | null
           fallback_response?: string | null
           greeting?: string | null
           handoff_rules?: Json
@@ -113,6 +115,7 @@ export type Database = {
           company_id?: string
           created_at?: string
           description?: string | null
+          direct_link?: string | null
           fallback_response?: string | null
           greeting?: string | null
           handoff_rules?: Json

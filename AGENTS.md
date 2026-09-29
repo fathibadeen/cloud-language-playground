@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Brand and partner artwork is stored as Lovable Asset pointer JSON and imported by UI components, keeping uploaded binaries out of source control.
+- Voice provider is Nabrah: agents are created in the Nabrah dashboard and linked by direct link/id; calls arrive via /api/public/webhooks/nabrah with a per-agent HMAC token, because Nabrah publishes no REST reference or webhook signature.

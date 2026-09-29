@@ -29,7 +29,7 @@ import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 import { humanizeDbError } from "@/lib/errors";
 import { saveProviderCredentials, testProviderConnection } from "@/lib/credentials.functions";
-import { provisionCompanyVoice } from "@/lib/retell.functions";
+import { provisionCompanyVoice } from "@/lib/nabrah.functions";
 
 export const Route = createFileRoute("/dashboard/numbers")({
   head: () => ({ meta: [{ title: "أرقام الهاتف | صوتي" }, { name: "description", content: "إدارة أرقام الهاتف وقنوات الاتصال في صوتي." }, { property: "og:title", content: "أرقام الهاتف | صوتي" }, { property: "og:description", content: "إدارة أرقام الهاتف وقنوات الاتصال في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -51,7 +51,7 @@ const PROVIDERS = ["didhub", "twilio", "saudi_sip", "generic_sip"];
 
 function statusKey(n: Num): "numberReady" | "numberPreparing" | "numberNeedsSetup" {
   if (n.provider_status === "connected" || n.sip_status === "connected") return "numberReady";
-  if (n.provider === "retell") return "numberPreparing";
+  if (n.provider === "nabrah") return "numberPreparing";
   return "numberNeedsSetup";
 }
 

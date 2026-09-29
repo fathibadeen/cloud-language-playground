@@ -33,7 +33,7 @@ import { EmptyState, StatCard } from "@/components/StatCard";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { syncRetellCalls } from "@/lib/retell.functions";
+import { syncNabrahCalls } from "@/lib/nabrah.functions";
 
 export const Route = createFileRoute("/dashboard/calls")({
   head: () => ({ meta: [{ title: "سجل المكالمات | صوتي" }, { name: "description", content: "متابعة مكالمات شركتك وتفاصيلها في صوتي." }, { property: "og:title", content: "سجل المكالمات | صوتي" }, { property: "og:description", content: "متابعة مكالمات شركتك وتفاصيلها في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -61,7 +61,7 @@ function CallsPage() {
   const qc = useQueryClient();
   const companyId = useCompanyId();
   const { data: calls, isLoading } = useCompanyTable<Call>("voice_calls", companyId);
-  const sync = useServerFn(syncRetellCalls);
+  const sync = useServerFn(syncNabrahCalls);
 
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("all");
@@ -109,7 +109,7 @@ function CallsPage() {
     setBusy(true);
     try {
       const res = await sync({ data: { companyId } });
-      if (res.reason) toast.message(t("notConnected"), { description: res.reason });
+      if (res.reason) toast.message("المكالمات تصل تلقائيًا من نبرة عبر الويب هوك");
       else toast.success(`${t("syncCalls")}: ${res.imported}`);
       await qc.invalidateQueries({ queryKey: ["voice_calls"] });
     } catch (err) {

@@ -16,7 +16,7 @@ import { useMembership, usePlans } from "@/lib/tenant";
 import { ProductPlanCards, ProductToggle } from "@/components/ProductPlans";
 import { plansFor, type PlanRow, type Product } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
-import { provisionCompanyVoice } from "@/lib/retell.functions";
+import { provisionCompanyVoice } from "@/lib/nabrah.functions";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -119,7 +119,7 @@ function Onboarding() {
           language: locale,
           greeting,
           knowledge_base_id: kb.id,
-          provider: ch === "voice" ? "retell" : "whatsapp_provider",
+          provider: ch === "voice" ? "nabrah" : "whatsapp_provider",
         });
       }
 
@@ -131,12 +131,12 @@ function Onboarding() {
         plan_id: chosenPlan,
       });
 
-      // ربط الوكيل الصوتي تلقائيًا مع Retell (لا يمنع دخول العميل إن فشل)
+      // ربط الوكيل الصوتي تلقائيًا مع نبرة (لا يمنع دخول العميل إن فشل)
       if (channels.includes("voice") && typeof companyId === "string") {
         try {
           const res = await provision({ data: { companyId } });
           if (res.status === "connected") toast.success(t("voiceConnected"));
-          else toast.message(t("voicePending"), { description: res.reason ?? undefined });
+          else toast.message(t("voicePending"));
         } catch {
           toast.message(t("voicePending"));
         }

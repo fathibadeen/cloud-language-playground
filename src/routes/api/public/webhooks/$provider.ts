@@ -28,19 +28,53 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
         const provider = String(params.provider);
         const body = await request.text();
 
+        // Nabrah: per-agent token in the URL (Nabrah does not document a signature).
+        if (provider === "nabrah") {
+          const url = new URL(request.url);
+          const agentId = url.searchParams.get("agent") ?? "";
+          const token = url.searchParams.get("token") ?? "";
+          const { verifyAgentWebhookToken } = await import("@/lib/nabrah.server");
+          if (!/^[0-9a-f-]{36}$/i.test(agentId) || !verifyAgentWebhookToken(agentId, token)) {
+            return new Response("Invalid token", { status: 401 });
+          }
+          let payload: Record<string, unknown>;
+          try {
+            payload = JSON.parse(body);
+          } catch {
+            return Response.json({ error: "invalid_json" }, { status: 400 });
+          }
+          const call = (payload["call"] ?? payload["data"] ?? payload) as Record<string, unknown>;
+          const eventType = String(payload["event"] ?? payload["type"] ?? "call");
+          const externalId = `${String(call["call_id"] ?? call["id"] ?? call["session_id"] ?? Date.now())}:${eventType}`;
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          const { data: existing } = await supabaseAdmin
+            .from("webhook_events").select("id")
+            .eq("provider", "nabrah").eq("external_event_id", externalId).maybeSingle();
+          if (existing) return Response.json({ ok: true, duplicate: true });
+          const { data: ev, error } = await supabaseAdmin
+            .from("webhook_events")
+            .insert({ provider: "nabrah", event_type: eventType, external_event_id: externalId, status: "received", payload: payload as never })
+            .select("id").single();
+          if (error) return Response.json({ error: error.message }, { status: 500 });
+          const { ingestNabrahCall } = await import("@/lib/nabrah-ingest.server");
+          const result = await ingestNabrahCall(agentId, payload);
+          await supabaseAdmin.from("webhook_events").update({
+            status: result.ok ? "processed" : "failed",
+            company_id: result.companyId ?? null,
+            error: result.ok ? null : (result.reason ?? "unknown_error"),
+            processed_at: new Date().toISOString(),
+          }).eq("id", ev.id);
+          return Response.json({ ok: true, processed: result.ok });
+        }
+
         const secret =
-          provider === "retell"
-            ? process.env["RETELL_WEBHOOK_SECRET"]
-            : provider === "whatsapp"
-              ? process.env["WHATSAPP_WEBHOOK_SECRET"]
-              : undefined;
+          provider === "whatsapp" ? process.env["WHATSAPP_WEBHOOK_SECRET"] : undefined;
 
         if (!secret) {
           return Response.json({ error: "provider_not_configured" }, { status: 503 });
         }
 
         const header =
-          request.headers.get("x-retell-signature") ??
           request.headers.get("x-hub-signature-256") ??
           request.headers.get("x-webhook-signature") ??
           "";
@@ -92,24 +126,6 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
           .single();
         if (error) {
           return Response.json({ error: error.message }, { status: 500 });
-        }
-
-        // Retell call events become real call records.
-        if (provider === "retell" && payload["call"]) {
-          const { ingestRetellCall } = await import("@/lib/retell-ingest.server");
-          const result = await ingestRetellCall(
-            payload["call"] as Parameters<typeof ingestRetellCall>[0],
-          );
-          await supabaseAdmin
-            .from("webhook_events")
-            .update({
-              status: result.ok ? "processed" : "failed",
-              company_id: result.companyId ?? null,
-              error: result.ok ? null : (result.reason ?? "unknown_error"),
-              processed_at: new Date().toISOString(),
-            })
-            .eq("id", eventRow.id);
-          return Response.json({ ok: true, processed: result.ok });
         }
 
         // WhatsApp Cloud messages become conversations + AI replies.
