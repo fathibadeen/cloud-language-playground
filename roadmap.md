@@ -10,15 +10,19 @@
 - [x] Knowledge documents are chunked and fed into the AI answers
 - [x] Usage page reads real monthly usage and plan limits
 
-## Phase 3 — product maturity (open)
-- [ ] In-app notifications and operational emails
-- [ ] Invoices with 15% VAT and payment history (ready for payments later)
+## Phase 3 — product maturity (done except payments)
+- [x] In-app notifications (usage 80%/100%, account events) with a header bell
+- [x] Invoices with 15% VAT and printable simplified tax invoice
 - [x] Public terms and privacy pages
 - [x] Channel products: WhatsApp / Calls / Bundle plans, signup choice, channel-aware dashboard
-- [ ] Data export and account deletion
-- [ ] Admin: per-customer detail page and plan management
-- [ ] Multiple companies per user
+- [x] Data export (JSON) and owner-initiated account closure
+- [x] Admin: per-customer detail page and plan pricing/limits editor
+- [x] Multiple companies per user with a company switcher
 
 ## Blocked
 - [x] Nabrah voice: agent linking, call sync, outbound calls, SIP line linking, knowledge upload
 - [ ] Real WhatsApp connections — code is done (Meta Embedded Signup from the admin panel, per-company encrypted tokens, webhook auto-registration); waiting for META_APP_ID / META_APP_SECRET / META_CONFIG_ID (+ optional META_REDIRECT_URI, META_GRAPH_API_VERSION)
+
+## Phase 4 — remaining
+- [ ] Real payments (provider not chosen yet)
+- [ ] Operational emails (in-app notifications only for now)
