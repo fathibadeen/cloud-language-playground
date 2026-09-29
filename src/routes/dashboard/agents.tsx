@@ -90,10 +90,63 @@ function AgentsPage() {
     qc.invalidateQueries({ queryKey: ["ai_agents"] });
   }
 
+  const syncMeta = useServerFn(syncNabrahAgentMeta);
+  const unlink = useServerFn(unlinkNabrahAgent);
+  const [busy, setBusy] = useState(false);
+
+  async function syncWithNabrah() {
+    if (!companyId) return;
+    setBusy(true);
+    try {
+      const res = await syncMeta({ data: { companyId } });
+      if (res.reason === "no_linked_agent") toast.error("لا يوجد وكيل مرتبط بعد");
+      else if (res.reason) toast.error(res.reason);
+      else
+        toast.success(
+          res.missing > 0
+            ? `تمت المزامنة: ${res.checked} وكيل، ${res.missing} غير موجود في نبرة`
+            : `تمت المزامنة: ${res.checked} وكيل متصل`,
+        );
+      qc.invalidateQueries({ queryKey: ["ai_agents"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function unlinkAgent(agent: Agent) {
+    if (!companyId) return;
+    if (!confirm(`فك ربط "${agent.name}" عن نبرة؟ سيبقى الوكيل في حسابك بنبرة.`)) return;
+    try {
+      await unlink({ data: { companyId, agentId: agent.id } });
+      toast.success("تم فك الربط");
+      qc.invalidateQueries({ queryKey: ["ai_agents"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+  async function remove(agent: Agent) {
+    if (!confirm(`حذف الوكيل "${agent.name}" من صوتي نهائيًا؟`)) return;
+    const { error } = await supabase.from("ai_agents").delete().eq("id", agent.id);
+    if (error) {
+      toast.error(
+        error.message.includes("foreign key")
+          ? "لا يمكن الحذف لارتباط الوكيل بمكالمات أو محادثات سابقة. يمكنك تعطيله بدلًا من ذلك."
+          : humanizeDbError(error.message, t),
+      );
+      return;
+    }
+    toast.success("تم حذف الوكيل");
+    qc.invalidateQueries({ queryKey: ["ai_agents"] });
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">{t("navAgents")}</h1>
+
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger asChild>
             <Button className="gap-2">
