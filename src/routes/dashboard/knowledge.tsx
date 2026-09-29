@@ -61,6 +61,10 @@ function KnowledgePage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", source_type: "text", content: "", source_url: "" });
   const processDoc = useServerFn(processKnowledgeDocument);
+  const syncKb = useServerFn(syncCompanyKnowledge);
+  const clearKb = useServerFn(clearNabrahKnowledge);
+  const [syncing, setSyncing] = useState(false);
+
 
   async function createDoc() {
     if (!companyId) return;
