@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { linkNabrahAgent, nabrahStatus } from "@/lib/nabrah.functions";
+import { linkNabrahAgent, listNabrahAgents, nabrahStatus, syncNabrahCallbacks } from "@/lib/nabrah.functions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useQuery } from "@tanstack/react-query";
@@ -50,6 +50,8 @@ function VoicePage() {
 
   const status = useServerFn(nabrahStatus);
   const link = useServerFn(linkNabrahAgent);
+  const listAgentsFn = useServerFn(listNabrahAgents);
+  const syncCallbacks = useServerFn(syncNabrahCallbacks);
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState<{ directLink: string; nabrahAgentId: string } | null>(null);
 
@@ -58,10 +60,31 @@ function VoicePage() {
     enabled: !!companyId,
     queryFn: () => status({ data: { companyId: companyId! } }),
   });
+  const isAdmin = ["owner", "admin"].includes(String(membership?.role ?? ""));
+  const { data: remoteAgents } = useQuery({
+    queryKey: ["nabrah-agents", companyId],
+    enabled: !!companyId && isAdmin,
+    queryFn: () => listAgentsFn({ data: { companyId: companyId! } }),
+  });
   const current = form ?? {
     directLink: nabrah?.directLink ?? "",
     nabrahAgentId: nabrah?.nabrahAgentId ?? "",
   };
+
+  async function connectWebhook() {
+    if (!companyId) return;
+    setBusy(true);
+    try {
+      const res = await syncCallbacks({ data: { companyId } });
+      if (res.ok) toast.success("تم توصيل الوكيل بالمنصة تلقائيًا");
+      else toast.error(res.reason === "no_linked_agent" ? "اختر وكيل نبرة واحفظه أولًا" : String(res.reason));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : String(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
 
   async function saveLink() {
     if (!companyId || !nabrah?.agentId) return;
