@@ -11,9 +11,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { linkNabrahAgent, listNabrahAgents, nabrahStatus, syncNabrahCallbacks } from "@/lib/nabrah.functions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AgentTester } from "@/components/AgentTester";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+
 
 export const Route = createFileRoute("/dashboard/voice")({
   head: () => ({ meta: [{ title: "الوكيل الصوتي | صوتي" }, { name: "description", content: "متابعة ربط وحالة الوكيل الصوتي لشركتك." }, { property: "og:title", content: "الوكيل الصوتي | صوتي" }, { property: "og:description", content: "متابعة ربط وحالة الوكيل الصوتي لشركتك." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
