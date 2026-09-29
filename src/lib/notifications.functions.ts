@@ -113,12 +113,15 @@ export const exportCompanyData = createServerFn({ method: "POST" })
     const out: Record<string, unknown> = { exported_at: new Date().toISOString() };
     for (const table of tables) {
       const column = table === "companies" ? "id" : "company_id";
-      const { data: rows } = await context.supabase
-        .from(table).select("*").eq(column, data.companyId).limit(2000);
+      const query = context.supabase.from(table).select("*") as unknown as {
+        eq: (c: string, v: string) => { limit: (n: number) => Promise<{ data: unknown[] | null }> };
+      };
+      const { data: rows } = await query.eq(column, data.companyId).limit(2000);
       out[table] = rows ?? [];
     }
-    return out;
+    return { json: JSON.stringify(out, null, 2) };
   });
+
 
 /** Owner-initiated account closure: suspends the company and logs the request. */
 export const requestAccountDeletion = createServerFn({ method: "POST" })
