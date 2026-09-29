@@ -21,6 +21,8 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { NotificationBell } from "@/components/NotificationBell";
+
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useIsSuperAdmin, useMembership, usePlans, useSubscription } from "@/lib/tenant";
@@ -209,7 +211,9 @@ function DashboardLayout() {
           </Button>
           <div className="min-w-0 truncate text-sm text-muted-foreground">{user?.email}</div>
           <div className="flex items-center gap-2">
+            <NotificationBell companyId={membership.company_id} />
             <LanguageToggle />
+
             <Button variant="outline" size="sm" onClick={signOut} className="gap-2">
               <LogOut className="size-4" />
               {t("logout")}
