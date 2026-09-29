@@ -199,8 +199,8 @@ export const syncNabrahCalls = createServerFn({ method: "POST" })
         status: c.status === "completed" ? "completed" : c.status,
         duration_seconds: c.duration ?? 0,
         recording_url: recording,
-        transcript: (detail?.transcript as unknown) ?? null,
-        analysis: (detail?.analysis_results as unknown) ?? null,
+        transcript: (detail?.transcript ?? null) as unknown as never,
+        analysis: (detail?.analysis_results ?? null) as unknown as never,
         started_at: c.call_started_at ?? c.created_at,
         ended_at: c.call_ended_at ?? null,
         synced_at: new Date().toISOString(),
@@ -238,12 +238,12 @@ export const getNabrahCallDetail = createServerFn({ method: "POST" })
       const recordingUrl = detail.recording_file ? await nabrah.getRecordingLink(row.provider_call_id) : null;
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       await supabaseAdmin.from("voice_calls").update({
-        transcript: (detail.transcript as unknown) ?? null,
-        analysis: (detail.analysis_results as unknown) ?? null,
+        transcript: (detail.transcript ?? null) as unknown as never,
+        analysis: (detail.analysis_results ?? null) as unknown as never,
         recording_url: recordingUrl,
         synced_at: new Date().toISOString(),
       }).eq("id", row.id);
-      return { transcript: (detail.transcript as unknown) ?? null, recordingUrl };
+      return { transcript: (detail.transcript ?? null) as unknown as never, recordingUrl };
     } catch {
       return { transcript: row.transcript ?? null, recordingUrl: null };
     }
