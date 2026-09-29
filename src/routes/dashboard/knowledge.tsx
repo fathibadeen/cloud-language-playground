@@ -35,6 +35,8 @@ import { humanizeDbError } from "@/lib/errors";
 const SYNC_ERRORS: Record<string, string> = {
   not_configured: "الوكيل الصوتي غير مفعّل بعد",
   no_documents: "لا توجد مستندات جاهزة للمزامنة",
+  nabrah_api_read_only:
+    "مزوّد المكالمات لا يسمح حاليًا برفع المستندات تلقائيًا. معرفتك محفوظة في صوتي ويستخدمها الوكيل التجريبي، ويلزم إضافتها يدويًا في لوحة المزوّد.",
 };
 
 
