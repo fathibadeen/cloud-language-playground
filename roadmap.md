@@ -24,5 +24,7 @@
 - [ ] Real WhatsApp connections — code is done (Meta Embedded Signup from the admin panel, per-company encrypted tokens, webhook auto-registration); waiting for META_APP_ID / META_APP_SECRET / META_CONFIG_ID (+ optional META_REDIRECT_URI, META_GRAPH_API_VERSION)
 
 ## Phase 4 — remaining
+- [x] Public homepage: stronger hero/navigation contrast and live web voice-agent demo
 - [ ] Real payments (provider not chosen yet)
 - [ ] Operational emails (in-app notifications only for now)
+- [ ] Add verified social-proof metrics once real call and company counts are approved
