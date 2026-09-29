@@ -28,6 +28,8 @@ import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { StatCard } from "@/components/StatCard";
 import { companyProduct, productLabels } from "@/lib/products";
 import { AdminShell, type AdminSection } from "@/components/AdminShell";
+import { AdminPlans } from "@/components/AdminPlans";
+
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
 import { useIsSuperAdmin } from "@/lib/tenant";
@@ -54,7 +56,7 @@ export const Route = createFileRoute("/admin")({
   }),
   validateSearch: (search: Record<string, unknown>): { section?: AdminSection } => {
     const v = search["section"];
-    return ["overview", "companies", "whatsapp", "requests", "events"].includes(String(v)) ? { section: v as AdminSection } : {};
+    return ["overview", "companies", "plans", "whatsapp", "requests", "events"].includes(String(v)) ? { section: v as AdminSection } : {};
   },
   component: AdminPage,
 });
@@ -236,7 +238,11 @@ function AdminPage() {
               </CardContent>
             </Card>
           </TabsContent>
+          <TabsContent value="plans">
+            <AdminPlans />
+          </TabsContent>
           <TabsContent value="whatsapp">
+
             <WhatsappTab data={data} metaConfigured={!!metaConfig?.configured} metaAppId={metaConfig?.appId ?? null} metaConfigId={metaConfig?.configId ?? null} graphVersion={metaConfig?.graphVersion ?? "v21.0"} refetch={refetch} ar={ar} />
           </TabsContent>
           <TabsContent value="requests">
