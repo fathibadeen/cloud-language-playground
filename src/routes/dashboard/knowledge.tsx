@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +29,14 @@ import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { processKnowledgeDocument } from "@/lib/knowledge.functions";
+import { clearNabrahKnowledge, syncCompanyKnowledge } from "@/lib/nabrah.functions";
 import { humanizeDbError } from "@/lib/errors";
+
+const SYNC_ERRORS: Record<string, string> = {
+  not_configured: "الوكيل الصوتي غير مفعّل بعد",
+  no_documents: "لا توجد مستندات جاهزة للمزامنة",
+};
+
 
 export const Route = createFileRoute("/dashboard/knowledge")({
   head: () => ({ meta: [{ title: "قاعدة المعرفة | صوتي" }, { name: "description", content: "إدارة معرفة شركتك التي يعتمد عليها وكلاء صوتي." }, { property: "og:title", content: "قاعدة المعرفة | صوتي" }, { property: "og:description", content: "إدارة معرفة شركتك التي يعتمد عليها وكلاء صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
