@@ -109,7 +109,7 @@ function CallsPage() {
     setBusy(true);
     try {
       const res = await sync({ data: { companyId } });
-      if (res.reason) toast.message(t("notConnected"), { description: res.reason });
+      if (res.reason) toast.message("المكالمات تصل تلقائيًا من نبرة عبر الويب هوك");
       else toast.success(`${t("syncCalls")}: ${res.imported}`);
       await qc.invalidateQueries({ queryKey: ["voice_calls"] });
     } catch (err) {

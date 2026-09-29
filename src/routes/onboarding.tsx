@@ -136,7 +136,7 @@ function Onboarding() {
         try {
           const res = await provision({ data: { companyId } });
           if (res.status === "connected") toast.success(t("voiceConnected"));
-          else toast.message(t("voicePending"), { description: res.reason ?? undefined });
+          else toast.message(t("voicePending"));
         } catch {
           toast.message(t("voicePending"));
         }
