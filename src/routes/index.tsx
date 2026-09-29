@@ -21,6 +21,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { SawtiLogo } from "@/components/SawtiLogo";
+import { HeroVoiceCard } from "@/components/HeroVoiceCard";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useI18n } from "@/lib/i18n";
 import { usePlans } from "@/lib/tenant";
@@ -206,6 +207,9 @@ function Landing() {
               <div className="mt-12 grid max-w-2xl grid-cols-3 border-t border-landing-foreground/10 pt-7">
                 {[['24/7', copy.stat1], ['AR / EN', copy.stat2], ['2×', copy.stat3]].map(([value, label]) => <div key={label} className="border-e border-landing-foreground/10 px-4 first:px-s-0 last:border-0"><div className="font-display text-2xl font-semibold text-landing-foreground">{value}</div><div className="mt-1 text-sm text-landing-muted md:text-base">{label}</div></div>)}
               </div>
+            </div>
+            <div className="hidden justify-center lg:flex">
+              <HeroVoiceCard ar={ar} onCall={() => { setVoiceDemoLoaded(false); setVoiceDemoOpen(true); }} />
             </div>
           </div>
         </section>
