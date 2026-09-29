@@ -267,12 +267,21 @@ function CallsPage() {
               />
               <div>
                 <p className="mb-2 font-medium">{t("recording")}</p>
-                {selected.recording_url ? (
-                  <audio controls className="w-full" src={selected.recording_url} />
+                {detail?.recordingUrl || selected.recording_url ? (
+                  <audio controls className="w-full" src={detail?.recordingUrl ?? selected.recording_url!} />
                 ) : (
                   <p className="text-muted-foreground">{t("noRecording")}</p>
                 )}
               </div>
+              <div>
+                <p className="mb-2 font-medium">نص المكالمة</p>
+                {detailLoading ? (
+                  <p className="text-muted-foreground">{t("loading")}</p>
+                ) : (
+                  <TranscriptView transcript={detail?.transcript} />
+                )}
+              </div>
+
             </div>
           )}
         </DialogContent>
