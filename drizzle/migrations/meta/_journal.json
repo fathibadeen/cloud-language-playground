@@ -50,6 +50,13 @@
       "when": 1790434448319,
       "tag": "0006_channel_products",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790684657527,
+      "tag": "0007_nabrah_direct_link",
+      "breakpoints": true
     }
   ]
 }
