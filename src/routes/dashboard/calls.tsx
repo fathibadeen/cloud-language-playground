@@ -290,6 +290,30 @@ function CallsPage() {
   );
 }
 
+function TranscriptView({ transcript }: { transcript: unknown }) {
+  const items = Array.isArray(transcript) ? transcript : [];
+  if (items.length === 0) return <p className="text-muted-foreground">لا يوجد نص لهذه المكالمة</p>;
+  return (
+    <div className="max-h-60 space-y-2 overflow-y-auto rounded-md border p-3 text-sm">
+      {items.map((raw, i) => {
+        const o = (raw ?? {}) as Record<string, unknown>;
+        const who = String(o["role"] ?? o["speaker"] ?? o["source"] ?? "");
+        const text = String(o["content"] ?? o["text"] ?? o["message"] ?? "");
+        if (!text) return null;
+        const isAgent = who.toLowerCase().includes("agent") || who.toLowerCase().includes("assistant");
+        return (
+          <div key={i}>
+            <span className="text-muted-foreground">{isAgent ? "الوكيل" : "العميل"}: </span>
+            <span>{text}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+
+
 function Row({ label, value, ltr }: { label: string; value: string; ltr?: boolean }) {
   return (
     <div className="flex items-center justify-between border-b pb-2 last:border-0">
