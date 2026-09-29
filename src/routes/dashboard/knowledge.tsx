@@ -207,7 +207,9 @@ function KnowledgePage() {
             </div>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
+
 
       {isLoading ? (
         <p className="text-sm text-muted-foreground">{t("loading")}</p>
