@@ -86,6 +86,20 @@ export const processKnowledgeDocument = createServerFn({ method: "POST" })
       .update({ status: "ready", content: text.slice(0, 100000) })
       .eq("id", doc.id);
 
+    // Also give the Nabrah voice agent the same knowledge (non-fatal).
+    let voiceSynced = false;
+    try {
+      const { data: company } = await supabaseAdmin
+        .from("companies").select("name, voice_enabled").eq("id", doc.company_id).maybeSingle();
+      if (company?.voice_enabled) {
+        const { pushCompanyKnowledge } = await import("./nabrah.server");
+        const res = await pushCompanyKnowledge(doc.company_id, company.name, `${doc.title}\n\n${text}`);
+        voiceSynced = res.ok;
+      }
+    } catch (e) {
+      console.error("nabrah kb sync failed", (e as Error).message);
+    }
+
     void context.userId;
-    return { ok: true as const, chunks: rows.length };
+    return { ok: true as const, chunks: rows.length, voiceSynced };
   });
