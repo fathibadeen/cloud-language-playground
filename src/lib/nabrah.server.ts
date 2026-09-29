@@ -246,9 +246,22 @@ export function unlinkAgentFromInbound(agentId: string, inboundId: string) {
   );
 }
 
+/**
+ * Nabrah's External API is read-only for agents and documents right now:
+ * POST/PUT /agent -> 405/500 and POST /document/text -> 501. Only knowledge
+ * bases can be created. Callers surface this instead of faking success.
+ */
+export const NABRAH_READ_ONLY = "nabrah_api_read_only";
+
+export function isUnsupported(e: unknown): boolean {
+  const s = (e as NabrahError)?.status;
+  return s === 405 || s === 500 || s === 501;
+}
+
 /** Returns the company's Nabrah knowledge base, creating it when missing. */
 export async function ensureCompanyKb(companyId: string, companyName: string): Promise<NabrahKb> {
-  const key = `sawti-${companyId.slice(0, 8)}`;
+  // Nabrah keys must match ^[A-Za-z_][A-Za-z0-9_]*$
+  const key = `sawti_${companyId.replace(/-/g, "").slice(0, 16)}`;
   const res = (await listKnowledgeBases()) as unknown;
   const list = (Array.isArray(res) ? res : ((res as { items?: NabrahKb[] })?.items ?? [])) as NabrahKb[];
   const found = list.find((k) => k.key === key);
@@ -264,7 +277,13 @@ export async function ensureCompanyKb(companyId: string, companyName: string): P
 export async function pushCompanyKnowledge(companyId: string, companyName: string, text: string) {
   if (!nabrahConfigured() || !text.trim()) return { ok: false as const, reason: "skipped" };
   const kb = await ensureCompanyKb(companyId, companyName);
-  await addTextDocument(kb.id, text.slice(0, 50000));
+  try {
+    await addTextDocument(kb.id, text.slice(0, 50000));
+  } catch (e) {
+    if (isUnsupported(e)) return { ok: false as const, reason: NABRAH_READ_ONLY, kbId: kb.id };
+    throw e;
+  }
   return { ok: true as const, kbId: kb.id };
 }
+
 
