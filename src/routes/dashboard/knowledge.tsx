@@ -105,14 +105,52 @@ function KnowledgePage() {
     qc.invalidateQueries({ queryKey: ["knowledge_documents"] });
   }
 
+  async function syncAll() {
+    if (!companyId) return;
+    setSyncing(true);
+    try {
+      const res = await syncKb({ data: { companyId } });
+      if (res.ok) toast.success(`تمت مزامنة ${res.synced} مستند مع الوكيل الصوتي`);
+      else toast.error(SYNC_ERRORS[String(res.reason)] ?? String(res.reason));
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  async function clearRemote() {
+    if (!companyId) return;
+    if (!confirm("حذف نسخة المعرفة المرفوعة للوكيل الصوتي؟ ستبقى المستندات في صوتي.")) return;
+    setSyncing(true);
+    try {
+      const res = await clearKb({ data: { companyId } });
+      if (res.ok) toast.success(`تم حذف ${res.deleted} نسخة من الوكيل الصوتي`);
+      else toast.error(SYNC_ERRORS[String(res.reason)] ?? String(res.reason));
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h1 className="text-2xl font-bold">{t("navKnowledge")}</h1>
           <p className="text-sm text-muted-foreground">{t("featKbDesc")}</p>
         </div>
+        <div className="flex flex-wrap items-center gap-2">
+        <Button variant="outline" className="gap-2" onClick={syncAll} disabled={syncing}>
+          <RefreshCw className={`size-4 ${syncing ? "animate-spin" : ""}`} />
+          مزامنة شاملة
+        </Button>
+        <Button variant="ghost" className="gap-2" onClick={clearRemote} disabled={syncing}>
+          حذف النسخة لدى الوكيل
+        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
+
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="size-4" />
