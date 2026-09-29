@@ -243,7 +243,7 @@ export const getNabrahCallDetail = createServerFn({ method: "POST" })
         recording_url: recordingUrl,
         synced_at: new Date().toISOString(),
       }).eq("id", row.id);
-      return { transcript: (detail.transcript ?? null) as unknown as never, recordingUrl };
+      return { transcript: (detail.transcript ?? null) as unknown, recordingUrl };
     } catch {
       return { transcript: row.transcript ?? null, recordingUrl: null };
     }
