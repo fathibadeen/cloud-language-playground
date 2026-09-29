@@ -25,7 +25,7 @@ import { NotificationBell } from "@/components/NotificationBell";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { useIsSuperAdmin, useMembership, usePlans, useSubscription } from "@/lib/tenant";
+import { useIsSuperAdmin, useMembership, useMemberships, usePlans, useSubscription, useSwitchCompany } from "@/lib/tenant";
 import { addonPrice, companyProduct, productChannels, type PlanRow } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -65,6 +65,9 @@ function DashboardLayout() {
   const qc = useQueryClient();
   const { user, loading } = useAuth();
   const { data: membership, isLoading: memberLoading } = useMembership();
+  const { data: memberships } = useMemberships();
+  const switchCompany = useSwitchCompany();
+
   const { data: isAdmin } = useIsSuperAdmin();
   const { data: subscription } = useSubscription(membership?.company_id ?? null);
   const { data: plans } = usePlans();
