@@ -143,40 +143,11 @@ function VoicePage() {
           ) : (
             <>
               <p className="text-sm text-muted-foreground">
-                اختر وكيل نبرة الخاص بشركتك، ثم اضغط «توصيل تلقائي» ليصل سجل المكالمات إلى لوحتك مباشرة.
+                {nabrah.status === "connected"
+                  ? "وكيلك الصوتي جاهز، وسجل المكالمات يصل إلى لوحتك تلقائيًا."
+                  : "وكيلك الصوتي قيد التجهيز من فريق صوتي. سنفعّله لحسابك ونبلغك فور جاهزيته."}
               </p>
-              <div className="grid gap-3 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label>وكيل نبرة</Label>
-                  <select
-                    dir="ltr"
-                    className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm"
-                    value={current.nabrahAgentId}
-                    onChange={(e) => setForm({ ...current, nabrahAgentId: e.target.value })}
-                  >
-                    <option value="">—</option>
-                    {(remoteAgents?.agents ?? []).map((a) => (
-                      <option key={a.id} value={a.id}>{a.name}</option>
-                    ))}
-                    {current.nabrahAgentId &&
-                    !(remoteAgents?.agents ?? []).some((a) => a.id === current.nabrahAgentId) ? (
-                      <option value={current.nabrahAgentId}>{current.nabrahAgentId}</option>
-                    ) : null}
-                  </select>
-                </div>
-                <div className="space-y-2">
-                  <Label>الرابط المباشر (اختياري)</Label>
-                  <Input dir="ltr" placeholder="https://..." value={current.directLink}
-                    onChange={(e) => setForm({ ...current, directLink: e.target.value })} />
-                </div>
-              </div>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" onClick={saveLink} disabled={busy}>{t("save")}</Button>
-                {isAdmin ? (
-                  <Button size="sm" variant="secondary" onClick={connectWebhook} disabled={busy}>
-                    توصيل تلقائي
-                  </Button>
-                ) : null}
                 {nabrah.agentId ? (
                   <AgentTester
                     companyId={companyId}
