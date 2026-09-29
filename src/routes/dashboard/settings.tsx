@@ -65,8 +65,9 @@ function SettingsPage() {
     if (!company) return;
     setBusy(true);
     try {
-      const data = await doExport({ data: { companyId: company.id } });
-      const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+      const res = await doExport({ data: { companyId: company.id } });
+      const url = URL.createObjectURL(new Blob([res.json], { type: "application/json" }));
+
       const a = document.createElement("a");
       a.href = url;
       a.download = `sawti-${company.id.slice(0, 8)}.json`;
