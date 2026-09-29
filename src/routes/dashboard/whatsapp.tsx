@@ -116,6 +116,27 @@ function WhatsappPage() {
         </div>
       </div>
 
+      {waAgents.length > 0 ? (
+        <Card>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5">
+            <div>
+              <p className="font-semibold">جرّب وكيل واتساب قبل إطلاقه</p>
+              <p className="text-sm text-muted-foreground">
+                محادثة تجريبية بنفس ردود الوكيل وقاعدة معرفة شركتك، بلا رسائل حقيقية.
+              </p>
+            </div>
+            <AgentTester
+              companyId={companyId}
+              agentId={waAgents[0]!.id}
+              agentName={waAgents[0]!.name}
+              label="تجربة المحادثة"
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
+
+
       {account ? (
         <Card>
           <CardContent className="space-y-4 p-6">
