@@ -25,6 +25,7 @@ import {
   deleteCustomer, deleteKnowledgeDocument, getCompanyDetail, getConversationMessages, reprocessKnowledgeDocument,
   updateAgentByAdmin, updateCompanyInfo, upsertCustomer, upsertKnowledgeDocument,
 } from "@/lib/admin-company.functions";
+import { adminAssignNabrahAgent, adminNabrahOverview, adminUnassignNabrahAgent } from "@/lib/nabrah-admin.functions";
 
 export const Route = createFileRoute("/admin_/companies/$companyId")({
   ssr: false,
@@ -100,6 +101,7 @@ function CompanyDetailPage() {
             <TabsTrigger value="customers">{ar ? "العملاء" : "Customers"}</TabsTrigger>
             <TabsTrigger value="knowledge">{ar ? "قاعدة المعرفة" : "Knowledge"}</TabsTrigger>
             <TabsTrigger value="agents">{ar ? "الوكلاء الذكيون" : "Agents"}</TabsTrigger>
+            <TabsTrigger value="nabrah">{ar ? "الوكيل الصوتي (نبرة)" : "Voice agent"}</TabsTrigger>
             <TabsTrigger value="conversations">{ar ? "المحادثات والمكالمات" : "Conversations & calls"}</TabsTrigger>
             <TabsTrigger value="team">{ar ? "الفريق" : "Team"}</TabsTrigger>
             <TabsTrigger value="logs">{ar ? "السجل" : "Log"}</TabsTrigger>
