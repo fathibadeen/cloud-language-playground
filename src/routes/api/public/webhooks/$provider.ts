@@ -75,7 +75,6 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
         }
 
         const header =
-          request.headers.get("x-retell-signature") ??
           request.headers.get("x-hub-signature-256") ??
           request.headers.get("x-webhook-signature") ??
           "";
@@ -127,24 +126,6 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
           .single();
         if (error) {
           return Response.json({ error: error.message }, { status: 500 });
-        }
-
-        // Retell call events become real call records.
-        if (provider === "retell" && payload["call"]) {
-          const { ingestRetellCall } = await import("@/lib/retell-ingest.server");
-          const result = await ingestRetellCall(
-            payload["call"] as Parameters<typeof ingestRetellCall>[0],
-          );
-          await supabaseAdmin
-            .from("webhook_events")
-            .update({
-              status: result.ok ? "processed" : "failed",
-              company_id: result.companyId ?? null,
-              error: result.ok ? null : (result.reason ?? "unknown_error"),
-              processed_at: new Date().toISOString(),
-            })
-            .eq("id", eventRow.id);
-          return Response.json({ ok: true, processed: result.ok });
         }
 
         // WhatsApp Cloud messages become conversations + AI replies.

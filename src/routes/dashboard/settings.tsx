@@ -151,7 +151,7 @@ function SettingsPage() {
           <CardTitle className="text-base">{t("integrations")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm">
-          {["Retell AI", "WhatsApp Business API", "SIP"].map((name) => (
+          {["Nabrah (نبرة)", "WhatsApp Business API", "SIP"].map((name) => (
             <div key={name} className="flex items-center justify-between border-b py-2 last:border-0">
               <span>{name}</span>
               <Badge variant="secondary">{t("notConnected")}</Badge>

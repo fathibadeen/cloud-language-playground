@@ -76,7 +76,7 @@ export const testProviderConnection = createServerFn({ method: "POST" })
 
     const hasCredentials = (rows ?? []).length > 0;
     const apiKey =
-      data.scope === "whatsapp" ? process.env["WHATSAPP_API_KEY"] : process.env["RETELL_API_KEY"];
+      data.scope === "whatsapp" ? process.env["WHATSAPP_API_KEY"] : process.env["NABRAH_API_KEY"];
 
     void context.userId;
 
