@@ -278,7 +278,7 @@ function CallsPage() {
                 {detailLoading ? (
                   <p className="text-muted-foreground">{t("loading")}</p>
                 ) : (
-                  <TranscriptView transcript={detail?.transcript} />
+                  <TranscriptView transcript={detail?.transcript ?? []} />
                 )}
               </div>
 
