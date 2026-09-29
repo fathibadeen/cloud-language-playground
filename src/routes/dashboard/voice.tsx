@@ -172,11 +172,25 @@ function VoicePage() {
                     توصيل تلقائي
                   </Button>
                 ) : null}
-                {nabrah.directLink ? (
-                  <Button asChild size="sm" variant="outline">
-                    <a href={nabrah.directLink} target="_blank" rel="noopener noreferrer">جرّب الاتصال بالوكيل</a>
-                  </Button>
+                {nabrah.agentId ? (
+                  <AgentTester
+                    companyId={companyId}
+                    agentId={nabrah.agentId}
+                    agentName={voiceAgents[0]?.name ?? "الوكيل الصوتي"}
+                    label="تجربة كتابية"
+                  />
                 ) : null}
+                {nabrah.directLink ? (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => setPreview(true)}>
+                      تحدث مع الوكيل هنا
+                    </Button>
+                    <Button asChild size="sm" variant="ghost">
+                      <a href={nabrah.directLink} target="_blank" rel="noopener noreferrer">فتح في نافذة جديدة</a>
+                    </Button>
+                  </>
+                ) : null}
+
               </div>
               {nabrah.webhookUrl ? (
                 <div className="space-y-2">
