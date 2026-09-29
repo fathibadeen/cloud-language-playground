@@ -1,19 +1,21 @@
 import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
-import { Activity, Building2, LayoutDashboard, Link2, Menu, MessageCircle, Webhook, ArrowRight } from "lucide-react";
+import { Activity, Building2, LayoutDashboard, Link2, Menu, MessageCircle, Webhook, ArrowRight, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useI18n } from "@/lib/i18n";
 
-export type AdminSection = "overview" | "companies" | "whatsapp" | "requests" | "events";
+export type AdminSection = "overview" | "companies" | "plans" | "whatsapp" | "requests" | "events";
 
 const items: { key: AdminSection; ar: string; en: string; icon: typeof Activity }[] = [
   { key: "overview", ar: "نظرة عامة", en: "Overview", icon: LayoutDashboard },
   { key: "companies", ar: "الشركات", en: "Companies", icon: Building2 },
+  { key: "plans", ar: "الباقات", en: "Plans", icon: CreditCard },
   { key: "whatsapp", ar: "WhatsApp", en: "WhatsApp", icon: MessageCircle },
   { key: "requests", ar: "طلبات الربط", en: "Connection requests", icon: Link2 },
   { key: "events", ar: "الويب هوك", en: "Webhooks", icon: Webhook },
 ];
+
 
 export function AdminShell({ active, children }: { active: AdminSection; children: ReactNode }) {
   const { locale } = useI18n();
