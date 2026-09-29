@@ -20,6 +20,8 @@ import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 import { humanizeDbError } from "@/lib/errors";
+import { AgentTester } from "@/components/AgentTester";
+
 
 export const Route = createFileRoute("/dashboard/whatsapp")({
   head: () => ({ meta: [{ title: "واتساب الأعمال | صوتي" }, { name: "description", content: "متابعة ربط واتساب الأعمال والوكيل الذكي لشركتك." }, { property: "og:title", content: "واتساب الأعمال | صوتي" }, { property: "og:description", content: "متابعة ربط واتساب الأعمال والوكيل الذكي لشركتك." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
