@@ -61,6 +61,8 @@ function WhatsappPage() {
 
   const company = membership?.companies as { id: string; name: string; whatsapp_enabled: boolean } | null;
   const account = accounts?.[0];
+  const waAgents = (agents ?? []).filter((a) => a.channel === "whatsapp");
+
   const latestRequest = (requests ?? [])
     .filter((r) => r.channel === "whatsapp")
     .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
