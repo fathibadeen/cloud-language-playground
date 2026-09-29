@@ -11,9 +11,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { linkNabrahAgent, listNabrahAgents, nabrahStatus, syncNabrahCallbacks } from "@/lib/nabrah.functions";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AgentTester } from "@/components/AgentTester";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
+
 
 export const Route = createFileRoute("/dashboard/voice")({
   head: () => ({ meta: [{ title: "الوكيل الصوتي | صوتي" }, { name: "description", content: "متابعة ربط وحالة الوكيل الصوتي لشركتك." }, { property: "og:title", content: "الوكيل الصوتي | صوتي" }, { property: "og:description", content: "متابعة ربط وحالة الوكيل الصوتي لشركتك." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -53,7 +56,9 @@ function VoicePage() {
   const listAgentsFn = useServerFn(listNabrahAgents);
   const syncCallbacks = useServerFn(syncNabrahCallbacks);
   const [busy, setBusy] = useState(false);
+  const [preview, setPreview] = useState(false);
   const [form, setForm] = useState<{ directLink: string; nabrahAgentId: string } | null>(null);
+
 
   const { data: nabrah } = useQuery({
     queryKey: ["nabrah-status", companyId],
@@ -172,11 +177,25 @@ function VoicePage() {
                     توصيل تلقائي
                   </Button>
                 ) : null}
-                {nabrah.directLink ? (
-                  <Button asChild size="sm" variant="outline">
-                    <a href={nabrah.directLink} target="_blank" rel="noopener noreferrer">جرّب الاتصال بالوكيل</a>
-                  </Button>
+                {nabrah.agentId ? (
+                  <AgentTester
+                    companyId={companyId}
+                    agentId={nabrah.agentId}
+                    agentName={voiceAgents[0]?.name ?? "الوكيل الصوتي"}
+                    label="تجربة كتابية"
+                  />
                 ) : null}
+                {nabrah.directLink ? (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => setPreview(true)}>
+                      تحدث مع الوكيل هنا
+                    </Button>
+                    <Button asChild size="sm" variant="ghost">
+                      <a href={nabrah.directLink} target="_blank" rel="noopener noreferrer">فتح في نافذة جديدة</a>
+                    </Button>
+                  </>
+                ) : null}
+
               </div>
               {nabrah.webhookUrl ? (
                 <div className="space-y-2">
@@ -194,6 +213,27 @@ function VoicePage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={preview} onOpenChange={setPreview}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>تجربة الاتصال الصوتي</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-muted-foreground">
+            اسمح للمتصفح باستخدام الميكروفون، ثم تحدث مع الوكيل للتأكد من ردوده ومعلوماته.
+          </p>
+          {nabrah?.directLink ? (
+            <iframe
+              title="تجربة الوكيل الصوتي"
+              src={nabrah.directLink}
+              allow="microphone; autoplay"
+              className="h-[60vh] w-full rounded-lg border"
+            />
+          ) : null}
+        </DialogContent>
+      </Dialog>
+
+
 
 
       <div className="grid gap-4 md:grid-cols-2">

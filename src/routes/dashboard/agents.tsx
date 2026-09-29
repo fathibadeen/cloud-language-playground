@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, RefreshCw, Trash2, Unlink } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +31,9 @@ import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 import { humanizeDbError } from "@/lib/errors";
+import { AgentTester } from "@/components/AgentTester";
+import { syncNabrahAgentMeta, unlinkNabrahAgent } from "@/lib/nabrah.functions";
+
 
 export const Route = createFileRoute("/dashboard/agents")({
   head: () => ({ meta: [{ title: "الوكلاء الذكيون | صوتي" }, { name: "description", content: "إدارة وكلاء شركتك الذكيين في صوتي." }, { property: "og:title", content: "الوكلاء الذكيون | صوتي" }, { property: "og:description", content: "إدارة وكلاء شركتك الذكيين في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -85,11 +90,69 @@ function AgentsPage() {
     qc.invalidateQueries({ queryKey: ["ai_agents"] });
   }
 
+  const syncMeta = useServerFn(syncNabrahAgentMeta);
+  const unlink = useServerFn(unlinkNabrahAgent);
+  const [busy, setBusy] = useState(false);
+
+  async function syncWithNabrah() {
+    if (!companyId) return;
+    setBusy(true);
+    try {
+      const res = await syncMeta({ data: { companyId } });
+      if (res.reason === "no_linked_agent") toast.error("لا يوجد وكيل مرتبط بعد");
+      else if (res.reason) toast.error(res.reason);
+      else
+        toast.success(
+          res.missing > 0
+            ? `تمت المزامنة: ${res.checked} وكيل، ${res.missing} غير موجود في نبرة`
+            : `تمت المزامنة: ${res.checked} وكيل متصل`,
+        );
+      qc.invalidateQueries({ queryKey: ["ai_agents"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function unlinkAgent(agent: Agent) {
+    if (!companyId) return;
+    if (!confirm(`فك ربط "${agent.name}" عن نبرة؟ سيبقى الوكيل في حسابك بنبرة.`)) return;
+    try {
+      await unlink({ data: { companyId, agentId: agent.id } });
+      toast.success("تم فك الربط");
+      qc.invalidateQueries({ queryKey: ["ai_agents"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
+
+  async function remove(agent: Agent) {
+    if (!confirm(`حذف الوكيل "${agent.name}" من صوتي نهائيًا؟`)) return;
+    const { error } = await supabase.from("ai_agents").delete().eq("id", agent.id);
+    if (error) {
+      toast.error(
+        error.message.includes("foreign key")
+          ? "لا يمكن الحذف لارتباط الوكيل بمكالمات أو محادثات سابقة. يمكنك تعطيله بدلًا من ذلك."
+          : humanizeDbError(error.message, t),
+      );
+      return;
+    }
+    toast.success("تم حذف الوكيل");
+    qc.invalidateQueries({ queryKey: ["ai_agents"] });
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h1 className="text-2xl font-bold">{t("navAgents")}</h1>
+
+        <Button variant="outline" className="gap-2" onClick={syncWithNabrah} disabled={busy}>
+          <RefreshCw className={`size-4 ${busy ? "animate-spin" : ""}`} />
+          مزامنة مع نبرة
+        </Button>
         <Dialog open={open} onOpenChange={setOpen}>
+
           <DialogTrigger asChild>
             <Button className="gap-2">
               <Plus className="size-4" />
@@ -202,7 +265,31 @@ function AgentsPage() {
                 <Badge variant={a.provider_agent_id ? "default" : "secondary"}>
                   {a.provider_agent_id ? t("connected") : t("notConnected")}
                 </Badge>
+                <div className="flex flex-wrap items-center gap-2 border-t pt-3">
+                  <AgentTester
+                    companyId={companyId}
+                    agentId={a.id}
+                    agentName={a.name}
+                    greeting={a.greeting}
+                  />
+                  {a.provider_agent_id ? (
+                    <Button variant="ghost" size="sm" className="gap-2" onClick={() => unlinkAgent(a)}>
+                      <Unlink className="size-4" />
+                      فك الربط
+                    </Button>
+                  ) : null}
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="gap-2 text-destructive hover:text-destructive"
+                    onClick={() => remove(a)}
+                  >
+                    <Trash2 className="size-4" />
+                    حذف
+                  </Button>
+                </div>
               </CardContent>
+
             </Card>
           ))}
         </div>

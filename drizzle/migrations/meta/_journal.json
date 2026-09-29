@@ -64,6 +64,13 @@
       "when": 1790689434473,
       "tag": "0008_nabrah_call_transcript",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790693215823,
+      "tag": "0009_allow_multi_company_membership",
+      "breakpoints": true
     }
   ]
 }

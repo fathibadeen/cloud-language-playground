@@ -18,6 +18,9 @@ import {
 import { useI18n } from "@/lib/i18n";
 import { useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
+import { exportCompanyData, requestAccountDeletion } from "@/lib/notifications.functions";
+
 
 export const Route = createFileRoute("/dashboard/settings")({
   head: () => ({ meta: [{ title: "إعدادات الشركة | صوتي" }, { name: "description", content: "تحديث بيانات وإعدادات شركتك في صوتي." }, { property: "og:title", content: "إعدادات الشركة | صوتي" }, { property: "og:description", content: "تحديث بيانات وإعدادات شركتك في صوتي." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -46,6 +49,10 @@ function SettingsPage() {
   const company = membership?.companies as Company | undefined;
   const [form, setForm] = useState<Partial<Company>>({});
   const [hours, setHours] = useState("");
+  const [busy, setBusy] = useState(false);
+  const isOwner = membership?.role === "owner";
+  const doExport = useServerFn(exportCompanyData);
+  const doClose = useServerFn(requestAccountDeletion);
 
   useEffect(() => {
     if (company) {
@@ -53,6 +60,41 @@ function SettingsPage() {
       setHours(JSON.stringify(company.working_hours ?? {}, null, 2));
     }
   }, [company]);
+
+  async function exportData() {
+    if (!company) return;
+    setBusy(true);
+    try {
+      const res = await doExport({ data: { companyId: company.id } });
+      const url = URL.createObjectURL(new Blob([res.json], { type: "application/json" }));
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sawti-${company.id.slice(0, 8)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("تم تنزيل نسخة بياناتك");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function closeAccount() {
+    if (!company) return;
+    if (!window.confirm("سيتوقف الحساب فورًا وتُحذف البيانات خلال 14 يومًا. هل تريد المتابعة؟")) return;
+    setBusy(true);
+    try {
+      await doClose({ data: { companyId: company.id } });
+      toast.success("تم استلام طلب إغلاق الحساب");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
 
   async function save() {
     if (!company) return;
@@ -172,6 +214,31 @@ function SettingsPage() {
           </Button>
         </CardContent>
       </Card>
+
+      <Card className="border-destructive/40">
+        <CardHeader>
+          <CardTitle className="text-base">بياناتك وحسابك</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="font-medium">تصدير بيانات الشركة</p>
+              <p className="text-muted-foreground">نسخة كاملة من الوكلاء والمحادثات والمكالمات والفواتير بصيغة JSON.</p>
+            </div>
+            <Button variant="outline" onClick={exportData} disabled={busy}>تنزيل نسخة</Button>
+          </div>
+          {isOwner ? (
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+              <div>
+                <p className="font-medium text-destructive">إغلاق الحساب نهائيًا</p>
+                <p className="text-muted-foreground">يتوقف الحساب فورًا وتُحذف البيانات خلال 14 يومًا.</p>
+              </div>
+              <Button variant="destructive" onClick={closeAccount} disabled={busy}>طلب الإغلاق</Button>
+            </div>
+          ) : null}
+        </CardContent>
+      </Card>
     </div>
+
   );
 }

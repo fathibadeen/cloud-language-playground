@@ -240,3 +240,50 @@ export const reviewConnectionRequest = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+/** Lists every plan (active and inactive) for super-admin management. */
+export const listAllPlans = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertSuperAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await supabaseAdmin
+      .from("plans")
+      .select("*")
+      .order("sort_order")
+      .order("price_sar");
+    if (error) throw new Error(error.message);
+    return { plans: data ?? [] };
+  });
+
+const planSchema = z.object({
+  id: z.string().uuid(),
+  price_sar: z.number().min(0).max(1000000),
+  voice_minutes: z.number().int().min(0).max(10000000),
+  whatsapp_messages: z.number().int().min(0).max(10000000),
+  max_agents: z.number().int().min(0).max(10000),
+  max_phone_numbers: z.number().int().min(0).max(10000),
+  max_members: z.number().int().min(0).max(10000),
+  max_documents: z.number().int().min(0).max(100000),
+  is_active: z.boolean(),
+});
+
+/** Updates a plan's price and limits. */
+export const updatePlan = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => planSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertSuperAdmin(context);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { id, ...fields } = data;
+    const { error } = await supabaseAdmin.from("plans").update(fields).eq("id", id);
+    if (error) throw new Error(error.message);
+    await supabaseAdmin.from("audit_logs").insert({
+      user_id: context.userId,
+      action: "plan_updated",
+      entity: "plans",
+      entity_id: id,
+      metadata: fields,
+    });
+    return { ok: true };
+  });

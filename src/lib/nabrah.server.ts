@@ -205,6 +205,19 @@ export function addTextDocument(knowledgeBaseId: string, text: string) {
   });
 }
 
+export type NabrahDoc = { id: string; name?: string | null; knowledge_base_id?: string | null };
+
+export async function listKbDocuments(knowledgeBaseId: string): Promise<NabrahDoc[]> {
+  const res = (await call<unknown>(`/document?knowledge_base_id=${encodeURIComponent(knowledgeBaseId)}`)) as unknown;
+  if (Array.isArray(res)) return res as NabrahDoc[];
+  const o = res as { items?: NabrahDoc[]; documents?: NabrahDoc[] } | null;
+  return o?.items ?? o?.documents ?? [];
+}
+
+export function deleteDocument(documentId: string) {
+  return call<unknown>(`/document/${documentId}`, { method: "DELETE" });
+}
+
 /* ---------------- SIP inbound numbers ---------------- */
 
 export type NabrahSip = {
@@ -226,14 +239,32 @@ export function linkAgentToInbound(agentId: string, inboundId: string) {
   });
 }
 
-/** Finds or creates the company's Nabrah knowledge base, then uploads text to it. */
-export async function pushCompanyKnowledge(companyId: string, companyName: string, text: string) {
-  if (!nabrahConfigured() || !text.trim()) return { ok: false as const, reason: "skipped" };
+export function unlinkAgentFromInbound(agentId: string, inboundId: string) {
+  return call<Record<string, unknown>>(
+    `/agent-inbound-link?agent_id=${encodeURIComponent(agentId)}&inbound_id=${encodeURIComponent(inboundId)}`,
+    { method: "DELETE" },
+  );
+}
+
+/** Returns the company's Nabrah knowledge base, creating it when missing. */
+export async function ensureCompanyKb(companyId: string, companyName: string): Promise<NabrahKb> {
   const key = `sawti-${companyId.slice(0, 8)}`;
   const res = (await listKnowledgeBases()) as unknown;
   const list = (Array.isArray(res) ? res : ((res as { items?: NabrahKb[] })?.items ?? [])) as NabrahKb[];
-  let kb = list.find((k) => k.key === key);
-  if (!kb) kb = await createKnowledgeBase({ name: `${companyName} - Sawti`.slice(0, 80), key, desc: "Sawti company knowledge" });
+  const found = list.find((k) => k.key === key);
+  if (found) return found;
+  return createKnowledgeBase({
+    name: `${companyName} - Sawti`.slice(0, 80),
+    key,
+    desc: "Sawti company knowledge",
+  });
+}
+
+/** Finds or creates the company's Nabrah knowledge base, then uploads text to it. */
+export async function pushCompanyKnowledge(companyId: string, companyName: string, text: string) {
+  if (!nabrahConfigured() || !text.trim()) return { ok: false as const, reason: "skipped" };
+  const kb = await ensureCompanyKb(companyId, companyName);
   await addTextDocument(kb.id, text.slice(0, 50000));
   return { ok: true as const, kbId: kb.id };
 }
+

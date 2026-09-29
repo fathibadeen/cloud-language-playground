@@ -1,32 +1,56 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
 
 export type CompanyRole = "owner" | "admin" | "agent" | "viewer";
 
-export function useMembership() {
+const ACTIVE_KEY = "sawti.active-company";
+
+function readActiveCompany(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(ACTIVE_KEY);
+}
+
+/** All companies the signed-in user belongs to. */
+export function useMemberships() {
   const { user } = useAuth();
   return useQuery({
-    queryKey: ["membership", user?.id],
+    queryKey: ["memberships", user?.id],
     enabled: !!user,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("company_members")
         .select("id, role, company_id, companies(*)")
         .eq("user_id", user!.id)
-        .order("created_at", { ascending: true })
-        .limit(1)
-        .maybeSingle();
+        .order("created_at", { ascending: true });
       if (error) throw error;
-      return data;
+      return data ?? [];
     },
   });
+}
+
+/** The membership for the currently selected company. */
+export function useMembership() {
+  const { data, ...rest } = useMemberships();
+  const active = readActiveCompany();
+  const match = data?.find((m) => m.company_id === active) ?? data?.[0] ?? null;
+  return { ...rest, data: match };
+}
+
+/** Switches the active company and refreshes every company-scoped query. */
+export function useSwitchCompany() {
+  const qc = useQueryClient();
+  return (companyId: string) => {
+    if (typeof window !== "undefined") window.localStorage.setItem(ACTIVE_KEY, companyId);
+    qc.clear();
+  };
 }
 
 export function useCompanyId() {
   const { data } = useMembership();
   return data?.company_id ?? null;
 }
+
 
 export function useIsSuperAdmin() {
   const { user } = useAuth();

@@ -61,6 +61,32 @@ function BillingPage() {
     else toast.success(ar ? "وصل طلبك، سنفعّل الإضافة قريبًا" : "Request sent, we'll enable it soon");
   }
 
+  function printInvoice(inv: Invoice) {
+    const net = Number(inv.amount_sar);
+    const vat = net * 0.15;
+    const name = (membership?.companies as { name?: string } | null)?.name ?? "";
+    const w = window.open("", "_blank", "width=720,height=900");
+    if (!w) return;
+    w.document.write(`<!doctype html><html dir="rtl" lang="ar"><head><meta charset="utf-8">
+      <title>فاتورة ${inv.id.slice(0, 8)}</title>
+      <style>body{font-family:system-ui,sans-serif;padding:32px;color:#111}
+      h1{font-size:20px}table{width:100%;border-collapse:collapse;margin-top:24px}
+      td,th{border:1px solid #ddd;padding:8px;text-align:start}tfoot td{font-weight:700}</style></head><body>
+      <h1>فاتورة ضريبية مبسطة — صوتي</h1>
+      <p>العميل: ${name}</p>
+      <p>رقم الفاتورة: ${inv.id.slice(0, 8)}</p>
+      <p>التاريخ: ${new Date(inv.issued_at).toLocaleDateString("ar-SA")}</p>
+      <table><tbody>
+        <tr><td>المبلغ قبل الضريبة</td><td>${net.toFixed(2)} ر.س</td></tr>
+        <tr><td>ضريبة القيمة المضافة (15%)</td><td>${vat.toFixed(2)} ر.س</td></tr>
+      </tbody><tfoot><tr><td>الإجمالي</td><td>${(net + vat).toFixed(2)} ر.س</td></tr></tfoot></table>
+      <p style="margin-top:24px;font-size:12px;color:#666">الحالة: ${inv.status}</p>
+      </body></html>`);
+    w.document.close();
+    w.print();
+  }
+
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t("navBilling")}</h1>
@@ -97,32 +123,50 @@ function BillingPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>{t("date")}</TableHead>
-                <TableHead>{t("amount")}</TableHead>
+                <TableHead>{ar ? "قبل الضريبة" : "Subtotal"}</TableHead>
+                <TableHead>{ar ? "ضريبة 15%" : "VAT 15%"}</TableHead>
+                <TableHead>{ar ? "الإجمالي" : "Total"}</TableHead>
                 <TableHead>{t("status")}</TableHead>
-                <TableHead>{t("provider")}</TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
               {(invoices ?? []).length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center text-muted-foreground">
+                  <TableCell colSpan={6} className="text-center text-muted-foreground">
                     {t("empty")}
                   </TableCell>
                 </TableRow>
               ) : (
-                invoices!.map((inv) => (
-                  <TableRow key={inv.id}>
-                    <TableCell>{new Date(inv.issued_at).toLocaleDateString()}</TableCell>
-                    <TableCell>{Number(inv.amount_sar).toFixed(2)}</TableCell>
-                    <TableCell>{inv.status}</TableCell>
-                    <TableCell>{inv.provider ?? "—"}</TableCell>
-                  </TableRow>
-                ))
+                invoices!.map((inv) => {
+                  const net = Number(inv.amount_sar);
+                  const vat = net * 0.15;
+                  return (
+                    <TableRow key={inv.id}>
+                      <TableCell>{new Date(inv.issued_at).toLocaleDateString()}</TableCell>
+                      <TableCell>{net.toFixed(2)}</TableCell>
+                      <TableCell>{vat.toFixed(2)}</TableCell>
+                      <TableCell className="font-medium">{(net + vat).toFixed(2)}</TableCell>
+                      <TableCell>{inv.status}</TableCell>
+                      <TableCell>
+                        <Button variant="ghost" size="sm" onClick={() => printInvoice(inv)}>
+                          {ar ? "طباعة" : "Print"}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>
+          <p className="p-4 text-xs text-muted-foreground">
+            {ar
+              ? "كل الأسعار بالريال السعودي، وتُضاف ضريبة القيمة المضافة 15%."
+              : "All prices in SAR; 15% VAT is added."}
+          </p>
         </CardContent>
       </Card>
+
     </div>
   );
 }

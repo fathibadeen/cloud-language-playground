@@ -21,9 +21,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { NotificationBell } from "@/components/NotificationBell";
+
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
-import { useIsSuperAdmin, useMembership, usePlans, useSubscription } from "@/lib/tenant";
+import { useIsSuperAdmin, useMembership, useMemberships, usePlans, useSubscription, useSwitchCompany } from "@/lib/tenant";
 import { addonPrice, companyProduct, productChannels, type PlanRow } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -63,6 +65,9 @@ function DashboardLayout() {
   const qc = useQueryClient();
   const { user, loading } = useAuth();
   const { data: membership, isLoading: memberLoading } = useMembership();
+  const { data: memberships } = useMemberships();
+  const switchCompany = useSwitchCompany();
+
   const { data: isAdmin } = useIsSuperAdmin();
   const { data: subscription } = useSubscription(membership?.company_id ?? null);
   const { data: plans } = usePlans();
@@ -207,9 +212,27 @@ function DashboardLayout() {
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen((o) => !o)}>
             <Menu className="size-5" />
           </Button>
-          <div className="min-w-0 truncate text-sm text-muted-foreground">{user?.email}</div>
+          <div className="flex min-w-0 items-center gap-2">
+            {(memberships ?? []).length > 1 ? (
+              <select
+                className="h-9 max-w-44 rounded-md border border-input bg-background px-2 text-sm"
+                value={membership.company_id}
+                onChange={(e) => switchCompany(e.target.value)}
+              >
+                {memberships!.map((m) => (
+                  <option key={m.company_id} value={m.company_id}>
+                    {(m.companies as { name?: string } | null)?.name ?? m.company_id.slice(0, 8)}
+                  </option>
+                ))}
+              </select>
+            ) : null}
+            <span className="min-w-0 truncate text-sm text-muted-foreground">{user?.email}</span>
+          </div>
+
           <div className="flex items-center gap-2">
+            <NotificationBell companyId={membership.company_id} />
             <LanguageToggle />
+
             <Button variant="outline" size="sm" onClick={signOut} className="gap-2">
               <LogOut className="size-4" />
               {t("logout")}

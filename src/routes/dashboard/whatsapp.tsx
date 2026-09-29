@@ -20,6 +20,8 @@ import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 import { humanizeDbError } from "@/lib/errors";
+import { AgentTester } from "@/components/AgentTester";
+
 
 export const Route = createFileRoute("/dashboard/whatsapp")({
   head: () => ({ meta: [{ title: "واتساب الأعمال | صوتي" }, { name: "description", content: "متابعة ربط واتساب الأعمال والوكيل الذكي لشركتك." }, { property: "og:title", content: "واتساب الأعمال | صوتي" }, { property: "og:description", content: "متابعة ربط واتساب الأعمال والوكيل الذكي لشركتك." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -59,6 +61,8 @@ function WhatsappPage() {
 
   const company = membership?.companies as { id: string; name: string; whatsapp_enabled: boolean } | null;
   const account = accounts?.[0];
+  const waAgents = (agents ?? []).filter((a) => a.channel === "whatsapp");
+
   const latestRequest = (requests ?? [])
     .filter((r) => r.channel === "whatsapp")
     .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
@@ -115,6 +119,27 @@ function WhatsappPage() {
           <Switch checked={!!company?.whatsapp_enabled} onCheckedChange={toggleService} />
         </div>
       </div>
+
+      {waAgents.length > 0 ? (
+        <Card>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5">
+            <div>
+              <p className="font-semibold">جرّب وكيل واتساب قبل إطلاقه</p>
+              <p className="text-sm text-muted-foreground">
+                محادثة تجريبية بنفس ردود الوكيل وقاعدة معرفة شركتك، بلا رسائل حقيقية.
+              </p>
+            </div>
+            <AgentTester
+              companyId={companyId}
+              agentId={waAgents[0]!.id}
+              agentName={waAgents[0]!.name}
+              label="تجربة المحادثة"
+            />
+          </CardContent>
+        </Card>
+      ) : null}
+
+
 
       {account ? (
         <Card>
