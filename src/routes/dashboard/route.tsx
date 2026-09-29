@@ -209,7 +209,23 @@ function DashboardLayout() {
           <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setOpen((o) => !o)}>
             <Menu className="size-5" />
           </Button>
-          <div className="min-w-0 truncate text-sm text-muted-foreground">{user?.email}</div>
+          <div className="flex min-w-0 items-center gap-2">
+            {(memberships ?? []).length > 1 ? (
+              <select
+                className="h-9 max-w-44 rounded-md border border-input bg-background px-2 text-sm"
+                value={membership.company_id}
+                onChange={(e) => switchCompany(e.target.value)}
+              >
+                {memberships!.map((m) => (
+                  <option key={m.company_id} value={m.company_id}>
+                    {(m.companies as { name?: string } | null)?.name ?? m.company_id.slice(0, 8)}
+                  </option>
+                ))}
+              </select>
+            ) : null}
+            <span className="min-w-0 truncate text-sm text-muted-foreground">{user?.email}</span>
+          </div>
+
           <div className="flex items-center gap-2">
             <NotificationBell companyId={membership.company_id} />
             <LanguageToggle />
