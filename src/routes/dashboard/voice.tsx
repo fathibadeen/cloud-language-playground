@@ -52,66 +52,14 @@ function VoicePage() {
   }
 
   const status = useServerFn(nabrahStatus);
-  const link = useServerFn(linkNabrahAgent);
-  const listAgentsFn = useServerFn(listNabrahAgents);
-  const syncCallbacks = useServerFn(syncNabrahCallbacks);
-  const [busy, setBusy] = useState(false);
   const [preview, setPreview] = useState(false);
-  const [form, setForm] = useState<{ directLink: string; nabrahAgentId: string } | null>(null);
-
 
   const { data: nabrah } = useQuery({
     queryKey: ["nabrah-status", companyId],
     enabled: !!companyId,
     queryFn: () => status({ data: { companyId: companyId! } }),
   });
-  const isAdmin = ["owner", "admin"].includes(String(membership?.role ?? ""));
-  const { data: remoteAgents } = useQuery({
-    queryKey: ["nabrah-agents", companyId],
-    enabled: !!companyId && isAdmin,
-    queryFn: () => listAgentsFn({ data: { companyId: companyId! } }),
-  });
-  const current = form ?? {
-    directLink: nabrah?.directLink ?? "",
-    nabrahAgentId: nabrah?.nabrahAgentId ?? "",
-  };
 
-  async function connectWebhook() {
-    if (!companyId) return;
-    setBusy(true);
-    try {
-      const res = await syncCallbacks({ data: { companyId } });
-      if (res.ok) toast.success("تم توصيل الوكيل بالمنصة تلقائيًا");
-      else toast.error(res.reason === "no_linked_agent" ? "اختر وكيل نبرة واحفظه أولًا" : String(res.reason));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : String(err));
-    } finally {
-      setBusy(false);
-    }
-  }
-
-
-  async function saveLink() {
-    if (!companyId || !nabrah?.agentId) return;
-    setBusy(true);
-    try {
-      await link({
-        data: {
-          companyId,
-          agentId: nabrah.agentId,
-          directLink: current.directLink.trim() || null,
-          nabrahAgentId: current.nabrahAgentId.trim() || null,
-        },
-      });
-      toast.success(t("saved"));
-      setForm(null);
-      qc.invalidateQueries();
-    } catch (err) {
-      toast.error(err instanceof Error && err.message.includes("https") ? "الرابط يجب أن يبدأ بـ https://" : String(err instanceof Error ? err.message : err));
-    } finally {
-      setBusy(false);
-    }
-  }
 
   return (
     <div className="space-y-6">
