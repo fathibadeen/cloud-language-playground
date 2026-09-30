@@ -184,7 +184,7 @@ export async function bookFromConversation(
     .single();
   if (error) return { created: false, reason: error.message };
 
-  const when = new Intl.DateTimeFormat("ar-SA", {
+  const when = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
     timeZone: settings.timezone,
     dateStyle: "full",
     timeStyle: "short",
