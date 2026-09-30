@@ -145,6 +145,102 @@ export type Database = {
           },
         ]
       }
+      appointments: {
+        Row: {
+          agent_id: string | null
+          call_id: string | null
+          company_id: string
+          conversation_id: string | null
+          created_at: string
+          customer_id: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          end_time: string
+          google_event_id: string | null
+          id: string
+          notes: string | null
+          service_name: string | null
+          source: string
+          start_time: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id?: string | null
+          call_id?: string | null
+          company_id: string
+          conversation_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          end_time: string
+          google_event_id?: string | null
+          id?: string
+          notes?: string | null
+          service_name?: string | null
+          source?: string
+          start_time: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string | null
+          call_id?: string | null
+          company_id?: string
+          conversation_id?: string | null
+          created_at?: string
+          customer_id?: string | null
+          customer_name?: string | null
+          customer_phone?: string | null
+          end_time?: string
+          google_event_id?: string | null
+          id?: string
+          notes?: string | null
+          service_name?: string | null
+          source?: string
+          start_time?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "appointments_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "ai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_call_id_fkey"
+            columns: ["call_id"]
+            isOneToOne: false
+            referencedRelation: "voice_calls"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -239,6 +335,59 @@ export type Database = {
             columns: ["subscription_id"]
             isOneToOne: false
             referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      booking_settings: {
+        Row: {
+          calendar_token: string
+          company_id: string
+          created_at: string
+          enabled: boolean
+          end_time: string
+          notes: string | null
+          services: string[]
+          slot_minutes: number
+          start_time: string
+          timezone: string
+          updated_at: string
+          work_days: number[]
+        }
+        Insert: {
+          calendar_token?: string
+          company_id: string
+          created_at?: string
+          enabled?: boolean
+          end_time?: string
+          notes?: string | null
+          services?: string[]
+          slot_minutes?: number
+          start_time?: string
+          timezone?: string
+          updated_at?: string
+          work_days?: number[]
+        }
+        Update: {
+          calendar_token?: string
+          company_id?: string
+          created_at?: string
+          enabled?: boolean
+          end_time?: string
+          notes?: string | null
+          services?: string[]
+          slot_minutes?: number
+          start_time?: string
+          timezone?: string
+          updated_at?: string
+          work_days?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "booking_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]

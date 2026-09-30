@@ -228,9 +228,28 @@ export async function ingestWhatsappMessage(
       content: m.body as string,
     }));
 
+  // Booking guidance so the agent can agree on an appointment inside the chat.
+  const { loadBookingSettings } = await import("@/lib/appointments.server");
+  const booking = await loadBookingSettings(companyId);
+  const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+  const bookingHint =
+    booking?.enabled
+      ? [
+          "\n\nحجز المواعيد:",
+          `- أيام العمل: ${(booking.work_days ?? []).map((d) => days[d]).filter(Boolean).join("، ")}.`,
+          `- ساعات العمل: من ${booking.start_time.slice(0, 5)} إلى ${booking.end_time.slice(0, 5)} بتوقيت ${booking.timezone}.`,
+          booking.services.length ? `- الخدمات: ${booking.services.join("، ")}.` : "",
+          `- مدة الموعد ${booking.slot_minutes} دقيقة.`,
+          "- إذا رغب العميل بموعد: اقترح وقتاً داخل أوقات العمل، وأكد الاسم ورقم الجوال والخدمة، ثم أكد له أن الموعد محجوز وسيصله تأكيد.",
+        ]
+          .filter(Boolean)
+          .join("\n")
+      : "";
+
   const reply =
     (await generateReply(
-      agent.system_instructions ?? "أنت موظف خدمة عملاء سعودي محترف. أجب بإيجاز وباللهجة المهذبة.",
+      (agent.system_instructions ?? "أنت موظف خدمة عملاء سعودي محترف. أجب بإيجاز وباللهجة المهذبة.") +
+        bookingHint,
       knowledge,
       turns,
     )) ?? agent.fallback_response;
@@ -264,6 +283,28 @@ export async function ingestWhatsappMessage(
     .from("conversations")
     .update({ last_message_at: new Date().toISOString() })
     .eq("id", conversationId!);
+
+  // The thread may now contain an agreed appointment; store it automatically.
+  try {
+    const { bookFromConversation } = await import("@/lib/appointments.server");
+    await bookFromConversation(
+      {
+        companyId,
+        agentId: agent.id,
+        conversationId,
+        customerId,
+        customerPhone: msg.waId,
+        customerName: msg.name || null,
+        source: "whatsapp",
+      },
+      [...turns, { role: "assistant", content: reply }].map((m) => ({
+        role: m.role === "user" ? "العميل" : "الوكيل",
+        content: m.content,
+      })),
+    );
+  } catch {
+    // booking is best-effort; never fail the webhook because of it
+  }
 
   return { ok: true, companyId };
 }
