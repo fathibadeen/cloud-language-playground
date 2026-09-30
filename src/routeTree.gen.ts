@@ -21,6 +21,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardAgentsRouteImport } from './routes/dashboard/agents'
+import { Route as DashboardAppointmentsRouteImport } from './routes/dashboard/appointments'
 import { Route as DashboardBillingRouteImport } from './routes/dashboard/billing'
 import { Route as DashboardCallsRouteImport } from './routes/dashboard/calls'
 import { Route as DashboardConversationsRouteImport } from './routes/dashboard/conversations'
@@ -33,6 +34,7 @@ import { Route as DashboardVoiceRouteImport } from './routes/dashboard/voice'
 import { Route as DashboardWhatsappRouteImport } from './routes/dashboard/whatsapp'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as AdminCompaniesCompanyIdRouteImport } from './routes/admin_.companies.$companyId'
+import { Route as ApiPublicCalendarTokenRouteImport } from './routes/api/public/calendar.$token'
 import { Route as ApiPublicWebhooksProviderRouteImport } from './routes/api/public/webhooks/$provider'
 
 const IndexRoute = IndexRouteImport.update({
@@ -95,6 +97,11 @@ const DashboardAgentsRoute = DashboardAgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardAppointmentsRoute = DashboardAppointmentsRouteImport.update({
+  id: '/appointments',
+  path: '/appointments',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardBillingRoute = DashboardBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -155,6 +162,11 @@ const AdminCompaniesCompanyIdRoute = AdminCompaniesCompanyIdRouteImport.update({
   path: '/admin/companies/$companyId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCalendarTokenRoute = ApiPublicCalendarTokenRouteImport.update({
+  id: '/api/public/calendar/$token',
+  path: '/api/public/calendar/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWebhooksProviderRoute =
   ApiPublicWebhooksProviderRouteImport.update({
     id: '/api/public/webhooks/$provider',
@@ -174,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/appointments': typeof DashboardAppointmentsRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/calls': typeof DashboardCallsRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
@@ -187,6 +200,7 @@ export interface FileRoutesByFullPath {
   '/invite/$token': typeof InviteTokenRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/admin/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
+  '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRoutesByTo {
@@ -200,6 +214,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/appointments': typeof DashboardAppointmentsRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/calls': typeof DashboardCallsRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
@@ -213,6 +228,7 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/dashboard': typeof DashboardIndexRoute
   '/admin/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
+  '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRoutesById {
@@ -228,6 +244,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
+  '/dashboard/appointments': typeof DashboardAppointmentsRoute
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/calls': typeof DashboardCallsRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
@@ -241,6 +258,7 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/admin_/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
+  '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
 export interface FileRouteTypes {
@@ -257,6 +275,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/dashboard/agents'
+    | '/dashboard/appointments'
     | '/dashboard/billing'
     | '/dashboard/calls'
     | '/dashboard/conversations'
@@ -270,6 +289,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/dashboard/'
     | '/admin/companies/$companyId'
+    | '/api/public/calendar/$token'
     | '/api/public/webhooks/$provider'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -283,6 +303,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/dashboard/agents'
+    | '/dashboard/appointments'
     | '/dashboard/billing'
     | '/dashboard/calls'
     | '/dashboard/conversations'
@@ -296,6 +317,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/dashboard'
     | '/admin/companies/$companyId'
+    | '/api/public/calendar/$token'
     | '/api/public/webhooks/$provider'
   id:
     | '__root__'
@@ -310,6 +332,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/terms'
     | '/dashboard/agents'
+    | '/dashboard/appointments'
     | '/dashboard/billing'
     | '/dashboard/calls'
     | '/dashboard/conversations'
@@ -323,6 +346,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/dashboard/'
     | '/admin_/companies/$companyId'
+    | '/api/public/calendar/$token'
     | '/api/public/webhooks/$provider'
   fileRoutesById: FileRoutesById
 }
@@ -339,6 +363,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   InviteTokenRoute: typeof InviteTokenRoute
   AdminCompaniesCompanyIdRoute: typeof AdminCompaniesCompanyIdRoute
+  ApiPublicCalendarTokenRoute: typeof ApiPublicCalendarTokenRoute
   ApiPublicWebhooksProviderRoute: typeof ApiPublicWebhooksProviderRoute
 }
 
@@ -428,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardAgentsRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/appointments': {
+      id: '/dashboard/appointments'
+      path: '/appointments'
+      fullPath: '/dashboard/appointments'
+      preLoaderRoute: typeof DashboardAppointmentsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/billing': {
       id: '/dashboard/billing'
       path: '/billing'
@@ -512,6 +544,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCompaniesCompanyIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/calendar/$token': {
+      id: '/api/public/calendar/$token'
+      path: '/api/public/calendar/$token'
+      fullPath: '/api/public/calendar/$token'
+      preLoaderRoute: typeof ApiPublicCalendarTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/$provider': {
       id: '/api/public/webhooks/$provider'
       path: '/api/public/webhooks/$provider'
@@ -524,6 +563,7 @@ declare module '@tanstack/react-router' {
 
 interface DashboardRouteRouteChildren {
   DashboardAgentsRoute: typeof DashboardAgentsRoute
+  DashboardAppointmentsRoute: typeof DashboardAppointmentsRoute
   DashboardBillingRoute: typeof DashboardBillingRoute
   DashboardCallsRoute: typeof DashboardCallsRoute
   DashboardConversationsRoute: typeof DashboardConversationsRoute
@@ -539,6 +579,7 @@ interface DashboardRouteRouteChildren {
 
 const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardAgentsRoute: DashboardAgentsRoute,
+  DashboardAppointmentsRoute: DashboardAppointmentsRoute,
   DashboardBillingRoute: DashboardBillingRoute,
   DashboardCallsRoute: DashboardCallsRoute,
   DashboardConversationsRoute: DashboardConversationsRoute,
@@ -569,6 +610,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   InviteTokenRoute: InviteTokenRoute,
   AdminCompaniesCompanyIdRoute: AdminCompaniesCompanyIdRoute,
+  ApiPublicCalendarTokenRoute: ApiPublicCalendarTokenRoute,
   ApiPublicWebhooksProviderRoute: ApiPublicWebhooksProviderRoute,
 }
 export const routeTree = rootRouteImport

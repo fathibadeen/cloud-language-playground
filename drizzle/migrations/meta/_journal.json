@@ -71,6 +71,13 @@
       "when": 1790693215823,
       "tag": "0009_allow_multi_company_membership",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1790752679313,
+      "tag": "0010_create_appointments",
+      "breakpoints": true
     }
   ]
 }

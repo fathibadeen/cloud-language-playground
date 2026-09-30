@@ -94,17 +94,25 @@ export async function ingestNabrahCall(
     ended_at: toIso(ended),
   };
 
+  const transcript = pick(call, ["transcript", "transcript_object", "messages", "conversation"]);
+  const rowWithTranscript = transcript
+    ? { ...row, transcript: transcript as unknown as never }
+    : row;
+
   const { data: existingCall } = await supabaseAdmin
     .from("voice_calls").select("id")
     .eq("provider", "nabrah").eq("provider_call_id", callId).maybeSingle();
 
+  let callRowId: string | null = existingCall?.id ?? null;
   if (existingCall) {
-    const { error } = await supabaseAdmin.from("voice_calls").update(row).eq("id", existingCall.id);
+    const { error } = await supabaseAdmin
+      .from("voice_calls").update(rowWithTranscript).eq("id", existingCall.id);
     if (error) return { ok: false, reason: error.message, companyId: agent.company_id };
   } else {
     const { data: inserted, error } = await supabaseAdmin
-      .from("voice_calls").insert(row).select("id").single();
+      .from("voice_calls").insert(rowWithTranscript).select("id").single();
     if (error) return { ok: false, reason: error.message, companyId: agent.company_id };
+    callRowId = inserted.id;
     if (durationSeconds > 0) {
       await supabaseAdmin.from("usage_records").insert({
         company_id: agent.company_id,
@@ -115,5 +123,26 @@ export async function ingestNabrahCall(
       });
     }
   }
+
+  // A finished call may contain an agreed appointment; store it automatically.
+  if (status === "completed" && transcript && callRowId) {
+    try {
+      const { bookFromConversation } = await import("@/lib/appointments.server");
+      await bookFromConversation(
+        {
+          companyId: agent.company_id,
+          agentId: agent.id,
+          callId: callRowId,
+          customerId,
+          customerPhone: customerNumber,
+          source: "voice_call",
+        },
+        transcript,
+      );
+    } catch {
+      // booking is best-effort; never fail the webhook because of it
+    }
+  }
+
   return { ok: true, companyId: agent.company_id };
 }
