@@ -161,7 +161,7 @@ function AppointmentsPage() {
   const createAppointment = useMutation({
     mutationFn: async () => {
       if (!form.start) throw new Error(ar ? "حدد وقت الموعد" : "Pick a time");
-      const start = new Date(form.start);
+      const start = zonedToUtc(form.start, tz);
       const minutes = Number(form.minutes) > 0 ? Number(form.minutes) : settings?.slot_minutes ?? 30;
       const { error } = await supabase.from("appointments").insert({
         company_id: companyId!,
