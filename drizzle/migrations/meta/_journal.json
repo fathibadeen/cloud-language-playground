@@ -78,6 +78,13 @@
       "when": 1790752679313,
       "tag": "0010_create_appointments",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791049175416,
+      "tag": "0011_automation_jobs",
+      "breakpoints": true
     }
   ]
 }
