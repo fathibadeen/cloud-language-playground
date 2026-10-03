@@ -53,7 +53,7 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
           if (existing) return Response.json({ ok: true, duplicate: true });
           const { data: ev, error } = await supabaseAdmin
             .from("webhook_events")
-            .insert({ provider: "nabrah", event_type: eventType, external_event_id: externalId, status: "received", payload: payload as never })
+            .insert({ provider: "nabrah", event_type: eventType, external_event_id: externalId, status: "received", payload: payload as never, provider_ref: agentId })
             .select("id").single();
           if (error) return Response.json({ error: error.message }, { status: 500 });
           const { ingestNabrahCall } = await import("@/lib/nabrah-ingest.server");
