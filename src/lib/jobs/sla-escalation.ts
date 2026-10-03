@@ -13,7 +13,7 @@ export async function run() {
   const { data: pending } = await supabaseAdmin
     .from("conversations")
     .select("*, companies(id, name)")
-    .eq("status", "pending")
+    .eq("status", "open")
     .is("assigned_user_id", null)
     .lte("created_at", threshold.toISOString());
 
@@ -34,7 +34,7 @@ export async function run() {
       // Update conversation status to 'escalated'
       await supabaseAdmin
         .from("conversations")
-        .update({ status: "escalated" })
+        .update({ status: "needs_human" })
         .eq("id", conv.id);
 
       processed++;

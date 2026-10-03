@@ -25,8 +25,6 @@ export async function run() {
       await supabaseAdmin
         .from("subscriptions")
         .update({
-          usage_voice: 0,
-          usage_whatsapp: 0,
           current_period_start: sub.current_period_end,
           current_period_end: nextPeriodEnd.toISOString(),
         })

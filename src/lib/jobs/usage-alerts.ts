@@ -24,7 +24,8 @@ export async function run() {
       
       // Voice usage
       if (plan.voice_minutes > 0) {
-        const ratio = sub.usage_voice / plan.voice_minutes;
+        const { data: usedV } = await supabaseAdmin.rpc("company_usage_this_month", { _company_id: sub.company_id, _metric: "voice_minutes" });
+        const ratio = Number(usedV ?? 0) / plan.voice_minutes;
         if (ratio >= ALERT_THRESHOLD && ratio < 1) {
           await supabaseAdmin.from("notifications").insert({
             company_id: company.id,
@@ -38,7 +39,8 @@ export async function run() {
 
       // WhatsApp usage
       if (plan.whatsapp_messages > 0) {
-        const ratio = sub.usage_whatsapp / plan.whatsapp_messages;
+        const { data: usedW } = await supabaseAdmin.rpc("company_usage_this_month", { _company_id: sub.company_id, _metric: "whatsapp_messages" });
+        const ratio = Number(usedW ?? 0) / plan.whatsapp_messages;
         if (ratio >= ALERT_THRESHOLD && ratio < 1) {
           await supabaseAdmin.from("notifications").insert({
             company_id: company.id,

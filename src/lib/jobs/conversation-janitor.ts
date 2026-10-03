@@ -13,7 +13,7 @@ export async function run() {
   const { data: resolved } = await supabaseAdmin
     .from("conversations")
     .select("id, company_id")
-    .eq("status", "resolved")
+    .eq("status", "closed")
     .is("summary", null)
     .lte("last_message_at", threshold.toISOString())
     .limit(100);
@@ -26,19 +26,19 @@ export async function run() {
       // Fetch messages for summarization
       const { data: messages } = await supabaseAdmin
         .from("messages")
-        .select("content, role")
+        .select("body, sender")
         .eq("conversation_id", conv.id)
         .order("created_at", { ascending: true });
 
       // Simple summary: first customer message + resolution indicator
-      const customerMsg = messages?.find((m) => m.role === "user")?.content;
+      const customerMsg = messages?.find((m) => m.sender === "customer")?.body;
       const summary = customerMsg
         ? `${customerMsg.slice(0, 100)}... [Resolved]`
         : "[Resolved conversation]";
 
       await supabaseAdmin
         .from("conversations")
-        .update({ summary, status: "archived" })
+        .update({ summary })
         .eq("id", conv.id);
 
       processed++;

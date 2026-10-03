@@ -67,7 +67,7 @@ export async function runJob(name: JobName): Promise<JobResult> {
       entity: "cron",
       entity_id: name,
       company_id: null,
-      metadata: jobResult,
+      metadata: jobResult as never,
     });
 
     return jobResult;
@@ -87,7 +87,7 @@ export async function runJob(name: JobName): Promise<JobResult> {
       entity: "cron",
       entity_id: name,
       company_id: null,
-      metadata: jobResult,
+      metadata: jobResult as never,
     });
 
     return jobResult;

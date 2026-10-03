@@ -26,8 +26,7 @@ export async function run() {
       const list = await nabrah.searchCalls({ 
         limit: 100, 
         offset: 0, 
-        created_at_start: since,
-        agent_id: agent.provider_agent_id! 
+        created_at_start: since
       });
 
       // Filter calls for this agent
@@ -38,13 +37,14 @@ export async function run() {
         const { data: existing } = await supabaseAdmin
           .from("voice_calls")
           .select("id")
-          .eq("external_call_id", call.call_id)
+          .eq("provider", "nabrah")
+          .eq("provider_call_id", call.id)
           .maybeSingle();
 
         if (!existing) {
           // Import the call using ingest function
           const { ingestNabrahCall } = await import("@/lib/nabrah-ingest.server");
-          await ingestNabrahCall(agent.id, { call });
+          await ingestNabrahCall(agent.id, { call: { ...call, call_id: call.id } } as never);
           processed++;
         }
       }
