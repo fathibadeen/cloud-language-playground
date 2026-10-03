@@ -34,6 +34,7 @@ import { Route as DashboardVoiceRouteImport } from './routes/dashboard/voice'
 import { Route as DashboardWhatsappRouteImport } from './routes/dashboard/whatsapp'
 import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as AdminCompaniesCompanyIdRouteImport } from './routes/admin_.companies.$companyId'
+import { Route as ApiCronJobRouteImport } from './routes/api/cron/$job'
 import { Route as ApiPublicCalendarTokenRouteImport } from './routes/api/public/calendar.$token'
 import { Route as ApiPublicWebhooksProviderRouteImport } from './routes/api/public/webhooks/$provider'
 
@@ -162,6 +163,11 @@ const AdminCompaniesCompanyIdRoute = AdminCompaniesCompanyIdRouteImport.update({
   path: '/admin/companies/$companyId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiCronJobRoute = ApiCronJobRouteImport.update({
+  id: '/api/cron/$job',
+  path: '/api/cron/$job',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCalendarTokenRoute = ApiPublicCalendarTokenRouteImport.update({
   id: '/api/public/calendar/$token',
   path: '/api/public/calendar/$token',
@@ -200,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/invite/$token': typeof InviteTokenRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/admin/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
+  '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
@@ -228,6 +235,7 @@ export interface FileRoutesByTo {
   '/invite/$token': typeof InviteTokenRoute
   '/dashboard': typeof DashboardIndexRoute
   '/admin/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
+  '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
@@ -258,6 +266,7 @@ export interface FileRoutesById {
   '/invite/$token': typeof InviteTokenRoute
   '/dashboard/': typeof DashboardIndexRoute
   '/admin_/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
+  '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
 }
@@ -289,6 +298,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/dashboard/'
     | '/admin/companies/$companyId'
+    | '/api/cron/$job'
     | '/api/public/calendar/$token'
     | '/api/public/webhooks/$provider'
   fileRoutesByTo: FileRoutesByTo
@@ -317,6 +327,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/dashboard'
     | '/admin/companies/$companyId'
+    | '/api/cron/$job'
     | '/api/public/calendar/$token'
     | '/api/public/webhooks/$provider'
   id:
@@ -346,6 +357,7 @@ export interface FileRouteTypes {
     | '/invite/$token'
     | '/dashboard/'
     | '/admin_/companies/$companyId'
+    | '/api/cron/$job'
     | '/api/public/calendar/$token'
     | '/api/public/webhooks/$provider'
   fileRoutesById: FileRoutesById
@@ -363,6 +375,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   InviteTokenRoute: typeof InviteTokenRoute
   AdminCompaniesCompanyIdRoute: typeof AdminCompaniesCompanyIdRoute
+  ApiCronJobRoute: typeof ApiCronJobRoute
   ApiPublicCalendarTokenRoute: typeof ApiPublicCalendarTokenRoute
   ApiPublicWebhooksProviderRoute: typeof ApiPublicWebhooksProviderRoute
 }
@@ -544,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCompaniesCompanyIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/cron/$job': {
+      id: '/api/cron/$job'
+      path: '/api/cron/$job'
+      fullPath: '/api/cron/$job'
+      preLoaderRoute: typeof ApiCronJobRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/calendar/$token': {
       id: '/api/public/calendar/$token'
       path: '/api/public/calendar/$token'
@@ -610,6 +630,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   InviteTokenRoute: InviteTokenRoute,
   AdminCompaniesCompanyIdRoute: AdminCompaniesCompanyIdRoute,
+  ApiCronJobRoute: ApiCronJobRoute,
   ApiPublicCalendarTokenRoute: ApiPublicCalendarTokenRoute,
   ApiPublicWebhooksProviderRoute: ApiPublicWebhooksProviderRoute,
 }
