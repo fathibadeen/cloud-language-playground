@@ -23,13 +23,13 @@ export async function run() {
     try {
       if (event.provider === "whatsapp") {
         const { ingestWhatsappMessage } = await import("@/lib/whatsapp-ingest.server");
-        await ingestWhatsappMessage(event.payload);
+        await ingestWhatsappMessage(event.payload as never);
       } else if (event.provider === "nabrah") {
         // Use provider_ref (agent UUID) if available
         const agentId = event.provider_ref;
         if (agentId) {
           const { ingestNabrahCall } = await import("@/lib/nabrah-ingest.server");
-          await ingestNabrahCall(agentId, event.payload);
+          await ingestNabrahCall(agentId, event.payload as never);
         } else {
           // Fallback: try to resolve from payload
           const providerAgentId = (event.payload as any)?.call?.agent_id;
@@ -41,7 +41,7 @@ export async function run() {
               .single();
             if (agent) {
               const { ingestNabrahCall } = await import("@/lib/nabrah-ingest.server");
-              await ingestNabrahCall(agent.id, event.payload);
+              await ingestNabrahCall(agent.id, event.payload as never);
             } else {
               throw new Error("Agent not found for provider_agent_id");
             }
