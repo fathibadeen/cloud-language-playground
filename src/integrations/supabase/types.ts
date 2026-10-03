@@ -1471,7 +1471,6 @@ export type Database = {
           payload: Json
           processed_at: string | null
           provider: string
-          provider_ref: string | null
           status: Database["public"]["Enums"]["webhook_status"]
         }
         Insert: {
@@ -1485,7 +1484,6 @@ export type Database = {
           payload?: Json
           processed_at?: string | null
           provider: string
-          provider_ref?: string | null
           status?: Database["public"]["Enums"]["webhook_status"]
         }
         Update: {
@@ -1499,7 +1497,6 @@ export type Database = {
           payload?: Json
           processed_at?: string | null
           provider?: string
-          provider_ref?: string | null
           status?: Database["public"]["Enums"]["webhook_status"]
         }
         Relationships: [
