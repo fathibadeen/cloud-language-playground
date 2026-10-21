@@ -141,8 +141,8 @@ export const createCheckout = createServerFn({ method: "POST" })
       });
       await supabaseAdmin.from("payments").update({ moyasar_invoice_id: inv.id }).eq("id", pay.id);
       return { error: null, url: inv.url };
-    } catch {
-      await supabaseAdmin.from("payments").update({ status: "failed" }).eq("id", pay.id);
+    } catch (e) {
+      await supabaseAdmin.from("payments").update({ status: "failed", raw: { error: (e as Error).message } as never }).eq("id", pay.id);
       return { error: "provider_error" as const, url: null };
     }
   });

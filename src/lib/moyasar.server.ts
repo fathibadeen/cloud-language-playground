@@ -25,7 +25,7 @@ export async function moyasarRequest<T>(secret: string, path: string, init?: Req
   const text = await res.text();
   if (!res.ok) {
     console.error("[moyasar]", path, res.status, text.slice(0, 500));
-    throw new Error(`moyasar_${res.status}`);
+    throw new Error(`moyasar_${res.status}: ${text.slice(0, 300)}`);
   }
   return JSON.parse(text) as T;
 }
