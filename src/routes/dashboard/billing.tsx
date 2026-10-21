@@ -139,7 +139,7 @@ function BillingPage() {
       ) : null}
 
       <ProductToggle value={view} onChange={setView} ar={ar} />
-      <ProductPlanCards plans={plans as PlanRow[] | undefined} product={view} ar={ar} currentId={currentPlanId ?? null} perMonth={t("perMonth")} selectedId={selected} onSelect={payState?.enabled ? setSelected : undefined} />
+      <ProductPlanCards plans={plans as PlanRow[] | undefined} product={view} ar={ar} currentId={currentPlanId ?? null} perMonth={t("perMonth")} selectedId={selected} {...(payState?.enabled ? { onSelect: setSelected } : {})} />
       {payState?.enabled ? (
         <Card>
           <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5">
