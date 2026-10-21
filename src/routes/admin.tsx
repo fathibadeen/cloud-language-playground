@@ -29,6 +29,7 @@ import { StatCard } from "@/components/StatCard";
 import { companyProduct, productLabels } from "@/lib/products";
 import { AdminShell, type AdminSection } from "@/components/AdminShell";
 import { AdminPlans } from "@/components/AdminPlans";
+import { AdminPayments } from "@/components/AdminPayments";
 
 import { useI18n } from "@/lib/i18n";
 import { useAuth } from "@/lib/auth";
@@ -56,7 +57,7 @@ export const Route = createFileRoute("/admin")({
   }),
   validateSearch: (search: Record<string, unknown>): { section?: AdminSection } => {
     const v = search["section"];
-    return ["overview", "companies", "plans", "whatsapp", "requests", "events"].includes(String(v)) ? { section: v as AdminSection } : {};
+    return ["overview", "companies", "plans", "payments", "whatsapp", "requests", "events"].includes(String(v)) ? { section: v as AdminSection } : {};
   },
   component: AdminPage,
 });
@@ -240,6 +241,9 @@ function AdminPage() {
           </TabsContent>
           <TabsContent value="plans">
             <AdminPlans />
+          </TabsContent>
+          <TabsContent value="payments">
+            <AdminPayments ar={ar} />
           </TabsContent>
           <TabsContent value="whatsapp">
 

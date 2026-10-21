@@ -1026,6 +1026,72 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount_halalas: number
+          applied: boolean
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          moyasar_invoice_id: string | null
+          moyasar_payment_id: string | null
+          plan_id: string | null
+          provider: string
+          raw: Json | null
+          status: string
+          updated_at: string
+          vat_halalas: number
+        }
+        Insert: {
+          amount_halalas: number
+          applied?: boolean
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          moyasar_invoice_id?: string | null
+          moyasar_payment_id?: string | null
+          plan_id?: string | null
+          provider?: string
+          raw?: Json | null
+          status?: string
+          updated_at?: string
+          vat_halalas?: number
+        }
+        Update: {
+          amount_halalas?: number
+          applied?: boolean
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          moyasar_invoice_id?: string | null
+          moyasar_payment_id?: string | null
+          plan_id?: string | null
+          provider?: string
+          raw?: Json | null
+          status?: string
+          updated_at?: string
+          vat_halalas?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phone_numbers: {
         Row: {
           agent_id: string | null
@@ -1146,6 +1212,36 @@ export type Database = {
           updated_at?: string
           voice_minutes?: number
           whatsapp_messages?: number
+        }
+        Relationships: []
+      }
+      platform_payment_settings: {
+        Row: {
+          enabled: boolean
+          mode: string
+          provider: string
+          publishable_key: string | null
+          secret_key: string | null
+          updated_at: string
+          webhook_secret: string | null
+        }
+        Insert: {
+          enabled?: boolean
+          mode?: string
+          provider?: string
+          publishable_key?: string | null
+          secret_key?: string | null
+          updated_at?: string
+          webhook_secret?: string | null
+        }
+        Update: {
+          enabled?: boolean
+          mode?: string
+          provider?: string
+          publishable_key?: string | null
+          secret_key?: string | null
+          updated_at?: string
+          webhook_secret?: string | null
         }
         Relationships: []
       }

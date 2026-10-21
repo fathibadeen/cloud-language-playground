@@ -16,6 +16,9 @@ import { useCompanyId, useCompanyTable, useMembership, usePlans, useSubscription
 import { ProductPlanCards, ProductToggle } from "@/components/ProductPlans";
 import { addonPrice, companyProduct, type PlanRow, type Product } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { createCheckout, paymentsEnabled } from "@/lib/payments.functions";
 
 
 export const Route = createFileRoute("/dashboard/billing")({
@@ -46,6 +49,28 @@ function BillingPage() {
 
   const currentPlanId = subscription?.plan_id;
   const addon = addonPrice(plans as PlanRow[] | undefined, own);
+  const getPay = useServerFn(paymentsEnabled);
+  const checkout = useServerFn(createCheckout);
+  const { data: payState } = useQuery({ queryKey: ["payments-enabled"], queryFn: () => getPay() });
+  const [selected, setSelected] = useState<string | null>(null);
+  const [paying, setPaying] = useState(false);
+  const selectedPlan = (plans as PlanRow[] | undefined)?.find((p) => p.id === selected);
+
+  async function subscribe() {
+    if (!companyId || !selected) return;
+    setPaying(true);
+    try {
+      const r = await checkout({ data: { companyId, planId: selected } });
+      if (r.url) window.location.href = r.url;
+      else {
+        toast.error(ar ? "تعذّر بدء الدفع، حاول لاحقاً" : "Couldn't start checkout");
+        setPaying(false);
+      }
+    } catch {
+      toast.error(ar ? "فقط مالك الشركة أو المدير يمكنه الدفع" : "Only owners/admins can pay");
+      setPaying(false);
+    }
+  }
 
   async function requestAddon() {
     if (!companyId) return;
@@ -91,9 +116,11 @@ function BillingPage() {
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">{t("navBilling")}</h1>
 
-      <Card>
-        <CardContent className="p-5 text-sm text-muted-foreground">{t("paymentsSoon")}</CardContent>
-      </Card>
+      {payState && !payState.enabled ? (
+        <Card>
+          <CardContent className="p-5 text-sm text-muted-foreground">{t("paymentsSoon")}</CardContent>
+        </Card>
+      ) : null}
 
       {own !== "bundle" ? (
         <Card className="border-primary/40">
@@ -112,7 +139,20 @@ function BillingPage() {
       ) : null}
 
       <ProductToggle value={view} onChange={setView} ar={ar} />
-      <ProductPlanCards plans={plans as PlanRow[] | undefined} product={view} ar={ar} currentId={currentPlanId ?? null} perMonth={t("perMonth")} />
+      <ProductPlanCards plans={plans as PlanRow[] | undefined} product={view} ar={ar} currentId={currentPlanId ?? null} perMonth={t("perMonth")} selectedId={selected} {...(payState?.enabled ? { onSelect: setSelected } : {})} />
+      {payState?.enabled ? (
+        <Card>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5">
+            <p className="text-sm text-muted-foreground">
+              {selectedPlan
+                ? `${ar ? selectedPlan.name_ar : selectedPlan.name_en}: ${(Number(selectedPlan.price_sar) * 1.15).toFixed(2)} ${ar ? "ر.س شامل الضريبة 15%" : "SAR incl. 15% VAT"}`
+                : ar ? "اختر باقة ثم اضغط اشترك الآن (مدى، فيزا، ماستركارد، Apple Pay)" : "Pick a plan, then subscribe (mada, Visa, Mastercard, Apple Pay)"}
+              {payState.mode === "test" ? (ar ? " — وضع تجريبي" : " — test mode") : ""}
+            </p>
+            <Button onClick={subscribe} disabled={!selected || paying}>{paying ? (ar ? "جارٍ التحويل..." : "Redirecting...") : ar ? "اشترك الآن" : "Subscribe now"}</Button>
+          </CardContent>
+        </Card>
+      ) : null}
 
       <Card>
         <CardHeader>
