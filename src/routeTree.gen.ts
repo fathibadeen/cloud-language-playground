@@ -23,6 +23,7 @@ import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardAgentsRouteImport } from './routes/dashboard/agents'
 import { Route as DashboardAppointmentsRouteImport } from './routes/dashboard/appointments'
 import { Route as DashboardBillingRouteImport } from './routes/dashboard/billing'
+import { Route as DashboardBillingCallbackRouteImport } from './routes/dashboard/billing-callback'
 import { Route as DashboardCallsRouteImport } from './routes/dashboard/calls'
 import { Route as DashboardConversationsRouteImport } from './routes/dashboard/conversations'
 import { Route as DashboardKnowledgeRouteImport } from './routes/dashboard/knowledge'
@@ -37,6 +38,7 @@ import { Route as AdminCompaniesCompanyIdRouteImport } from './routes/admin_.com
 import { Route as ApiCronJobRouteImport } from './routes/api/cron/$job'
 import { Route as ApiPublicCalendarTokenRouteImport } from './routes/api/public/calendar.$token'
 import { Route as ApiPublicWebhooksProviderRouteImport } from './routes/api/public/webhooks/$provider'
+import { Route as ApiPublicWebhooksMoyasarRouteImport } from './routes/api/public/webhooks/moyasar'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -108,6 +110,12 @@ const DashboardBillingRoute = DashboardBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardBillingCallbackRoute =
+  DashboardBillingCallbackRouteImport.update({
+    id: '/billing-callback',
+    path: '/billing-callback',
+    getParentRoute: () => DashboardRouteRoute,
+  } as any)
 const DashboardCallsRoute = DashboardCallsRouteImport.update({
   id: '/calls',
   path: '/calls',
@@ -179,6 +187,12 @@ const ApiPublicWebhooksProviderRoute =
     path: '/api/public/webhooks/$provider',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicWebhooksMoyasarRoute =
+  ApiPublicWebhooksMoyasarRouteImport.update({
+    id: '/api/public/webhooks/moyasar',
+    path: '/api/public/webhooks/moyasar',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -194,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/agents': typeof DashboardAgentsRoute
   '/dashboard/appointments': typeof DashboardAppointmentsRoute
   '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/billing-callback': typeof DashboardBillingCallbackRoute
   '/dashboard/calls': typeof DashboardCallsRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
@@ -209,6 +224,7 @@ export interface FileRoutesByFullPath {
   '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
+  '/api/public/webhooks/moyasar': typeof ApiPublicWebhooksMoyasarRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -223,6 +239,7 @@ export interface FileRoutesByTo {
   '/dashboard/agents': typeof DashboardAgentsRoute
   '/dashboard/appointments': typeof DashboardAppointmentsRoute
   '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/billing-callback': typeof DashboardBillingCallbackRoute
   '/dashboard/calls': typeof DashboardCallsRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
@@ -238,6 +255,7 @@ export interface FileRoutesByTo {
   '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
+  '/api/public/webhooks/moyasar': typeof ApiPublicWebhooksMoyasarRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -254,6 +272,7 @@ export interface FileRoutesById {
   '/dashboard/agents': typeof DashboardAgentsRoute
   '/dashboard/appointments': typeof DashboardAppointmentsRoute
   '/dashboard/billing': typeof DashboardBillingRoute
+  '/dashboard/billing-callback': typeof DashboardBillingCallbackRoute
   '/dashboard/calls': typeof DashboardCallsRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
@@ -269,6 +288,7 @@ export interface FileRoutesById {
   '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
+  '/api/public/webhooks/moyasar': typeof ApiPublicWebhooksMoyasarRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -286,6 +306,7 @@ export interface FileRouteTypes {
     | '/dashboard/agents'
     | '/dashboard/appointments'
     | '/dashboard/billing'
+    | '/dashboard/billing-callback'
     | '/dashboard/calls'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
@@ -301,6 +322,7 @@ export interface FileRouteTypes {
     | '/api/cron/$job'
     | '/api/public/calendar/$token'
     | '/api/public/webhooks/$provider'
+    | '/api/public/webhooks/moyasar'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -315,6 +337,7 @@ export interface FileRouteTypes {
     | '/dashboard/agents'
     | '/dashboard/appointments'
     | '/dashboard/billing'
+    | '/dashboard/billing-callback'
     | '/dashboard/calls'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
@@ -330,6 +353,7 @@ export interface FileRouteTypes {
     | '/api/cron/$job'
     | '/api/public/calendar/$token'
     | '/api/public/webhooks/$provider'
+    | '/api/public/webhooks/moyasar'
   id:
     | '__root__'
     | '/'
@@ -345,6 +369,7 @@ export interface FileRouteTypes {
     | '/dashboard/agents'
     | '/dashboard/appointments'
     | '/dashboard/billing'
+    | '/dashboard/billing-callback'
     | '/dashboard/calls'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
@@ -360,6 +385,7 @@ export interface FileRouteTypes {
     | '/api/cron/$job'
     | '/api/public/calendar/$token'
     | '/api/public/webhooks/$provider'
+    | '/api/public/webhooks/moyasar'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -378,6 +404,7 @@ export interface RootRouteChildren {
   ApiCronJobRoute: typeof ApiCronJobRoute
   ApiPublicCalendarTokenRoute: typeof ApiPublicCalendarTokenRoute
   ApiPublicWebhooksProviderRoute: typeof ApiPublicWebhooksProviderRoute
+  ApiPublicWebhooksMoyasarRoute: typeof ApiPublicWebhooksMoyasarRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -480,6 +507,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardBillingRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/billing-callback': {
+      id: '/dashboard/billing-callback'
+      path: '/billing-callback'
+      fullPath: '/dashboard/billing-callback'
+      preLoaderRoute: typeof DashboardBillingCallbackRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/calls': {
       id: '/dashboard/calls'
       path: '/calls'
@@ -578,6 +612,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWebhooksProviderRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/webhooks/moyasar': {
+      id: '/api/public/webhooks/moyasar'
+      path: '/api/public/webhooks/moyasar'
+      fullPath: '/api/public/webhooks/moyasar'
+      preLoaderRoute: typeof ApiPublicWebhooksMoyasarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -585,6 +626,7 @@ interface DashboardRouteRouteChildren {
   DashboardAgentsRoute: typeof DashboardAgentsRoute
   DashboardAppointmentsRoute: typeof DashboardAppointmentsRoute
   DashboardBillingRoute: typeof DashboardBillingRoute
+  DashboardBillingCallbackRoute: typeof DashboardBillingCallbackRoute
   DashboardCallsRoute: typeof DashboardCallsRoute
   DashboardConversationsRoute: typeof DashboardConversationsRoute
   DashboardKnowledgeRoute: typeof DashboardKnowledgeRoute
@@ -601,6 +643,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardAgentsRoute: DashboardAgentsRoute,
   DashboardAppointmentsRoute: DashboardAppointmentsRoute,
   DashboardBillingRoute: DashboardBillingRoute,
+  DashboardBillingCallbackRoute: DashboardBillingCallbackRoute,
   DashboardCallsRoute: DashboardCallsRoute,
   DashboardConversationsRoute: DashboardConversationsRoute,
   DashboardKnowledgeRoute: DashboardKnowledgeRoute,
@@ -633,6 +676,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronJobRoute: ApiCronJobRoute,
   ApiPublicCalendarTokenRoute: ApiPublicCalendarTokenRoute,
   ApiPublicWebhooksProviderRoute: ApiPublicWebhooksProviderRoute,
+  ApiPublicWebhooksMoyasarRoute: ApiPublicWebhooksMoyasarRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
