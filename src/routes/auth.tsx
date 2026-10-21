@@ -41,6 +41,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
+  const [agreed, setAgreed] = useState(false);
 
   useEffect(() => {
     if (!loading && user) navigate({ to: "/dashboard", replace: true });
@@ -51,6 +52,7 @@ function AuthPage() {
     setBusy(true);
     try {
       if (tab === "signup") {
+        if (!agreed) throw new Error("يجب الموافقة على الشروط والأحكام أولاً");
         const { error } = await supabase.auth.signUp({
           email,
           password,
@@ -144,7 +146,15 @@ function AuthPage() {
                   />
                 </div>
               ) : null}
-              <Button type="submit" className="w-full" disabled={busy}>
+              {tab === "signup" ? (
+                <label className="flex items-start gap-2 text-sm leading-6">
+                  <input type="checkbox" className="mt-1 size-4 accent-primary" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} required />
+                  <span>
+                    أوافق على <Link to="/terms" target="_blank" className="font-semibold text-primary underline">الشروط والأحكام</Link> و<Link to="/privacy" target="_blank" className="font-semibold text-primary underline">سياسة الخصوصية</Link>، وأعلم أن المكالمات قد تُسجَّل من أجل تحسين الخدمة.
+                  </span>
+                </label>
+              ) : null}
+              <Button type="submit" className="w-full" disabled={busy || (tab === "signup" && !agreed)}>
                 {tab === "signup"
                   ? t("signup")
                   : tab === "forgot"
@@ -162,6 +172,9 @@ function AuthPage() {
                 <Button variant="outline" className="w-full" onClick={google}>
                   {t("continueWithGoogle")}
                 </Button>
+                <p className="text-center text-xs text-muted-foreground">
+                  بالمتابعة أنت توافق على <Link to="/terms" className="underline">الشروط والأحكام</Link> وتسجيل المكالمات لتحسين الخدمة.
+                </p>
               </>
             ) : null}
 
