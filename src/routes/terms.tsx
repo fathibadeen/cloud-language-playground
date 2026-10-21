@@ -30,8 +30,9 @@ function TermsPage() {
     ["الخدمات الخارجية", "يعتمد بعض التشغيل على مزودي اتصالات وواتساب وذكاء اصطناعي خارجيين؛ وقد تتأثر الخدمة بتوفرهم وسياساتهم."],
     ["الخطط والاستخدام", "تخضع الحسابات لحدود الخطة والفترة التجريبية المعروضة. الدفع الإلكتروني غير مفعّل حاليًا، ولن تُفرض رسوم إلكترونية قبل إعلانه وتفعيله."],
     ["المحتوى والبيانات", "تحتفظ الشركة بحقوق محتواها. تمنح صوتي الإذن اللازم لمعالجته فقط لتقديم الخدمة وتشغيل المزايا المطلوبة."],
+    ["تسجيل المكالمات", "قد تُسجَّل المكالمات والمحادثات وتُفرَّغ نصياً من أجل تحسين الخدمة وضمان الجودة، وتُحفظ بأمان ولا يطّلع عليها إلا الشركة صاحبة الحساب والجهات اللازمة لتشغيل الخدمة."],
     ["التعليق والإنهاء", "يجوز تعليق الوصول عند إساءة الاستخدام أو وجود مخاطر أمنية أو مخالفة هذه الشروط، مع الحفاظ على البيانات وفق سياسة الخصوصية والالتزامات النظامية."],
-    ["التواصل", "للاستفسارات حول هذه الشروط، راسل support@sawti-ai.com."],
+    ["التواصل", "للاستفسارات حول هذه الشروط، راسل meswar2030@gmail.com."],
   ] : [
     ["Using the service", "Sawti must be used lawfully for legitimate business purposes, not for harassment, deception, or infringement of others' rights."],
     ["Account responsibility", "The company is responsible for accurate information, team account security, and the content and instructions it provides to AI agents."],
@@ -39,8 +40,9 @@ function TermsPage() {
     ["Third-party services", "Some features depend on external communications, WhatsApp, and AI providers; availability may be affected by their services and policies."],
     ["Plans and usage", "Accounts are subject to displayed plan and trial limits. Online payments are currently disabled, and no online charge will apply before activation is announced."],
     ["Content and data", "The company retains rights to its content and grants Sawti only the permission needed to process it and provide requested features."],
+    ["Call recording", "Calls and conversations may be recorded and transcribed to improve the service and ensure quality. They are stored securely and accessible only to the account's company and providers required to run the service."],
     ["Suspension and termination", "Access may be suspended for abuse, security risk, or breach of these terms, with data handled according to the privacy policy and legal obligations."],
-    ["Contact", "For questions about these terms, email support@sawti-ai.com."],
+    ["Contact", "For questions about these terms, email meswar2030@gmail.com."],
   ];
-  return <PublicPageShell><article className="mx-auto max-w-4xl px-4 py-20 md:px-8 md:py-28"><p className="font-semibold text-gold">{ar ? "آخر تحديث: 24 سبتمبر 2026" : "Last updated: September 24, 2026"}</p><h1 className="mt-4 font-display text-4xl font-bold md:text-6xl">{ar ? "الشروط والأحكام" : "Terms of Service"}</h1><p className="mt-6 text-xl leading-9 text-landing-muted">{ar ? "باستخدام صوتي، توافق شركتك على الشروط التالية." : "By using Sawti, your company agrees to the following terms."}</p><div className="mt-12 space-y-10">{sections.map(([title, body]) => <section key={title}><h2 className="text-2xl font-semibold">{title}</h2><p className="mt-3 text-lg leading-8 text-landing-muted">{body}</p></section>)}</div></article></PublicPageShell>;
+  return <PublicPageShell><article className="mx-auto max-w-4xl px-4 py-20 md:px-8 md:py-28"><p className="font-semibold text-gold">{ar ? "آخر تحديث: 21 أكتوبر 2026" : "Last updated: October 21, 2026"}</p><h1 className="mt-4 font-display text-4xl font-bold md:text-6xl">{ar ? "الشروط والأحكام" : "Terms of Service"}</h1><p className="mt-6 text-xl leading-9 text-landing-muted">{ar ? "باستخدام صوتي، توافق شركتك على الشروط التالية." : "By using Sawti, your company agrees to the following terms."}</p><div className="mt-12 space-y-10">{sections.map(([title, body]) => <section key={title}><h2 className="text-2xl font-semibold">{title}</h2><p className="mt-3 text-lg leading-8 text-landing-muted">{body}</p></section>)}</div></article></PublicPageShell>;
 }

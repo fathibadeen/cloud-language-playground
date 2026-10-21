@@ -124,7 +124,7 @@ function DashboardLayout() {
           </p>
           <div className="flex justify-center gap-2">
             <Button asChild variant="outline">
-              <a href="mailto:support@sawti-ai.com">{t("contactSupport")}</a>
+              <a href="mailto:meswar2030@gmail.com">{t("contactSupport")}</a>
             </Button>
             <Button variant="ghost" onClick={signOut}>
               {t("logout")}

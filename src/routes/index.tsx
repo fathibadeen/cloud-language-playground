@@ -82,7 +82,7 @@ export const Route = createFileRoute("/")({
         children: JSON.stringify({
           "@context": "https://schema.org",
           "@graph": [
-            { "@type": "Organization", name: "صوتي", alternateName: "Sawti", url: siteUrl, email: "support@sawti-ai.com" },
+            { "@type": "Organization", name: "صوتي", alternateName: "Sawti", url: siteUrl, email: "meswar2030@gmail.com" },
             { "@type": "WebSite", name: "صوتي", alternateName: "Sawti", url: siteUrl, inLanguage: ["ar", "en"] },
             { "@type": "FAQPage", mainEntity: faqAr.map(([question, answer]) => ({ "@type": "Question", name: question, acceptedAnswer: { "@type": "Answer", text: answer } })) },
           ],
@@ -289,7 +289,7 @@ function Landing() {
           </div>
         </section>
       </main>
-       <footer className="border-t border-landing-foreground/10 py-10"><div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 text-base text-landing-muted md:px-8"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><SawtiLogo compact className="text-landing-foreground" /><p className="mt-1 text-sm">{ar ? "منتج من مسور" : "A Meswar product"}</p></div><nav className="flex flex-wrap gap-x-6 gap-y-2"><a href="#faq" className="hover:text-landing-foreground">{t("faq")}</a><Link to="/partners" className="hover:text-landing-foreground">{ar ? "الشركاء" : "Partners"}</Link><Link to="/contact" className="hover:text-landing-foreground">{t("contact")}</Link><Link to="/privacy" className="hover:text-landing-foreground">{ar ? "سياسة الخصوصية" : "Privacy"}</Link><Link to="/terms" className="hover:text-landing-foreground">{ar ? "الشروط والأحكام" : "Terms"}</Link></nav></div><div className="flex flex-col justify-between gap-2 border-t border-landing-foreground/10 pt-5 md:flex-row"><span>{ar ? "تقنية تخدم الناس.. مثل ما ينبغي" : "Technology that serves people properly"}</span><span>© {new Date().getFullYear()} Sawti</span></div></div></footer>
+       <footer className="border-t border-landing-foreground/10 py-10"><div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 text-base text-landing-muted md:px-8"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><SawtiLogo compact className="text-landing-foreground" /><p className="mt-1 text-sm">{ar ? "منتج من مسور" : "A Meswar product"}</p></div><nav className="flex flex-wrap gap-x-6 gap-y-2"><a href="#faq" className="hover:text-landing-foreground">{t("faq")}</a><Link to="/partners" className="hover:text-landing-foreground">{ar ? "الشركاء" : "Partners"}</Link><Link to="/contact" className="hover:text-landing-foreground">{t("contact")}</Link><Link to="/privacy" className="hover:text-landing-foreground">{ar ? "سياسة الخصوصية" : "Privacy"}</Link><Link to="/terms" className="hover:text-landing-foreground">{ar ? "الشروط والأحكام" : "Terms"}</Link></nav></div><div className="flex flex-col justify-between gap-2 border-t border-landing-foreground/10 pt-5 md:flex-row"><span>{ar ? "تقنية تخدم الناس.. مثل ما ينبغي" : "Technology that serves people properly"}</span><a href="mailto:meswar2030@gmail.com" dir="ltr" className="hover:text-landing-foreground">meswar2030@gmail.com</a><span>© {new Date().getFullYear()} Sawti</span></div></div></footer>
     </div>
   );
 }

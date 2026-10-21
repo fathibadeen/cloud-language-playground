@@ -33,8 +33,8 @@ function ContactPage() {
         <p className="mt-6 max-w-2xl text-xl leading-9 text-landing-muted">{ar ? "للاستفسارات، الدعم، أو تجهيز قنوات شركتك، راسلنا وسنعود إليك عبر البريد الإلكتروني." : "For questions, support, or help setting up your company channels, email us and our team will get back to you."}</p>
         <div className="mt-10 border-y border-landing-foreground/10 py-8">
           <h2 className="text-2xl font-semibold">{ar ? "البريد الإلكتروني" : "Email"}</h2>
-          <p className="mt-2 text-lg text-landing-muted">support@sawti-ai.com</p>
-          <Button asChild size="lg" className="mt-6"><a href="mailto:support@sawti-ai.com"><Mail />{ar ? "راسلنا" : "Email us"}</a></Button>
+          <p className="mt-2 text-lg text-landing-muted">meswar2030@gmail.com</p>
+          <Button asChild size="lg" className="mt-6"><a href="mailto:meswar2030@gmail.com"><Mail />{ar ? "راسلنا" : "Email us"}</a></Button><p className="mt-3 text-base" dir="ltr">meswar2030@gmail.com</p>
         </div>
       </section>
     </PublicPageShell>

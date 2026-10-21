@@ -37,7 +37,7 @@ export function PublicPageShell({ children }: { children: ReactNode }) {
             <Link to="/privacy" className="hover:text-landing-foreground">{ar ? "الخصوصية" : "Privacy"}</Link>
             <Link to="/terms" className="hover:text-landing-foreground">{ar ? "الشروط" : "Terms"}</Link>
           </nav>
-          <span>© {new Date().getFullYear()} Sawti</span>
+          <div className="flex flex-col gap-1"><a href="mailto:meswar2030@gmail.com" dir="ltr" className="hover:text-landing-foreground">meswar2030@gmail.com</a><span>© {new Date().getFullYear()} Sawti</span></div>
         </div>
       </footer>
     </div>
