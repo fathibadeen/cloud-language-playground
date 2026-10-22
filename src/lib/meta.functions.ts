@@ -58,6 +58,8 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
         companyId: z.string().uuid(),
         code: z.string().min(10).max(2048),
         redirectUri: z.string().url().max(500).optional(),
+        wabaId: z.string().regex(/^\d{5,30}$/).optional(),
+        phoneNumberId: z.string().regex(/^\d{5,30}$/).optional(),
       })
       .parse(data),
   )
@@ -130,10 +132,12 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
     for (const waba of wabaList) {
       const phones = await meta.fetchWabaPhoneNumbers(token, waba.id);
       if (!phones.ok) {
-        if (phones.error.kind === "meta_business_verification") throw new Error("meta_business_verification");
+        lastPhoneError = phones.error;
         continue;
       }
-      const numbers = phones.data?.data ?? [];
+      const numbers = (phones.data?.data ?? []).filter(
+        (p) => !data.phoneNumberId || waba.id !== data.wabaId || p.id === data.phoneNumberId,
+      );
 
       for (const phone of numbers) {
         // Tenant guard: a phone number can belong to exactly one company.
@@ -182,13 +186,16 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
       await meta.subscribeWaba(token, waba.id);
     }
 
-    if (connected.length === 0) throw new Error("meta_no_phone_numbers");
+    if (connected.length === 0) {
+      if (lastPhoneError) fail(lastPhoneError.kind, lastPhoneError.detail);
+      fail("meta_no_phone_numbers");
+    }
 
     // 4) store the encrypted token for the company
     await meta.saveCompanyWhatsappToken(data.companyId, {
       access_token: token,
       token_type: "bearer",
-      expires_in: long.expiresIn,
+      expires_in: expiresIn,
     });
 
     // 5) flag the company + document the connection
