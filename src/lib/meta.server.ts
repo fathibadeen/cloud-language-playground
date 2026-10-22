@@ -200,6 +200,42 @@ export async function fetchGrantedWabaIds(token: string): Promise<string[]> {
   }
 }
 
+/** Fallback: WABAs owned by / shared with the businesses this token can see. */
+export async function fetchBusinessWabas(token: string): Promise<{ id: string; name?: string }[]> {
+  const env = getMetaEnv();
+  const out = new Map<string, { id: string; name?: string }>();
+  const biz = await graphCall<{ data?: { id: string }[] }>("me/businesses", token, env.graphVersion, {
+    params: { fields: "id", limit: "25" },
+  });
+  if (!biz.ok) return [];
+  for (const b of biz.data?.data ?? []) {
+    for (const edge of ["owned_whatsapp_business_accounts", "client_whatsapp_business_accounts"]) {
+      const r = await graphCall<{ data?: { id: string; name?: string }[] }>(`${b.id}/${edge}`, token, env.graphVersion, {
+        params: { fields: "id,name", limit: "50" },
+      });
+      if (r.ok) for (const w of r.data?.data ?? []) out.set(w.id, w);
+    }
+  }
+  return [...out.values()];
+}
+
+/** Short, secret-free summary of what a token was granted (for error messages). */
+export async function describeToken(token: string): Promise<string> {
+  const env = getMetaEnv();
+  const url = new URL(`${GRAPH_BASE}/${env.graphVersion}/debug_token`);
+  url.searchParams.set("input_token", token);
+  url.searchParams.set("access_token", `${env.appId}|${env.appSecret}`);
+  try {
+    const body = (await (await fetch(url.toString())).json()) as {
+      data?: { type?: string; scopes?: string[]; error?: { message?: string } };
+    };
+    const scopes = body.data?.scopes ?? [];
+    return `token=${body.data?.type ?? "?"}; scopes=${scopes.join(",") || "none"}`;
+  } catch {
+    return "";
+  }
+}
+
 /** Reads a single WABA by id (name only). */
 export async function readWaba(token: string, wabaId: string) {
   const env = getMetaEnv();
