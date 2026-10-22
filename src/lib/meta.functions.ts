@@ -57,6 +57,7 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
       .object({
         companyId: z.string().uuid(),
         code: z.string().min(10).max(2048),
+        redirectUri: z.string().url().max(500).optional(),
       })
       .parse(data),
   )
@@ -75,7 +76,7 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
     if (!company) throw new Error("company_not_found");
 
     // 1) code -> short-lived -> long-lived token
-    const short = await meta.exchangeCodeForToken(data.code);
+    const short = await meta.exchangeCodeForToken(data.code, data.redirectUri);
     if (!short.ok) throw new Error(short.error.kind);
     const long = await meta.exchangeLongLivedToken(short.token);
     if (!long.ok) throw new Error(long.error.kind);

@@ -117,7 +117,18 @@ function metaErrorText(message: string, ar: boolean): string {
   return map[message] ?? (ar ? `خطأ: ${message}` : `Error: ${message}`);
 }
 
+function useMetaOAuthReturn() {
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const state = params.get("state");
+    if (!state?.startsWith("meta_") || !window.opener) return;
+    window.opener.postMessage({ type: "meta_oauth", state, code: params.get("code") }, window.location.origin);
+    window.close();
+  }, []);
+}
+
 function AdminPage() {
+  useMetaOAuthReturn();
   const { t, locale } = useI18n();
   const navigate = useNavigate();
   const { user, loading } = useAuth();
@@ -376,19 +387,58 @@ function WhatsappTab({
       return;
     }
     setBusy(companyId);
-    loadFbSdk(metaAppId!, graphVersion)
+    const finish = async (code: string | undefined, redirectUri?: string) => {
+      if (!code) {
+        toast.error(ar ? "أُلغيت خطوات الربط مع Meta" : "Meta signup was canceled");
+        setBusy(null);
+        return;
+      }
+      await run(companyId, () => completeWhatsappConnect({ data: { companyId, code, redirectUri } }), ar ? `تم ربط واتساب ${companyName}` : `WhatsApp connected for ${companyName}`);
+    };
+    const popupFallback = () => {
+      const redirectUri = `${window.location.origin}/admin`;
+      const state = `meta_${crypto.randomUUID()}`;
+      const url = new URL(`https://www.facebook.com/${graphVersion}/dialog/oauth`);
+      url.searchParams.set("client_id", metaAppId!);
+      url.searchParams.set("config_id", metaConfigId ?? "");
+      url.searchParams.set("redirect_uri", redirectUri);
+      url.searchParams.set("response_type", "code");
+      url.searchParams.set("override_default_response_type", "true");
+      url.searchParams.set("state", state);
+      url.searchParams.set("extras", JSON.stringify({ setup: {} }));
+      const popup = window.open(url.toString(), "meta_signup", "width=620,height=760");
+      if (!popup) {
+        toast.error(ar ? "اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة" : "Allow pop-ups and try again");
+        setBusy(null);
+        return;
+      }
+      let done = false;
+      const onMsg = (event: MessageEvent) => {
+        if (event.origin !== window.location.origin || event.data?.type !== "meta_oauth" || event.data.state !== state) return;
+        done = true;
+        cleanup();
+        void finish(event.data.code ?? undefined, redirectUri);
+      };
+      const timer = window.setInterval(() => {
+        if (popup.closed && !done) {
+          cleanup();
+          setBusy(null);
+        }
+      }, 800);
+      const cleanup = () => {
+        window.removeEventListener("message", onMsg);
+        window.clearInterval(timer);
+      };
+      window.addEventListener("message", onMsg);
+    };
+    const sdkTimeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error("timeout")), 6000));
+    Promise.race([loadFbSdk(metaAppId!, graphVersion), sdkTimeout])
       .then(
         (FB) =>
           new Promise<void>((resolve) => {
-            FB.login(async (response) => {
-              const code = response?.authResponse?.code;
+            FB.login((response) => {
               resolve();
-              if (!code) {
-                toast.error(ar ? "أُلغيت خطوات الربط مع Meta" : "Meta signup was canceled");
-                setBusy(null);
-                return;
-              }
-              await run(companyId, () => completeWhatsappConnect({ data: { companyId, code } }), ar ? `تم ربط واتساب ${companyName}` : `WhatsApp connected for ${companyName}`);
+              void finish(response?.authResponse?.code);
             }, {
               config_id: metaConfigId,
               response_type: "code",
@@ -398,8 +448,7 @@ function WhatsappTab({
           }),
       )
       .catch(() => {
-        toast.error(ar ? "تعذر تحميل Meta — تحقق من الاتصال" : "Could not load Meta SDK");
-        setBusy(null);
+        popupFallback();
       });
   }
 

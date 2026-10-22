@@ -117,7 +117,7 @@ export async function graphCall<T>(
 }
 
 /** Exchanges the Embedded Signup code for a short-lived user token. */
-export async function exchangeCodeForToken(code: string) {
+export async function exchangeCodeForToken(code: string, redirectUri?: string) {
   const env = getMetaEnv();
   if (!env.appId || !env.appSecret) {
     return { ok: false as const, error: { kind: "meta_not_configured" } as MetaError };
@@ -126,6 +126,7 @@ export async function exchangeCodeForToken(code: string) {
   url.searchParams.set("client_id", env.appId);
   url.searchParams.set("client_secret", env.appSecret);
   url.searchParams.set("code", code);
+  if (redirectUri) url.searchParams.set("redirect_uri", redirectUri);
   const res = await fetch(url.toString());
   const body = (await res.json().catch(() => ({}))) as { access_token?: string } & GraphErrorBody;
   if (!res.ok || !body.access_token) {
