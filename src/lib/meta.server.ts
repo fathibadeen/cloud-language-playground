@@ -134,7 +134,6 @@ export async function exchangeCodeForToken(code: string, redirectUri?: string, e
   push("");
   for (const c of extraCandidates) push(c);
   if (env.redirectUri) push(env.redirectUri);
-  push("https://www.facebook.com/connect/login_success.html");
 
   let lastMessage = "Meta authorization failed";
   for (const candidate of candidates) {
@@ -146,8 +145,10 @@ export async function exchangeCodeForToken(code: string, redirectUri?: string, e
     const res = await fetch(url.toString());
     const body = (await res.json().catch(() => ({}))) as { access_token?: string } & GraphErrorBody;
     if (res.ok && body.access_token) return { ok: true as const, token: body.access_token };
-    lastMessage = body?.error?.message ?? lastMessage;
-    if (!/redirect_uri/i.test(lastMessage)) break; // a different error: stop retrying
+    const msg = body?.error?.message ?? lastMessage;
+    // keep trying on redirect/domain mismatches; stop on any other error
+    if (!/redirect_uri|domain/i.test(msg)) return { ok: false as const, error: { kind: "meta_auth_failed", detail: msg } as MetaError };
+    if (/redirect_uri/i.test(msg) || lastMessage === "Meta authorization failed") lastMessage = msg;
   }
   return { ok: false as const, error: { kind: "meta_auth_failed", detail: lastMessage } as MetaError };
 }
