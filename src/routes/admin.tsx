@@ -115,7 +115,8 @@ function metaErrorText(message: string, ar: boolean): string {
     Forbidden: ar ? "هذه الصلاحية للمدير فقط" : "Admins only",
   };
   const [kind, detail] = message.split("|");
-  const base = map[kind] ?? (ar ? `خطأ: ${kind}` : `Error: ${kind}`);
+  const key = kind ?? message;
+  const base = map[key] ?? (ar ? `خطأ: ${key}` : `Error: ${key}`);
   return detail ? `${base} (${ar ? "سبب Meta" : "Meta says"}: ${detail})` : base;
 }
 

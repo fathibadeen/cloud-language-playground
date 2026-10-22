@@ -101,7 +101,7 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
     const wabaList: { id: string; name?: string }[] = [];
     for (const id of wabaIds) {
       const info = await meta.readWaba(token, id);
-      wabaList.push({ id, name: info.ok ? info.data?.name : undefined });
+      wabaList.push({ id, name: (info.ok ? info.data?.name : undefined) ?? "" });
     }
     if (wabaList.length === 0) {
       const owned = await meta.fetchOwnedWabas(token);
