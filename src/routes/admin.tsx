@@ -429,7 +429,7 @@ function WhatsappTab({
       url.searchParams.set("response_type", "code");
       url.searchParams.set("override_default_response_type", "true");
       url.searchParams.set("state", state);
-      url.searchParams.set("extras", JSON.stringify({ setup: {} }));
+      url.searchParams.set("extras", JSON.stringify({ setup: {}, featureType: "", sessionInfoVersion: "3" }));
       const popup = window.open(url.toString(), "meta_signup", "width=620,height=760");
       if (!popup) {
         toast.error(ar ? "اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة" : "Allow pop-ups and try again");
@@ -467,7 +467,7 @@ function WhatsappTab({
               config_id: metaConfigId,
               response_type: "code",
               override_default_response_type: true,
-              extras: { setup: {} },
+              extras: { setup: {}, featureType: "", sessionInfoVersion: "3" },
             });
           }),
       )

@@ -107,7 +107,12 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
       const owned = await meta.fetchOwnedWabas(token);
       if (owned.ok) wabaList.push(...(owned.data?.data ?? []));
     }
-    if (wabaList.length === 0) fail("meta_no_waba");
+    if (wabaList.length === 0) {
+      for (const w of await meta.fetchBusinessWabas(token)) wabaList.push(w);
+    }
+    if (wabaList.length === 0) {
+      fail("meta_no_waba", await meta.describeToken(token));
+    }
 
     // 3) register the app-level webhook (best effort, reported back)
     let webhookBase = "";
