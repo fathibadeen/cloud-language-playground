@@ -173,6 +173,39 @@ export async function fetchOwnedWabas(token: string) {
   );
 }
 
+/**
+ * Reads the WABA ids granted to this token from /debug_token granular scopes.
+ * This is the reliable source for Embedded Signup tokens, where
+ * `me/owned_whatsapp_business_accounts` is not available.
+ */
+export async function fetchGrantedWabaIds(token: string): Promise<string[]> {
+  const env = getMetaEnv();
+  const url = new URL(`${GRAPH_BASE}/${env.graphVersion}/debug_token`);
+  url.searchParams.set("input_token", token);
+  url.searchParams.set("access_token", `${env.appId}|${env.appSecret}`);
+  try {
+    const res = await fetch(url.toString());
+    const body = (await res.json().catch(() => ({}))) as {
+      data?: { granular_scopes?: { scope: string; target_ids?: string[] }[] };
+    };
+    const ids = new Set<string>();
+    for (const s of body.data?.granular_scopes ?? []) {
+      if (s.scope === "whatsapp_business_management" || s.scope === "whatsapp_business_messaging") {
+        for (const id of s.target_ids ?? []) ids.add(id);
+      }
+    }
+    return [...ids];
+  } catch {
+    return [];
+  }
+}
+
+/** Reads a single WABA by id (name only). */
+export async function readWaba(token: string, wabaId: string) {
+  const env = getMetaEnv();
+  return graphCall<OwnedWaba>(wabaId, token, env.graphVersion, { params: { fields: "id,name" } });
+}
+
 export type WabaPhoneNumber = {
   id: string;
   display_phone_number?: string;
