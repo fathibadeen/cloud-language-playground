@@ -117,23 +117,39 @@ export async function graphCall<T>(
 }
 
 /** Exchanges the Embedded Signup code for a short-lived user token. */
-export async function exchangeCodeForToken(code: string, redirectUri?: string) {
+export async function exchangeCodeForToken(code: string, redirectUri?: string, extraCandidates: string[] = []) {
   const env = getMetaEnv();
   if (!env.appId || !env.appSecret) {
     return { ok: false as const, error: { kind: "meta_not_configured" } as MetaError };
   }
-  const url = new URL(`${GRAPH_BASE}/${env.graphVersion}/oauth/access_token`);
-  url.searchParams.set("client_id", env.appId);
-  url.searchParams.set("client_secret", env.appSecret);
-  url.searchParams.set("code", code);
-  if (redirectUri) url.searchParams.set("redirect_uri", redirectUri);
-  const res = await fetch(url.toString());
-  const body = (await res.json().catch(() => ({}))) as { access_token?: string } & GraphErrorBody;
-  if (!res.ok || !body.access_token) {
-    const message = body?.error?.message ?? "Meta authorization failed";
-    return { ok: false as const, error: { kind: "meta_auth_failed", detail: message } as MetaError };
+  // Meta requires the exact redirect_uri used by the dialog. The JS SDK flow
+  // uses none (or an internal one), the popup uses our /admin URL — so try
+  // each plausible value until one validates.
+  const candidates: (string | null)[] = [];
+  const push = (v: string | null) => {
+    if (!candidates.includes(v)) candidates.push(v);
+  };
+  if (redirectUri) push(redirectUri);
+  push(null);
+  push("");
+  for (const c of extraCandidates) push(c);
+  if (env.redirectUri) push(env.redirectUri);
+  push("https://www.facebook.com/connect/login_success.html");
+
+  let lastMessage = "Meta authorization failed";
+  for (const candidate of candidates) {
+    const url = new URL(`${GRAPH_BASE}/${env.graphVersion}/oauth/access_token`);
+    url.searchParams.set("client_id", env.appId);
+    url.searchParams.set("client_secret", env.appSecret);
+    url.searchParams.set("code", code);
+    if (candidate !== null) url.searchParams.set("redirect_uri", candidate);
+    const res = await fetch(url.toString());
+    const body = (await res.json().catch(() => ({}))) as { access_token?: string } & GraphErrorBody;
+    if (res.ok && body.access_token) return { ok: true as const, token: body.access_token };
+    lastMessage = body?.error?.message ?? lastMessage;
+    if (!/redirect_uri/i.test(lastMessage)) break; // a different error: stop retrying
   }
-  return { ok: true as const, token: body.access_token };
+  return { ok: false as const, error: { kind: "meta_auth_failed", detail: lastMessage } as MetaError };
 }
 
 /** Exchanges a short-lived token for a long-lived one (~60 days). */
