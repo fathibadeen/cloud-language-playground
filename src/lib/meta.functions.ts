@@ -58,6 +58,8 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
         companyId: z.string().uuid(),
         code: z.string().min(10).max(2048),
         redirectUri: z.string().url().max(500).optional(),
+        wabaId: z.string().regex(/^\d{5,30}$/).optional(),
+        phoneNumberId: z.string().regex(/^\d{5,30}$/).optional(),
       })
       .parse(data),
   )
@@ -75,24 +77,49 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
       .single();
     if (!company) throw new Error("company_not_found");
 
-    // 1) code -> short-lived -> long-lived token
-    const short = await meta.exchangeCodeForToken(data.code, data.redirectUri);
-    if (!short.ok) throw new Error(short.error.kind);
-    const long = await meta.exchangeLongLivedToken(short.token);
-    if (!long.ok) throw new Error(long.error.kind);
-    const token = long.token;
+    const fail = (kind: string, detail?: string): never => {
+      console.error("[meta connect]", kind, detail ?? "");
+      throw new Error(detail ? `${kind}|${detail.slice(0, 300)}` : kind);
+    };
 
-    // 2) discover WABAs granted by the signup
-    const wabas = await meta.fetchOwnedWabas(token);
-    if (!wabas.ok) throw new Error(wabas.error.kind);
-    const wabaList = wabas.data?.data ?? [];
-    if (wabaList.length === 0) throw new Error("meta_no_waba");
+    // 1) code -> token. Embedded Signup returns a business token that is
+    //    already long-lived; the extra exchange is best effort.
+    const short = await meta.exchangeCodeForToken(data.code, data.redirectUri);
+    if (!short.ok) fail(short.error.kind, short.error.detail);
+    let token = (short as { token: string }).token;
+    let expiresIn: number | null = null;
+    const long = await meta.exchangeLongLivedToken(token);
+    if (long.ok) {
+      token = long.token;
+      expiresIn = long.expiresIn;
+    }
+
+    // 2) discover WABAs: ids sent by the signup popup, then debug_token
+    //    granular scopes, then the owned-accounts edge as a last resort.
+    const wabaIds = new Set<string>(data.wabaId ? [data.wabaId] : []);
+    for (const id of await meta.fetchGrantedWabaIds(token)) wabaIds.add(id);
+    const wabaList: { id: string; name?: string }[] = [];
+    for (const id of wabaIds) {
+      const info = await meta.readWaba(token, id);
+      wabaList.push({ id, name: (info.ok ? info.data?.name : undefined) ?? "" });
+    }
+    if (wabaList.length === 0) {
+      const owned = await meta.fetchOwnedWabas(token);
+      if (owned.ok) wabaList.push(...(owned.data?.data ?? []));
+    }
+    if (wabaList.length === 0) fail("meta_no_waba");
 
     // 3) register the app-level webhook (best effort, reported back)
-    const redirectBase = meta.getMetaEnv().redirectUri.replace(/\/$/, "");
-    const webhook = redirectBase
-      ? await meta.configureAppWebhook(`${redirectBase}${WHATSAPP_WEBHOOK_PATH}`)
+    let webhookBase = "";
+    try {
+      webhookBase = new URL(meta.getMetaEnv().redirectUri).origin;
+    } catch {
+      webhookBase = "";
+    }
+    const webhook = webhookBase
+      ? await meta.configureAppWebhook(`${webhookBase}${WHATSAPP_WEBHOOK_PATH}`)
       : ({ ok: false as const, error: { kind: "meta_webhook_error" as const } });
+    let lastPhoneError: { kind: string; detail?: string } | null = null;
 
     const connected: {
       wabaId: string;
@@ -105,10 +132,12 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
     for (const waba of wabaList) {
       const phones = await meta.fetchWabaPhoneNumbers(token, waba.id);
       if (!phones.ok) {
-        if (phones.error.kind === "meta_business_verification") throw new Error("meta_business_verification");
+        lastPhoneError = phones.error;
         continue;
       }
-      const numbers = phones.data?.data ?? [];
+      const numbers = (phones.data?.data ?? []).filter(
+        (p) => !data.phoneNumberId || waba.id !== data.wabaId || p.id === data.phoneNumberId,
+      );
 
       for (const phone of numbers) {
         // Tenant guard: a phone number can belong to exactly one company.
@@ -157,13 +186,16 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
       await meta.subscribeWaba(token, waba.id);
     }
 
-    if (connected.length === 0) throw new Error("meta_no_phone_numbers");
+    if (connected.length === 0) {
+      if (lastPhoneError) fail(lastPhoneError.kind, lastPhoneError.detail);
+      fail("meta_no_phone_numbers");
+    }
 
     // 4) store the encrypted token for the company
     await meta.saveCompanyWhatsappToken(data.companyId, {
       access_token: token,
       token_type: "bearer",
-      expires_in: long.expiresIn,
+      expires_in: expiresIn,
     });
 
     // 5) flag the company + document the connection

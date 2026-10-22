@@ -114,7 +114,10 @@ function metaErrorText(message: string, ar: boolean): string {
     company_not_found: ar ? "الشركة غير موجودة" : "Company not found",
     Forbidden: ar ? "هذه الصلاحية للمدير فقط" : "Admins only",
   };
-  return map[message] ?? (ar ? `خطأ: ${message}` : `Error: ${message}`);
+  const [kind, detail] = message.split("|");
+  const key = kind ?? message;
+  const base = map[key] ?? (ar ? `خطأ: ${key}` : `Error: ${key}`);
+  return detail ? `${base} (${ar ? "سبب Meta" : "Meta says"}: ${detail})` : base;
 }
 
 function useMetaOAuthReturn() {
@@ -387,13 +390,34 @@ function WhatsappTab({
       return;
     }
     setBusy(companyId);
+    // Embedded Signup posts the chosen WABA + phone number from facebook.com.
+    const session: { wabaId?: string; phoneNumberId?: string } = {};
+    const onSession = (event: MessageEvent) => {
+      if (!/(^|\.)facebook\.com$/.test(new URL(event.origin).hostname)) return;
+      try {
+        const msg = typeof event.data === "string" ? JSON.parse(event.data) : event.data;
+        if (msg?.type !== "WA_EMBEDDED_SIGNUP") return;
+        if (msg.data?.waba_id) session.wabaId = String(msg.data.waba_id);
+        if (msg.data?.phone_number_id) session.phoneNumberId = String(msg.data.phone_number_id);
+      } catch {
+        /* not a signup message */
+      }
+    };
+    window.addEventListener("message", onSession);
     const finish = async (code: string | undefined, redirectUri?: string) => {
+      // let a late session message arrive before closing the listener
+      await new Promise((r) => setTimeout(r, 400));
+      window.removeEventListener("message", onSession);
       if (!code) {
         toast.error(ar ? "أُلغيت خطوات الربط مع Meta" : "Meta signup was canceled");
         setBusy(null);
         return;
       }
-      await run(companyId, () => completeWhatsappConnect({ data: { companyId, code, redirectUri } }), ar ? `تم ربط واتساب ${companyName}` : `WhatsApp connected for ${companyName}`);
+      await run(
+        companyId,
+        () => completeWhatsappConnect({ data: { companyId, code, redirectUri, ...session } }),
+        ar ? `تم ربط واتساب ${companyName}` : `WhatsApp connected for ${companyName}`,
+      );
     };
     const popupFallback = () => {
       const redirectUri = `${window.location.origin}/admin`;
