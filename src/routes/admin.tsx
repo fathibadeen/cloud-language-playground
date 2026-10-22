@@ -103,7 +103,7 @@ function metaErrorText(message: string, ar: boolean): string {
     meta_not_configured: ar ? "Meta غير مُهيأ بعد — أضف مفاتيح Meta أولاً من الإعدادات" : "Meta is not configured yet — add the Meta keys first",
     meta_auth_failed: ar ? "فشل التفويض مع Meta — تأكد أن المستخدم مدير حساب Business وجرّب من جديد" : "Meta authorization failed — try again",
     meta_business_verification: ar ? "حساب Meta Business يحتاج توثيق قبل الربط" : "Meta Business verification required",
-    meta_no_waba: ar ? "لم يُعثر على حساب WhatsApp Business — أنشئ واحداً أثناء خطوات الربط" : "No WhatsApp Business account found",
+    meta_no_waba: ar ? "لم تُرسل Meta أي حساب WhatsApp Business — في نافذة Meta اختر (أو أنشئ) حساب WhatsApp Business والرقم وأكمل حتى النهاية، وتأكد أن نوع الإعداد (Configuration) هو WhatsApp Embedded Signup" : "No WhatsApp Business account found",
     meta_no_phone_numbers: ar ? "لا يوجد رقم هاتف في حساب WhatsApp Business" : "No phone number in the WhatsApp Business account",
     meta_number_in_use: ar ? "هذا الرقم مرتبط بشركة أخرى في المنصة" : "This phone number is linked to another company",
     meta_api_error: ar ? "خطأ من Meta — حاول بعد قليل" : "Meta API error — try again later",
