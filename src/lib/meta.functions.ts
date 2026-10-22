@@ -58,6 +58,7 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
         companyId: z.string().uuid(),
         code: z.string().min(10).max(2048),
         redirectUri: z.string().url().max(500).optional(),
+        pageUrls: z.array(z.string().url().max(500)).max(5).optional(),
         wabaId: z.string().regex(/^\d{5,30}$/).optional(),
         phoneNumberId: z.string().regex(/^\d{5,30}$/).optional(),
       })
@@ -84,7 +85,7 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
 
     // 1) code -> token. Embedded Signup returns a business token that is
     //    already long-lived; the extra exchange is best effort.
-    const short = await meta.exchangeCodeForToken(data.code, data.redirectUri);
+    const short = await meta.exchangeCodeForToken(data.code, data.redirectUri, data.pageUrls ?? []);
     if (!short.ok) fail(short.error.kind, short.error.detail);
     let token = (short as { token: string }).token;
     let expiresIn: number | null = null;

@@ -415,7 +415,16 @@ function WhatsappTab({
       }
       await run(
         companyId,
-        () => completeWhatsappConnect({ data: { companyId, code, redirectUri, ...session } }),
+        () =>
+          completeWhatsappConnect({
+            data: {
+              companyId,
+              code,
+              redirectUri,
+              pageUrls: [window.location.href.split("#")[0], `${window.location.origin}/admin`, `${window.location.origin}/`],
+              ...session,
+            },
+          }),
         ar ? `تم ربط واتساب ${companyName}` : `WhatsApp connected for ${companyName}`,
       );
     };
