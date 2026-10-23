@@ -1,12 +1,13 @@
 # Roadmap
 
 ## Payment monitoring review
-- [ ] Verify Moyasar authentication rejection; valid replacement credentials require the administrator if still rejected.
-- [ ] Allow expired trials to reach billing and payment confirmation while keeping suspended companies blocked; test the access rule and dashboard flow.
+- [x] Verify Moyasar authentication rejection: authenticated admin connection test reproduced HTTP 401 Invalid authorization credentials.
+- [ ] Replace the rejected Moyasar credential — blocked on the administrator supplying a valid key through Payments settings.
+- [x] Allow expired trials to reach billing and payment confirmation while keeping suspended companies blocked; five rule tests passed and the signed-in flow passed with an expired-trial response simulation.
 
 ## Phase 1 — critical SaaS gaps (done)
 - [x] Enforce plan limits (agents, members, documents, numbers) in the database
-- [x] Block suspended companies and expired trials everywhere, with a clear screen
+- [x] Block suspended companies and expired trials from service routes, with billing exceptions for expired subscriptions
 - [x] Real team invitations with accept page; protect the last owner and self-role changes
 
 ## Phase 2 — channel completeness (done)
