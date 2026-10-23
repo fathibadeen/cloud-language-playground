@@ -429,7 +429,10 @@ function WhatsappTab({
       );
     };
     const popupFallback = () => {
-      const redirectUri = `${window.location.origin}/admin`;
+      // Always return to the registered production address on the Sawti domain
+      const redirectUri = window.location.hostname.endsWith("sawti-ai.com")
+        ? "https://www.sawti-ai.com/admin"
+        : `${window.location.origin}/admin`;
       const state = `meta_${crypto.randomUUID()}`;
       const url = new URL(`https://www.facebook.com/${graphVersion}/dialog/oauth`);
       url.searchParams.set("client_id", metaAppId!);
@@ -471,7 +474,10 @@ function WhatsappTab({
           new Promise<void>((resolve) => {
             FB.login((response) => {
               resolve();
-              void finish(response?.authResponse?.code);
+              const code = response?.authResponse?.code;
+              // SDK window closed without a code: open the direct window instead of showing "canceled"
+              if (!code) popupFallback();
+              else void finish(code);
             }, {
               config_id: metaConfigId,
               response_type: "code",
