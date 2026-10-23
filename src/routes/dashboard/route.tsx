@@ -29,6 +29,7 @@ import { useAuth } from "@/lib/auth";
 import { useIsSuperAdmin, useMembership, useMemberships, usePlans, useSubscription, useSwitchCompany } from "@/lib/tenant";
 import { addonPrice, companyProduct, productChannels, type PlanRow } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
+import { dashboardAccess } from "@/lib/dashboard-access";
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
@@ -104,13 +105,7 @@ function DashboardLayout() {
   const ar = locale === "ar";
   const voiceOnly: string[] = ["/dashboard/voice", "/dashboard/calls", "/dashboard/numbers"];
   const sub = subscription as { status?: string; current_period_end?: string } | null;
-  const expired =
-    !!sub &&
-    (sub.status === "canceled" ||
-      (["trialing", "past_due"].includes(sub.status ?? "") &&
-        !!sub.current_period_end &&
-        new Date(sub.current_period_end) < new Date()));
-  const blocked = company?.status === "suspended" || expired;
+  const { blocked, suspended } = dashboardAccess(company?.status, sub, pathname);
 
   if (blocked) {
     return (
@@ -123,6 +118,11 @@ function DashboardLayout() {
             {company?.status === "suspended" ? t("accountSuspendedDesc") : t("trialEndedDesc")}
           </p>
           <div className="flex justify-center gap-2">
+            {!suspended ? (
+              <Button asChild>
+                <Link to="/dashboard/billing"><CreditCard className="size-4" />{ar ? "تجديد الاشتراك" : "Renew subscription"}</Link>
+              </Button>
+            ) : null}
             <Button asChild variant="outline">
               <a href="mailto:meswar2030@gmail.com">{t("contactSupport")}</a>
             </Button>
@@ -221,7 +221,7 @@ function DashboardLayout() {
                 value={membership.company_id}
                 onChange={(e) => switchCompany(e.target.value)}
               >
-                {memberships!.map((m) => (
+                {(memberships ?? []).map((m) => (
                   <option key={m.company_id} value={m.company_id}>
                     {(m.companies as { name?: string } | null)?.name ?? m.company_id.slice(0, 8)}
                   </option>
