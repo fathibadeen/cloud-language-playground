@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { addonPrice, plansFor, productFeatures, productLabels, type PlanRow, type Product } from "@/lib/products";
+import { addonPrice, CLINIC_SETUP_FEE_SAR, periodPrice, plansFor, productFeatures, productLabels, type BillingPeriod, type PlanRow, type Product } from "@/lib/products";
 import {
   ArrowLeft,
   BarChart3,
@@ -98,6 +98,7 @@ function Landing() {
   const { user } = useAuth();
   const { data: plans } = usePlans();
   const [product, setProduct] = useState<Product>("whatsapp");
+  const [period, setPeriod] = useState<BillingPeriod>("monthly");
   const [voiceDemoOpen, setVoiceDemoOpen] = useState(false);
   const [voiceDemoLoaded, setVoiceDemoLoaded] = useState(false);
   const ar = locale === "ar";
