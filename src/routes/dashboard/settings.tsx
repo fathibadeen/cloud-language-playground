@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { useI18n } from "@/lib/i18n";
 import { useMembership } from "@/lib/tenant";
+import { INDUSTRIES, industryLabel } from "@/lib/industries";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { exportCompanyData, requestAccountDeletion } from "@/lib/notifications.functions";
@@ -148,7 +149,15 @@ function SettingsPage() {
           <div className="grid gap-4 md:grid-cols-2">
             {field("name", t("companyName"))}
             {field("cr_number", t("crNumber"), "ltr")}
-            {field("industry", t("industry"))}
+            <div className="space-y-2">
+              <Label>{t("industry")}</Label>
+              <Select value={form.industry ?? ""} onValueChange={(v) => setForm({ ...form, industry: v })}>
+                <SelectTrigger><SelectValue placeholder={industryLabel(form.industry) || "اختر النشاط"} /></SelectTrigger>
+                <SelectContent>
+                  {INDUSTRIES.map((i) => <SelectItem key={i.value} value={i.value}>{i.label}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
             {field("city", t("city"))}
             {field("contact_phone", t("contactPhone"), "ltr")}
             {field("contact_email", t("email"), "ltr")}

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { CalendarCheck, Clock, ExternalLink, MessageCircle, PhoneCall, PhoneMissed, ShieldCheck, Stethoscope } from "lucide-react";
+import { BarChart3, BellRing, BookOpen, CalendarCheck, Clock, ExternalLink, HeartPulse, MapPin, MessageCircle, PhoneCall, PhoneMissed, RotateCcw, ShieldCheck, Siren, Stethoscope, UserRound } from "lucide-react";
 import { PublicPageShell } from "@/components/PublicPageShell";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -36,6 +36,17 @@ const steps = [
   { icon: PhoneCall, t: "يرد فوراً", d: "الوكيل يرد على المكالمة أو رسالة واتساب خلال ثوانٍ، ليلاً ونهاراً." },
   { icon: Stethoscope, t: "يفهم الطلب", d: "يسأل عن الخدمة أو الطبيب والوقت المناسب، ويجيب من معلومات عيادتك." },
   { icon: CalendarCheck, t: "يحجز الموعد", d: "يسجّل الموعد ضمن ساعات العمل، ويظهر مباشرة في لوحتك وتقويم Google." },
+];
+
+const features = [
+  { icon: BellRing, t: "تذكير قبل 24 ساعة وساعتين", d: "رسالة واتساب للمريض يؤكد فيها حضوره أو يعيد الجدولة بضغطة — أقل تغيب، إيراد أكثر." },
+  { icon: RotateCcw, t: "استرجاع المتغيبين", d: "من لم يحضر يتواصل معه الوكيل تلقائياً ويعرض عليه موعداً بديلاً." },
+  { icon: UserRound, t: "حجز حسب الطبيب والتخصص", d: "يحجز ويعدّل ويلغي المواعيد حسب جدول دوام كل طبيب وخدماته." },
+  { icon: HeartPulse, t: "متابعة بعد الزيارة", d: "«كيف حالك بعد الإجراء؟» — رسالة اهتمام ترفع رضا المرضى وتقييماتك." },
+  { icon: MapPin, t: "تعليمات ما قبل الزيارة والموقع", d: "يرسل تعليمات الصيام أو الأوراق المطلوبة ورابط الخريطة وتفاصيل الوصول." },
+  { icon: Siren, t: "تحويل الطوارئ فوراً", d: "الحالات الطارئة تُحوّل لموظف أو للإسعاف 997، والوكيل لا يشخّص أبداً." },
+  { icon: BookOpen, t: "أسئلة شائعة جاهزة لكل تخصص", d: "أسنان، جلدية، تجميل، أطفال وغيرها — مع سياسات الإلغاء والدفع والتأمين." },
+  { icon: BarChart3, t: "لوحة خاصة بالعيادة", d: "نسبة الحضور مقابل التغيب، المواعيد المحجوزة عبر الوكيل، أوقات الذروة والمكالمات الفائتة." },
 ];
 
 function ClinicsPage() {
@@ -94,10 +105,31 @@ function ClinicsPage() {
               </div>
             ))}
           </div>
-          <ul className="mx-auto mt-10 grid max-w-3xl gap-3 text-base text-landing-muted sm:grid-cols-2">
-            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> يحوّل الحالات الحساسة لفريقك فوراً</li>
-            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> يلتزم بساعات عمل عيادتك وخدماتها</li>
-            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> تسجيل وتفريغ لكل مكالمة في لوحتك</li>
+        </section>
+
+        <section className="border-y border-landing-foreground/10 bg-saudi/40 py-16">
+          <div className="mx-auto max-w-6xl px-4 md:px-8">
+            <p className="text-center text-sm font-semibold text-gold">حزمة صوتي للعيادات</p>
+            <h2 className="mt-2 text-center font-display text-3xl font-bold md:text-4xl">قلّل التغيب… واسترجع إيرادك</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-lg text-landing-muted">كل موعد لا يحضره المريض كرسي فارغ وإيراد ضائع. صوتي يذكّر ويتابع ويعيد الجدولة بدلاً عن فريقك.</p>
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {features.map((f) => (
+                <div key={f.t} className="rounded-2xl border border-landing-foreground/10 bg-landing p-6">
+                  <f.icon className="size-7 text-gold" />
+                  <h3 className="mt-4 text-lg font-semibold">{f.t}</h3>
+                  <p className="mt-2 text-base leading-7 text-landing-muted">{f.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-4 py-16 md:px-8">
+          <h2 className="text-center font-display text-3xl font-bold">امتثال وخصوصية</h2>
+          <ul className="mx-auto mt-8 grid max-w-3xl gap-3 text-base text-landing-muted sm:grid-cols-2">
+            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> تنبيه المريض بتسجيل المكالمة وأخذ موافقته</li>
+            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> بيانات كل عيادة منفصلة تماماً</li>
+            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> متوافق مع نظام حماية البيانات الشخصية (PDPL)</li>
             <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> أسعار بالريال وتشمل ضريبة القيمة المضافة</li>
           </ul>
         </section>

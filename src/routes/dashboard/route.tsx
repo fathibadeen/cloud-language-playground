@@ -31,6 +31,7 @@ import { useIsSuperAdmin, useMembership, useMemberships, usePlans, useSubscripti
 import { addonPrice, companyProduct, productChannels, type PlanRow } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 import { dashboardAccess } from "@/lib/dashboard-access";
+import { isClinicIndustry } from "@/lib/industries";
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
@@ -163,6 +164,7 @@ function DashboardLayout() {
           {nav.filter((item) => {
             if (!channels.voice && voiceOnly.includes(item.to)) return false;
             if (!channels.whatsapp && item.to === "/dashboard/whatsapp") return false;
+            if (item.to === "/dashboard/clinic" && !isClinicIndustry((company as { industry?: string | null } | null)?.industry)) return false;
             return true;
           }).map((item) => {
             const active = "exact" in item && item.exact ? pathname === item.to : pathname.startsWith(item.to);
