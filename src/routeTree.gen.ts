@@ -26,6 +26,7 @@ import { Route as DashboardAppointmentsRouteImport } from './routes/dashboard/ap
 import { Route as DashboardBillingRouteImport } from './routes/dashboard/billing'
 import { Route as DashboardBillingCallbackRouteImport } from './routes/dashboard/billing-callback'
 import { Route as DashboardCallsRouteImport } from './routes/dashboard/calls'
+import { Route as DashboardClinicRouteImport } from './routes/dashboard/clinic'
 import { Route as DashboardConversationsRouteImport } from './routes/dashboard/conversations'
 import { Route as DashboardKnowledgeRouteImport } from './routes/dashboard/knowledge'
 import { Route as DashboardNumbersRouteImport } from './routes/dashboard/numbers'
@@ -127,6 +128,11 @@ const DashboardCallsRoute = DashboardCallsRouteImport.update({
   path: '/calls',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardClinicRoute = DashboardClinicRouteImport.update({
+  id: '/clinic',
+  path: '/clinic',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardConversationsRoute = DashboardConversationsRouteImport.update({
   id: '/conversations',
   path: '/conversations',
@@ -217,6 +223,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/billing-callback': typeof DashboardBillingCallbackRoute
   '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/clinic': typeof DashboardClinicRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
@@ -249,6 +256,7 @@ export interface FileRoutesByTo {
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/billing-callback': typeof DashboardBillingCallbackRoute
   '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/clinic': typeof DashboardClinicRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
@@ -283,6 +291,7 @@ export interface FileRoutesById {
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/billing-callback': typeof DashboardBillingCallbackRoute
   '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/clinic': typeof DashboardClinicRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
@@ -318,6 +327,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/billing-callback'
     | '/dashboard/calls'
+    | '/dashboard/clinic'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
@@ -350,6 +360,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/billing-callback'
     | '/dashboard/calls'
+    | '/dashboard/clinic'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
@@ -383,6 +394,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/billing-callback'
     | '/dashboard/calls'
+    | '/dashboard/clinic'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
@@ -541,6 +553,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCallsRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/clinic': {
+      id: '/dashboard/clinic'
+      path: '/clinic'
+      fullPath: '/dashboard/clinic'
+      preLoaderRoute: typeof DashboardClinicRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/conversations': {
       id: '/dashboard/conversations'
       path: '/conversations'
@@ -648,6 +667,7 @@ interface DashboardRouteRouteChildren {
   DashboardBillingRoute: typeof DashboardBillingRoute
   DashboardBillingCallbackRoute: typeof DashboardBillingCallbackRoute
   DashboardCallsRoute: typeof DashboardCallsRoute
+  DashboardClinicRoute: typeof DashboardClinicRoute
   DashboardConversationsRoute: typeof DashboardConversationsRoute
   DashboardKnowledgeRoute: typeof DashboardKnowledgeRoute
   DashboardNumbersRoute: typeof DashboardNumbersRoute
@@ -665,6 +685,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardBillingRoute: DashboardBillingRoute,
   DashboardBillingCallbackRoute: DashboardBillingCallbackRoute,
   DashboardCallsRoute: DashboardCallsRoute,
+  DashboardClinicRoute: DashboardClinicRoute,
   DashboardConversationsRoute: DashboardConversationsRoute,
   DashboardKnowledgeRoute: DashboardKnowledgeRoute,
   DashboardNumbersRoute: DashboardNumbersRoute,
