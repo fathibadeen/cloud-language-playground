@@ -1170,6 +1170,7 @@ export type Database = {
         Row: {
           amount_halalas: number
           applied: boolean
+          billing_period: string
           company_id: string
           created_at: string
           created_by: string | null
@@ -1179,6 +1180,7 @@ export type Database = {
           plan_id: string | null
           provider: string
           raw: Json | null
+          setup_fee_halalas: number
           status: string
           updated_at: string
           vat_halalas: number
@@ -1186,6 +1188,7 @@ export type Database = {
         Insert: {
           amount_halalas: number
           applied?: boolean
+          billing_period?: string
           company_id: string
           created_at?: string
           created_by?: string | null
@@ -1195,6 +1198,7 @@ export type Database = {
           plan_id?: string | null
           provider?: string
           raw?: Json | null
+          setup_fee_halalas?: number
           status?: string
           updated_at?: string
           vat_halalas?: number
@@ -1202,6 +1206,7 @@ export type Database = {
         Update: {
           amount_halalas?: number
           applied?: boolean
+          billing_period?: string
           company_id?: string
           created_at?: string
           created_by?: string | null
@@ -1211,6 +1216,7 @@ export type Database = {
           plan_id?: string | null
           provider?: string
           raw?: Json | null
+          setup_fee_halalas?: number
           status?: string
           updated_at?: string
           vat_halalas?: number

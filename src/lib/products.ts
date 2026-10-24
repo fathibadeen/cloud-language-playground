@@ -56,3 +56,21 @@ export function addonPrice(plans: PlanRow[] | undefined, product: Product): numb
 }
 
 export const productChannels = (p: Product) => ({ voice: p !== "whatsapp", whatsapp: p !== "voice" });
+
+export type BillingPeriod = "monthly" | "yearly";
+
+/** Yearly billing charges 10 months for 12 (two months free). */
+export const YEARLY_MONTHS_CHARGED = 10;
+/** One-time onboarding fee for clinic companies, charged with their first paid subscription. */
+export const CLINIC_SETUP_FEE_SAR = 1000;
+
+export function periodPrice(monthlySar: number, period: BillingPeriod): number {
+  return period === "yearly" ? Number(monthlySar) * YEARLY_MONTHS_CHARGED : Number(monthlySar);
+}
+
+/** Net (pre-VAT) checkout amount in SAR. */
+export function checkoutNet(opts: { monthlySar: number; period: BillingPeriod; clinic: boolean; setupPaid: boolean }) {
+  const plan = periodPrice(opts.monthlySar, opts.period);
+  const setup = opts.clinic && !opts.setupPaid ? CLINIC_SETUP_FEE_SAR : 0;
+  return { plan, setup, total: plan + setup };
+}

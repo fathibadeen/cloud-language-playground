@@ -99,6 +99,13 @@
       "when": 1792881146439,
       "tag": "0013_clinic_suite",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1792882860972,
+      "tag": "0014_annual_billing_setup_fee",
+      "breakpoints": true
     }
   ]
 }

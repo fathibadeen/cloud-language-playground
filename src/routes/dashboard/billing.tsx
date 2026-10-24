@@ -13,8 +13,9 @@ import {
 } from "@/components/ui/table";
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership, usePlans, useSubscription } from "@/lib/tenant";
-import { ProductPlanCards, ProductToggle } from "@/components/ProductPlans";
-import { addonPrice, companyProduct, type PlanRow, type Product } from "@/lib/products";
+import { PeriodToggle, ProductPlanCards, ProductToggle } from "@/components/ProductPlans";
+import { addonPrice, checkoutNet, companyProduct, CLINIC_SETUP_FEE_SAR, type BillingPeriod, type PlanRow, type Product } from "@/lib/products";
+import { isClinicIndustry } from "@/lib/industries";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -55,12 +56,16 @@ function BillingPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   const selectedPlan = (plans as PlanRow[] | undefined)?.find((p) => p.id === selected);
+  const [period, setPeriod] = useState<BillingPeriod>("monthly");
+  const clinic = isClinicIndustry((membership?.companies as { industry?: string | null } | null)?.industry);
+  const setupPaid = (invoices ?? []).some((i) => i.status === "paid");
+  const price = selectedPlan ? checkoutNet({ monthlySar: Number(selectedPlan.price_sar), period, clinic, setupPaid }) : null;
 
   async function subscribe() {
     if (!companyId || !selected) return;
     setPaying(true);
     try {
-      const r = await checkout({ data: { companyId, planId: selected } });
+      const r = await checkout({ data: { companyId, planId: selected, period } });
       if (r.url) window.location.href = r.url;
       else {
         toast.error(ar ? "تعذّر بدء الدفع، حاول لاحقاً" : "Couldn't start checkout");
@@ -139,13 +144,21 @@ function BillingPage() {
       ) : null}
 
       <ProductToggle value={view} onChange={setView} ar={ar} />
-      <ProductPlanCards plans={plans as PlanRow[] | undefined} product={view} ar={ar} currentId={currentPlanId ?? null} perMonth={t("perMonth")} selectedId={selected} {...(payState?.enabled ? { onSelect: setSelected } : {})} />
+      <div className="flex flex-wrap items-center gap-3">
+        <PeriodToggle value={period} onChange={setPeriod} ar={ar} />
+        {clinic && !setupPaid ? (
+          <span className="text-sm text-muted-foreground">
+            {ar ? `رسوم تأسيس العيادة ${CLINIC_SETUP_FEE_SAR} ر.س تُدفع مرة واحدة مع أول اشتراك` : `One-time clinic setup fee: ${CLINIC_SETUP_FEE_SAR} SAR`}
+          </span>
+        ) : null}
+      </div>
+      <ProductPlanCards period={period} plans={plans as PlanRow[] | undefined} product={view} ar={ar} currentId={currentPlanId ?? null} perMonth={t("perMonth")} selectedId={selected} {...(payState?.enabled ? { onSelect: setSelected } : {})} />
       {payState?.enabled ? (
         <Card>
           <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5">
             <p className="text-sm text-muted-foreground">
               {selectedPlan
-                ? `${ar ? selectedPlan.name_ar : selectedPlan.name_en}: ${(Number(selectedPlan.price_sar) * 1.15).toFixed(2)} ${ar ? "ر.س شامل الضريبة 15%" : "SAR incl. 15% VAT"}`
+                ? `${ar ? selectedPlan.name_ar : selectedPlan.name_en}${price && price.setup ? (ar ? " + رسوم التأسيس" : " + setup fee") : ""}: ${((price?.total ?? 0) * 1.15).toFixed(2)} ${ar ? "ر.س شامل الضريبة 15%" : "SAR incl. 15% VAT"}`
                 : ar ? "اختر باقة ثم اضغط اشترك الآن (مدى، فيزا، ماستركارد، Apple Pay)" : "Pick a plan, then subscribe (mada, Visa, Mastercard, Apple Pay)"}
               {payState.mode === "test" ? (ar ? " — وضع تجريبي" : " — test mode") : ""}
             </p>

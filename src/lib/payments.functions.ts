@@ -93,7 +93,7 @@ export const paymentsEnabled = createServerFn({ method: "GET" })
 
 export const createCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ companyId: z.string().uuid(), planId: z.string().uuid() }).parse(d))
+  .inputValidator((d: unknown) => z.object({ companyId: z.string().uuid(), planId: z.string().uuid(), period: z.enum(["monthly", "yearly"]).default("monthly") }).parse(d))
   .handler(async ({ data, context }) => {
     const { data: m } = await context.supabase
       .from("company_members")
@@ -115,13 +115,28 @@ export const createCheckout = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!plan || !plan.is_active || Number(plan.price_sar) <= 0) return { error: "invalid_plan" as const, url: null };
 
-    const net = Math.round(Number(plan.price_sar) * 100);
+    const { checkoutNet } = await import("@/lib/products");
+    const { isClinicIndustry } = await import("@/lib/industries");
+    const { data: company } = await supabaseAdmin.from("companies").select("industry").eq("id", data.companyId).maybeSingle();
+    const { count: setupCount } = await supabaseAdmin
+      .from("payments")
+      .select("id", { count: "exact", head: true })
+      .eq("company_id", data.companyId)
+      .eq("applied", true)
+      .gt("setup_fee_halalas", 0);
+    const price = checkoutNet({
+      monthlySar: Number(plan.price_sar),
+      period: data.period,
+      clinic: isClinicIndustry(company?.industry),
+      setupPaid: (setupCount ?? 0) > 0,
+    });
+    const net = Math.round(price.total * 100);
     const vat = Math.round(net * VAT_RATE);
     const amount = net + vat;
 
     const { data: pay, error } = await supabaseAdmin
       .from("payments")
-      .insert({ company_id: data.companyId, plan_id: plan.id, amount_halalas: amount, vat_halalas: vat, created_by: context.userId })
+      .insert({ company_id: data.companyId, plan_id: plan.id, amount_halalas: amount, vat_halalas: vat, created_by: context.userId, billing_period: data.period, setup_fee_halalas: Math.round(price.setup * 100) })
       .select("id")
       .single();
     if (error || !pay) throw new Error(error?.message ?? "insert_failed");
@@ -133,7 +148,7 @@ export const createCheckout = createServerFn({ method: "POST" })
         body: JSON.stringify({
           amount,
           currency: "SAR",
-          description: `اشتراك صوتي — ${plan.name_ar} (شامل ضريبة 15%)`,
+          description: `اشتراك صوتي — ${plan.name_ar} — ${data.period === "yearly" ? "سنوي" : "شهري"}${price.setup ? " + رسوم تأسيس العيادة" : ""} (شامل ضريبة 15%)`,
           success_url: `${origin}/dashboard/billing-callback?pid=${pay.id}`,
           back_url: `${origin}/dashboard/billing`,
           metadata: { payment_id: pay.id, company_id: data.companyId },
