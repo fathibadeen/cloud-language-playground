@@ -92,6 +92,13 @@
       "when": 1792605425638,
       "tag": "0012_moyasar_payments",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1792881146439,
+      "tag": "0013_clinic_suite",
+      "breakpoints": true
     }
   ]
 }

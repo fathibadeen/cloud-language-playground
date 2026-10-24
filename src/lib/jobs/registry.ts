@@ -11,7 +11,8 @@ export const JOB_NAMES = [
   "subscription-cycle",
   "sla-escalation",
   "conversation-janitor",
-  "retention"
+  "retention",
+  "clinic-reminders"
 ] as const;
 
 export type JobName = (typeof JOB_NAMES)[number];
@@ -55,6 +56,9 @@ export async function runJob(name: JobName): Promise<JobResult> {
         break;
       case "retention":
         result = await (await import("./retention")).run();
+        break;
+      case "clinic-reminders":
+        result = await (await import("./clinic-reminders")).run();
         break;
     }
 

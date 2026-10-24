@@ -26,6 +26,7 @@ import { Route as DashboardAppointmentsRouteImport } from './routes/dashboard/ap
 import { Route as DashboardBillingRouteImport } from './routes/dashboard/billing'
 import { Route as DashboardBillingCallbackRouteImport } from './routes/dashboard/billing-callback'
 import { Route as DashboardCallsRouteImport } from './routes/dashboard/calls'
+import { Route as DashboardClinicRouteImport } from './routes/dashboard/clinic'
 import { Route as DashboardConversationsRouteImport } from './routes/dashboard/conversations'
 import { Route as DashboardKnowledgeRouteImport } from './routes/dashboard/knowledge'
 import { Route as DashboardNumbersRouteImport } from './routes/dashboard/numbers'
@@ -38,6 +39,7 @@ import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as AdminCompaniesCompanyIdRouteImport } from './routes/admin_.companies.$companyId'
 import { Route as ApiCronJobRouteImport } from './routes/api/cron/$job'
 import { Route as ApiPublicCalendarTokenRouteImport } from './routes/api/public/calendar.$token'
+import { Route as ApiPublicJobsClinicRemindersRouteImport } from './routes/api/public/jobs/clinic-reminders'
 import { Route as ApiPublicWebhooksProviderRouteImport } from './routes/api/public/webhooks/$provider'
 import { Route as ApiPublicWebhooksMoyasarRouteImport } from './routes/api/public/webhooks/moyasar'
 
@@ -127,6 +129,11 @@ const DashboardCallsRoute = DashboardCallsRouteImport.update({
   path: '/calls',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardClinicRoute = DashboardClinicRouteImport.update({
+  id: '/clinic',
+  path: '/clinic',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardConversationsRoute = DashboardConversationsRouteImport.update({
   id: '/conversations',
   path: '/conversations',
@@ -187,6 +194,12 @@ const ApiPublicCalendarTokenRoute = ApiPublicCalendarTokenRouteImport.update({
   path: '/api/public/calendar/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicJobsClinicRemindersRoute =
+  ApiPublicJobsClinicRemindersRouteImport.update({
+    id: '/api/public/jobs/clinic-reminders',
+    path: '/api/public/jobs/clinic-reminders',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksProviderRoute =
   ApiPublicWebhooksProviderRouteImport.update({
     id: '/api/public/webhooks/$provider',
@@ -217,6 +230,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/billing-callback': typeof DashboardBillingCallbackRoute
   '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/clinic': typeof DashboardClinicRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
@@ -230,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/admin/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
   '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
+  '/api/public/jobs/clinic-reminders': typeof ApiPublicJobsClinicRemindersRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
   '/api/public/webhooks/moyasar': typeof ApiPublicWebhooksMoyasarRoute
 }
@@ -249,6 +264,7 @@ export interface FileRoutesByTo {
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/billing-callback': typeof DashboardBillingCallbackRoute
   '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/clinic': typeof DashboardClinicRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
@@ -262,6 +278,7 @@ export interface FileRoutesByTo {
   '/admin/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
   '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
+  '/api/public/jobs/clinic-reminders': typeof ApiPublicJobsClinicRemindersRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
   '/api/public/webhooks/moyasar': typeof ApiPublicWebhooksMoyasarRoute
 }
@@ -283,6 +300,7 @@ export interface FileRoutesById {
   '/dashboard/billing': typeof DashboardBillingRoute
   '/dashboard/billing-callback': typeof DashboardBillingCallbackRoute
   '/dashboard/calls': typeof DashboardCallsRoute
+  '/dashboard/clinic': typeof DashboardClinicRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
@@ -296,6 +314,7 @@ export interface FileRoutesById {
   '/admin_/companies/$companyId': typeof AdminCompaniesCompanyIdRoute
   '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
+  '/api/public/jobs/clinic-reminders': typeof ApiPublicJobsClinicRemindersRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
   '/api/public/webhooks/moyasar': typeof ApiPublicWebhooksMoyasarRoute
 }
@@ -318,6 +337,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/billing-callback'
     | '/dashboard/calls'
+    | '/dashboard/clinic'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
@@ -331,6 +351,7 @@ export interface FileRouteTypes {
     | '/admin/companies/$companyId'
     | '/api/cron/$job'
     | '/api/public/calendar/$token'
+    | '/api/public/jobs/clinic-reminders'
     | '/api/public/webhooks/$provider'
     | '/api/public/webhooks/moyasar'
   fileRoutesByTo: FileRoutesByTo
@@ -350,6 +371,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/billing-callback'
     | '/dashboard/calls'
+    | '/dashboard/clinic'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
@@ -363,6 +385,7 @@ export interface FileRouteTypes {
     | '/admin/companies/$companyId'
     | '/api/cron/$job'
     | '/api/public/calendar/$token'
+    | '/api/public/jobs/clinic-reminders'
     | '/api/public/webhooks/$provider'
     | '/api/public/webhooks/moyasar'
   id:
@@ -383,6 +406,7 @@ export interface FileRouteTypes {
     | '/dashboard/billing'
     | '/dashboard/billing-callback'
     | '/dashboard/calls'
+    | '/dashboard/clinic'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
     | '/dashboard/numbers'
@@ -396,6 +420,7 @@ export interface FileRouteTypes {
     | '/admin_/companies/$companyId'
     | '/api/cron/$job'
     | '/api/public/calendar/$token'
+    | '/api/public/jobs/clinic-reminders'
     | '/api/public/webhooks/$provider'
     | '/api/public/webhooks/moyasar'
   fileRoutesById: FileRoutesById
@@ -416,6 +441,7 @@ export interface RootRouteChildren {
   AdminCompaniesCompanyIdRoute: typeof AdminCompaniesCompanyIdRoute
   ApiCronJobRoute: typeof ApiCronJobRoute
   ApiPublicCalendarTokenRoute: typeof ApiPublicCalendarTokenRoute
+  ApiPublicJobsClinicRemindersRoute: typeof ApiPublicJobsClinicRemindersRoute
   ApiPublicWebhooksProviderRoute: typeof ApiPublicWebhooksProviderRoute
   ApiPublicWebhooksMoyasarRoute: typeof ApiPublicWebhooksMoyasarRoute
 }
@@ -541,6 +567,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardCallsRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/clinic': {
+      id: '/dashboard/clinic'
+      path: '/clinic'
+      fullPath: '/dashboard/clinic'
+      preLoaderRoute: typeof DashboardClinicRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/conversations': {
       id: '/dashboard/conversations'
       path: '/conversations'
@@ -625,6 +658,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCalendarTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/jobs/clinic-reminders': {
+      id: '/api/public/jobs/clinic-reminders'
+      path: '/api/public/jobs/clinic-reminders'
+      fullPath: '/api/public/jobs/clinic-reminders'
+      preLoaderRoute: typeof ApiPublicJobsClinicRemindersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/$provider': {
       id: '/api/public/webhooks/$provider'
       path: '/api/public/webhooks/$provider'
@@ -648,6 +688,7 @@ interface DashboardRouteRouteChildren {
   DashboardBillingRoute: typeof DashboardBillingRoute
   DashboardBillingCallbackRoute: typeof DashboardBillingCallbackRoute
   DashboardCallsRoute: typeof DashboardCallsRoute
+  DashboardClinicRoute: typeof DashboardClinicRoute
   DashboardConversationsRoute: typeof DashboardConversationsRoute
   DashboardKnowledgeRoute: typeof DashboardKnowledgeRoute
   DashboardNumbersRoute: typeof DashboardNumbersRoute
@@ -665,6 +706,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardBillingRoute: DashboardBillingRoute,
   DashboardBillingCallbackRoute: DashboardBillingCallbackRoute,
   DashboardCallsRoute: DashboardCallsRoute,
+  DashboardClinicRoute: DashboardClinicRoute,
   DashboardConversationsRoute: DashboardConversationsRoute,
   DashboardKnowledgeRoute: DashboardKnowledgeRoute,
   DashboardNumbersRoute: DashboardNumbersRoute,
@@ -696,6 +738,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminCompaniesCompanyIdRoute: AdminCompaniesCompanyIdRoute,
   ApiCronJobRoute: ApiCronJobRoute,
   ApiPublicCalendarTokenRoute: ApiPublicCalendarTokenRoute,
+  ApiPublicJobsClinicRemindersRoute: ApiPublicJobsClinicRemindersRoute,
   ApiPublicWebhooksProviderRoute: ApiPublicWebhooksProviderRoute,
   ApiPublicWebhooksMoyasarRoute: ApiPublicWebhooksMoyasarRoute,
 }

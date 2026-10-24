@@ -155,10 +155,16 @@ export type Database = {
           customer_id: string | null
           customer_name: string | null
           customer_phone: string | null
+          doctor_id: string | null
           end_time: string
+          followup_at: string | null
           google_event_id: string | null
           id: string
+          noshow_contacted_at: string | null
           notes: string | null
+          patient_confirmed: boolean | null
+          reminder_24h_at: string | null
+          reminder_2h_at: string | null
           service_name: string | null
           source: string
           start_time: string
@@ -174,10 +180,16 @@ export type Database = {
           customer_id?: string | null
           customer_name?: string | null
           customer_phone?: string | null
+          doctor_id?: string | null
           end_time: string
+          followup_at?: string | null
           google_event_id?: string | null
           id?: string
+          noshow_contacted_at?: string | null
           notes?: string | null
+          patient_confirmed?: boolean | null
+          reminder_24h_at?: string | null
+          reminder_2h_at?: string | null
           service_name?: string | null
           source?: string
           start_time: string
@@ -193,10 +205,16 @@ export type Database = {
           customer_id?: string | null
           customer_name?: string | null
           customer_phone?: string | null
+          doctor_id?: string | null
           end_time?: string
+          followup_at?: string | null
           google_event_id?: string | null
           id?: string
+          noshow_contacted_at?: string | null
           notes?: string | null
+          patient_confirmed?: boolean | null
+          reminder_24h_at?: string | null
+          reminder_2h_at?: string | null
           service_name?: string | null
           source?: string
           start_time?: string
@@ -237,6 +255,13 @@ export type Database = {
             columns: ["customer_id"]
             isOneToOne: false
             referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "appointments_doctor_id_fkey"
+            columns: ["doctor_id"]
+            isOneToOne: false
+            referencedRelation: "clinic_doctors"
             referencedColumns: ["id"]
           },
         ]
@@ -474,6 +499,121 @@ export type Database = {
             foreignKeyName: "call_transcripts_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_doctors: {
+        Row: {
+          company_id: string
+          created_at: string
+          end_time: string
+          id: string
+          is_active: boolean
+          name: string
+          services: string[]
+          specialty: string | null
+          start_time: string
+          updated_at: string
+          work_days: number[]
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          services?: string[]
+          specialty?: string | null
+          start_time?: string
+          updated_at?: string
+          work_days?: number[]
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          end_time?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          services?: string[]
+          specialty?: string | null
+          start_time?: string
+          updated_at?: string
+          work_days?: number[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_doctors_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clinic_settings: {
+        Row: {
+          arrival_details: string | null
+          cancellation_policy: string | null
+          company_id: string
+          created_at: string
+          emergency_number: string
+          followup_enabled: boolean
+          insurance: string[]
+          map_url: string | null
+          noshow_recovery: boolean
+          payment_policy: string | null
+          pre_visit_instructions: Json
+          recording_notice: string
+          reminder_24h: boolean
+          reminder_2h: boolean
+          specialty: string
+          updated_at: string
+        }
+        Insert: {
+          arrival_details?: string | null
+          cancellation_policy?: string | null
+          company_id: string
+          created_at?: string
+          emergency_number?: string
+          followup_enabled?: boolean
+          insurance?: string[]
+          map_url?: string | null
+          noshow_recovery?: boolean
+          payment_policy?: string | null
+          pre_visit_instructions?: Json
+          recording_notice?: string
+          reminder_24h?: boolean
+          reminder_2h?: boolean
+          specialty?: string
+          updated_at?: string
+        }
+        Update: {
+          arrival_details?: string | null
+          cancellation_policy?: string | null
+          company_id?: string
+          created_at?: string
+          emergency_number?: string
+          followup_enabled?: boolean
+          insurance?: string[]
+          map_url?: string | null
+          noshow_recovery?: boolean
+          payment_policy?: string | null
+          pre_visit_instructions?: Json
+          recording_notice?: string
+          reminder_24h?: boolean
+          reminder_2h?: boolean
+          specialty?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinic_settings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },

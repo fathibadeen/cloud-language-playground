@@ -57,6 +57,7 @@ const STATUS: Record<string, { ar: string; variant: "default" | "secondary" | "d
   completed: { ar: "منجز", variant: "secondary" },
   cancelled: { ar: "ملغي", variant: "destructive" },
   rescheduled: { ar: "أُعيد جدولته", variant: "outline" },
+  no_show: { ar: "لم يحضر", variant: "destructive" },
 };
 const SOURCE: Record<string, string> = {
   voice_call: "مكالمة صوتية",
@@ -239,6 +240,11 @@ function AppointmentsPage() {
           {a.status !== "completed" ? (
             <Button size="sm" variant="outline" onClick={() => setStatus.mutate({ id: a.id, status: "completed" })}>
               {ar ? "تم الحضور" : "Completed"}
+            </Button>
+          ) : null}
+          {a.status !== "no_show" && a.status !== "cancelled" ? (
+            <Button size="sm" variant="outline" onClick={() => setStatus.mutate({ id: a.id, status: "no_show" })}>
+              لم يحضر
             </Button>
           ) : null}
           {a.status !== "cancelled" ? (
