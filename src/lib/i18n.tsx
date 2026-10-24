@@ -146,6 +146,7 @@ export const dict: Dict = {
   navConversations: { ar: "المحادثات", en: "Conversations" },
   navCalls: { ar: "المكالمات", en: "Calls" },
   navAppointments: { ar: "المواعيد", en: "Appointments" },
+  navClinic: { ar: "العيادة", en: "Clinic" },
   navKnowledge: { ar: "قاعدة المعرفة", en: "Knowledge base" },
   navNumbers: { ar: "أرقام الهاتف", en: "Phone numbers" },
   navTeam: { ar: "الفريق", en: "Team" },

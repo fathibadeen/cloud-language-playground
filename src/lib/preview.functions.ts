@@ -57,6 +57,7 @@ export const previewAgentReply = createServerFn({ method: "POST" })
       company?.city ? `المدينة: ${company.city}` : "",
       knowledge ? `قاعدة المعرفة (اعتمد عليها حصراً للحقائق):\n${knowledge}` : "لا توجد قاعدة معرفة بعد.",
       `إن لم تجد الإجابة في قاعدة المعرفة فقل: ${agent.fallback_response ?? "سأحوّلك إلى موظف مختص."}`,
+      await (await import("@/lib/clinic.server")).buildClinicPrompt(data.companyId),
       agent.language === "en" ? "Reply in English." : "أجب بالعربية وبإيجاز.",
     ]
       .filter(Boolean)
