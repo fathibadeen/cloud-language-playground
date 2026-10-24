@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { CalendarCheck, Clock, ExternalLink, MessageCircle, PhoneCall, PhoneMissed, ShieldCheck, Stethoscope } from "lucide-react";
+import { BarChart3, BellRing, BookOpen, CalendarCheck, Clock, ExternalLink, HeartPulse, MapPin, MessageCircle, PhoneCall, PhoneMissed, RotateCcw, ShieldCheck, Siren, Stethoscope, UserRound } from "lucide-react";
 import { PublicPageShell } from "@/components/PublicPageShell";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -36,6 +36,17 @@ const steps = [
   { icon: PhoneCall, t: "يرد فوراً", d: "الوكيل يرد على المكالمة أو رسالة واتساب خلال ثوانٍ، ليلاً ونهاراً." },
   { icon: Stethoscope, t: "يفهم الطلب", d: "يسأل عن الخدمة أو الطبيب والوقت المناسب، ويجيب من معلومات عيادتك." },
   { icon: CalendarCheck, t: "يحجز الموعد", d: "يسجّل الموعد ضمن ساعات العمل، ويظهر مباشرة في لوحتك وتقويم Google." },
+];
+
+const features = [
+  { icon: BellRing, t: "تذكير قبل 24 ساعة وساعتين", d: "رسالة واتساب للمريض يؤكد فيها حضوره أو يعيد الجدولة بضغطة — أقل تغيب، إيراد أكثر." },
+  { icon: RotateCcw, t: "استرجاع المتغيبين", d: "من لم يحضر يتواصل معه الوكيل تلقائياً ويعرض عليه موعداً بديلاً." },
+  { icon: UserRound, t: "حجز حسب الطبيب والتخصص", d: "يحجز ويعدّل ويلغي المواعيد حسب جدول دوام كل طبيب وخدماته." },
+  { icon: HeartPulse, t: "متابعة بعد الزيارة", d: "«كيف حالك بعد الإجراء؟» — رسالة اهتمام ترفع رضا المرضى وتقييماتك." },
+  { icon: MapPin, t: "تعليمات ما قبل الزيارة والموقع", d: "يرسل تعليمات الصيام أو الأوراق المطلوبة ورابط الخريطة وتفاصيل الوصول." },
+  { icon: Siren, t: "تحويل الطوارئ فوراً", d: "الحالات الطارئة تُحوّل لموظف أو للإسعاف 997، والوكيل لا يشخّص أبداً." },
+  { icon: BookOpen, t: "أسئلة شائعة جاهزة لكل تخصص", d: "أسنان، جلدية، تجميل، أطفال وغيرها — مع سياسات الإلغاء والدفع والتأمين." },
+  { icon: BarChart3, t: "لوحة خاصة بالعيادة", d: "نسبة الحضور مقابل التغيب، المواعيد المحجوزة عبر الوكيل، أوقات الذروة والمكالمات الفائتة." },
 ];
 
 function ClinicsPage() {
