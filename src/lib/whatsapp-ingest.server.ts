@@ -246,10 +246,30 @@ export async function ingestWhatsappMessage(
           .join("\n")
       : "";
 
+  // Clinic suite: emergencies skip the AI entirely and go to a human.
+  const { buildClinicPrompt } = await import("@/lib/clinic.server");
+  const clinicHint = await buildClinicPrompt(companyId);
+  if (clinicHint) {
+    const { isEmergency } = await import("@/lib/clinic");
+    if (isEmergency(msg.text)) {
+      const urgent = "سلامتك أولاً 🙏 إذا كانت حالة طارئة اتصل فوراً بالإسعاف 997 أو توجه لأقرب طوارئ. تم تحويل محادثتك لموظف العيادة الآن.";
+      const ok = await sendWhatsapp(companyId, msg.phoneNumberId, msg.waId, urgent);
+      await supabaseAdmin.from("messages").insert({
+        company_id: companyId, conversation_id: conversationId, sender: "ai", channel: "whatsapp",
+        body: urgent, status: ok ? "sent" : "failed",
+      });
+      await supabaseAdmin.from("conversations").update({ status: "needs_human", last_message_at: new Date().toISOString() }).eq("id", conversationId!);
+      await supabaseAdmin.from("notifications").insert({
+        company_id: companyId, title: "حالة طارئة محتملة عبر واتساب", body: `${msg.name || msg.waId}: ${msg.text.slice(0, 140)}`, type: "warning",
+      });
+      return { ok: true, companyId };
+    }
+  }
+
   const reply =
     (await generateReply(
       (agent.system_instructions ?? "أنت موظف خدمة عملاء سعودي محترف. أجب بإيجاز وباللهجة المهذبة.") +
-        bookingHint,
+        bookingHint + clinicHint,
       knowledge,
       turns,
     )) ?? agent.fallback_response;
