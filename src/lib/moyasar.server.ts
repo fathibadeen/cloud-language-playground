@@ -72,7 +72,7 @@ export async function applyInvoice(invoiceId: string) {
 
   const now = new Date();
   const end = new Date(now);
-  end.setMonth(end.getMonth() + 1);
+  end.setMonth(end.getMonth() + ((payment as { billing_period?: string }).billing_period === "yearly" ? 12 : 1));
 
   const { data: sub } = await supabaseAdmin
     .from("subscriptions")
