@@ -200,9 +200,27 @@ function Onboarding() {
                   <Label>{t("crNumber")}</Label>
                   <Input value={form.cr_number} onChange={set("cr_number")} />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-2 md:col-span-2">
                   <Label>{t("industry")}</Label>
-                  <Input value={form.industry} onChange={set("industry")} />
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {INDUSTRIES.map((i) => (
+                      <button
+                        key={i.value}
+                        type="button"
+                        onClick={() => setForm((f) => ({ ...f, industry: i.value }))}
+                        className={`rounded-md border px-3 py-2 text-sm transition-colors ${
+                          form.industry === i.value
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "bg-card hover:bg-secondary"
+                        }`}
+                      >
+                        {i.label}
+                      </button>
+                    ))}
+                  </div>
+                  {form.industry === "clinic" ? (
+                    <p className="text-xs text-muted-foreground">سيُفعّل لك قسم «العيادة»: جداول الأطباء، التذكيرات، وتقليل التغيب.</p>
+                  ) : null}
                 </div>
                 <div className="space-y-2">
                   <Label>{t("city")}</Label>
