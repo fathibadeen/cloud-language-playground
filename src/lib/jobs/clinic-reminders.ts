@@ -54,7 +54,7 @@ export async function run() {
 
     const token = (await meta.loadCompanyWhatsappToken(a.company_id)) ?? process.env["WHATSAPP_API_KEY"];
     // Stamp first so a crash never double-sends; failures are recorded below.
-    await supabaseAdmin.from("appointments").update({ [COLUMN[kind]]: now.toISOString() }).eq("id", a.id);
+    await supabaseAdmin.from("appointments").update({ [COLUMN[kind]]: now.toISOString() } as never).eq("id", a.id);
     if (!token || !phoneNumberId) {
       skipped++;
       continue;
