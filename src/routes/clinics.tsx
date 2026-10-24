@@ -105,10 +105,31 @@ function ClinicsPage() {
               </div>
             ))}
           </div>
-          <ul className="mx-auto mt-10 grid max-w-3xl gap-3 text-base text-landing-muted sm:grid-cols-2">
-            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> يحوّل الحالات الحساسة لفريقك فوراً</li>
-            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> يلتزم بساعات عمل عيادتك وخدماتها</li>
-            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> تسجيل وتفريغ لكل مكالمة في لوحتك</li>
+        </section>
+
+        <section className="border-y border-landing-foreground/10 bg-saudi/40 py-16">
+          <div className="mx-auto max-w-6xl px-4 md:px-8">
+            <p className="text-center text-sm font-semibold text-gold">حزمة صوتي للعيادات</p>
+            <h2 className="mt-2 text-center font-display text-3xl font-bold md:text-4xl">قلّل التغيب… واسترجع إيرادك</h2>
+            <p className="mx-auto mt-3 max-w-2xl text-center text-lg text-landing-muted">كل موعد لا يحضره المريض كرسي فارغ وإيراد ضائع. صوتي يذكّر ويتابع ويعيد الجدولة بدلاً عن فريقك.</p>
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {features.map((f) => (
+                <div key={f.t} className="rounded-2xl border border-landing-foreground/10 bg-landing p-6">
+                  <f.icon className="size-7 text-gold" />
+                  <h3 className="mt-4 text-lg font-semibold">{f.t}</h3>
+                  <p className="mt-2 text-base leading-7 text-landing-muted">{f.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto max-w-6xl px-4 py-16 md:px-8">
+          <h2 className="text-center font-display text-3xl font-bold">امتثال وخصوصية</h2>
+          <ul className="mx-auto mt-8 grid max-w-3xl gap-3 text-base text-landing-muted sm:grid-cols-2">
+            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> تنبيه المريض بتسجيل المكالمة وأخذ موافقته</li>
+            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> بيانات كل عيادة منفصلة تماماً</li>
+            <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> متوافق مع نظام حماية البيانات الشخصية (PDPL)</li>
             <li className="flex items-center gap-2"><ShieldCheck className="size-5 text-gold" /> أسعار بالريال وتشمل ضريبة القيمة المضافة</li>
           </ul>
         </section>
