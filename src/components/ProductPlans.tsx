@@ -1,6 +1,6 @@
 import { Check, MessageSquare, Phone, Sparkles } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { addonPrice, plansFor, productFeatures, productLabels, type PlanRow, type Product } from "@/lib/products";
+import { addonPrice, periodPrice, plansFor, type BillingPeriod, productFeatures, productLabels, type PlanRow, type Product } from "@/lib/products";
 
 const icons = { whatsapp: MessageSquare, voice: Phone, bundle: Sparkles } as const;
 
@@ -36,6 +36,7 @@ export function ProductPlanCards({
   onSelect,
   currentId,
   perMonth,
+  period = "monthly",
 }: {
   plans: PlanRow[] | undefined;
   product: Product;
@@ -44,6 +45,7 @@ export function ProductPlanCards({
   onSelect?: (id: string) => void;
   currentId?: string | null;
   perMonth: string;
+  period?: BillingPeriod;
 }) {
   const list = plansFor(plans, product);
   const addon = addonPrice(plans, product);
@@ -68,8 +70,8 @@ export function ProductPlanCards({
                 {current ? <Badge>{ar ? "خطتك الحالية" : "Current"}</Badge> : null}
               </div>
               <p className="mt-3 text-3xl font-bold tabular-nums">
-                {Number(p.price_sar).toFixed(0)}
-                <span className="ms-2 text-sm font-normal text-muted-foreground">{perMonth}</span>
+                {periodPrice(Number(p.price_sar), period).toFixed(0)}
+                <span className="ms-2 text-sm font-normal text-muted-foreground">{period === "yearly" ? (ar ? "ريال / سنة" : "SAR / year") : perMonth}</span>
               </p>
               <ul className="mt-4 space-y-1.5 text-sm text-muted-foreground">
                 {p.whatsapp_messages > 0 ? <li>{p.whatsapp_messages} {ar ? "رسالة واتساب" : "WhatsApp messages"}</li> : null}
@@ -93,6 +95,23 @@ export function ProductPlanCards({
             : ar ? `إضافة واتساب لاحقًا: +${addon} ريال/شهر` : `Add WhatsApp later: +${addon} SAR/month`}
         </p>
       ) : null}
+    </div>
+  );
+}
+
+export function PeriodToggle({ value, onChange, ar }: { value: BillingPeriod; onChange: (p: BillingPeriod) => void; ar: boolean }) {
+  return (
+    <div className="inline-flex rounded-full border p-1">
+      {(["monthly", "yearly"] as const).map((p) => (
+        <button
+          key={p}
+          type="button"
+          onClick={() => onChange(p)}
+          className={`rounded-full px-4 py-2 text-sm font-semibold transition-colors ${value === p ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          {p === "monthly" ? (ar ? "شهري" : "Monthly") : ar ? "سنوي — شهران مجاناً" : "Yearly — 2 months free"}
+        </button>
+      ))}
     </div>
   );
 }
