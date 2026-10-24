@@ -17,6 +17,7 @@ import { ProductPlanCards, ProductToggle } from "@/components/ProductPlans";
 import { plansFor, type PlanRow, type Product } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 import { provisionCompanyVoice } from "@/lib/nabrah.functions";
+import { INDUSTRIES, isClinicIndustry } from "@/lib/industries";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -88,6 +89,10 @@ function Onboarding() {
         _service: service,
       });
       if (cErr) throw cErr;
+
+      if (isClinicIndustry(form.industry)) {
+        await supabase.from("clinic_settings").upsert({ company_id: companyId as string });
+      }
 
       const { data: kb, error: kErr } = await supabase
         .from("knowledge_bases")
