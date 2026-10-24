@@ -14,8 +14,8 @@ import {
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership, usePlans, useSubscription } from "@/lib/tenant";
 import { PeriodToggle, ProductPlanCards, ProductToggle } from "@/components/ProductPlans";
-import { addonPrice, checkoutNet, companyProduct, CLINIC_SETUP_FEE_SAR, type BillingPeriod, type PlanRow, type Product }
-import { isClinicIndustry } from "@/lib/industries"; from "@/lib/products";
+import { addonPrice, checkoutNet, companyProduct, CLINIC_SETUP_FEE_SAR, type BillingPeriod, type PlanRow, type Product } from "@/lib/products";
+import { isClinicIndustry } from "@/lib/industries";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
