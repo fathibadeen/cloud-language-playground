@@ -259,8 +259,10 @@ export async function ingestWhatsappMessage(
         body: urgent, status: ok ? "sent" : "failed",
       });
       await supabaseAdmin.from("conversations").update({ status: "needs_human", last_message_at: new Date().toISOString() }).eq("id", conversationId!);
-      await supabaseAdmin.from("notifications").insert({
-        company_id: companyId, title: "حالة طارئة محتملة عبر واتساب", body: `${msg.name || msg.waId}: ${msg.text.slice(0, 140)}`, type: "warning",
+      await supabaseAdmin.rpc("push_notification", {
+        _company_id: companyId, _category: "emergency", _type: `emergency:${conversationId}:${Date.now()}`,
+        _title: "حالة طارئة محتملة عبر واتساب", _body: `${msg.name || msg.waId}: ${msg.text.slice(0, 140)}`,
+        _link: "/dashboard/conversations", _severity: "error",
       });
       return { ok: true, companyId };
     }

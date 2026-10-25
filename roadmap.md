@@ -31,5 +31,6 @@
 ## Phase 4 — remaining
 - [x] Public homepage: stronger hero/navigation contrast and live web voice-agent demo
 - [ ] Real payments (provider not chosen yet)
-- [ ] Operational emails (in-app notifications only for now)
+- [x] Notification center: DB-trigger alerts (bookings, no-shows, missed calls, handoff, payments, channel errors, subscription ending), customer preferences page, admin bell
+- [ ] Email delivery of critical alerts — blocked on the owner setting up a sender email domain
 - [ ] Add verified social-proof metrics once real call and company counts are approved

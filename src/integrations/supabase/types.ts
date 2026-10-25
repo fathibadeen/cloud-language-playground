@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_notifications: {
+        Row: {
+          body: string | null
+          category: string
+          company_id: string | null
+          created_at: string
+          id: string
+          is_read: boolean
+          link: string | null
+          title: string
+          type: string
+        }
+        Insert: {
+          body?: string | null
+          category?: string
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          title: string
+          type: string
+        }
+        Update: {
+          body?: string | null
+          category?: string
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          link?: string | null
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_notifications_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_channels: {
         Row: {
           agent_id: string
@@ -1125,33 +1169,74 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          category: string
+          company_id: string
+          email: boolean
+          in_app: boolean
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          company_id: string
+          email?: boolean
+          in_app?: boolean
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          company_id?: string
+          email?: boolean
+          in_app?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
+          category: string
           company_id: string
           created_at: string
           id: string
           is_read: boolean
+          link: string | null
+          severity: string
           title: string
           type: string
           user_id: string | null
         }
         Insert: {
           body?: string | null
+          category?: string
           company_id: string
           created_at?: string
           id?: string
           is_read?: boolean
+          link?: string | null
+          severity?: string
           title: string
           type?: string
           user_id?: string | null
         }
         Update: {
           body?: string | null
+          category?: string
           company_id?: string
           created_at?: string
           id?: string
           is_read?: boolean
+          link?: string | null
+          severity?: string
           title?: string
           type?: string
           user_id?: string | null
@@ -1853,6 +1938,29 @@ export type Database = {
       is_company_member: { Args: { _company_id: string }; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       my_company_ids: { Args: never; Returns: string[] }
+      push_admin_notification: {
+        Args: {
+          _body: string
+          _category: string
+          _company_id: string
+          _link: string
+          _title: string
+          _type: string
+        }
+        Returns: boolean
+      }
+      push_notification: {
+        Args: {
+          _body: string
+          _category: string
+          _company_id: string
+          _link: string
+          _severity?: string
+          _title: string
+          _type: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
       agent_language: "ar" | "en"

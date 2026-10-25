@@ -153,6 +153,7 @@ export const dict: Dict = {
   navUsage: { ar: "الاستخدام", en: "Usage" },
   navBilling: { ar: "الاشتراك والفوترة", en: "Subscription & billing" },
   navSettings: { ar: "الإعدادات", en: "Settings" },
+  navNotifications: { ar: "التنبيهات", en: "Notifications" },
   navAdmin: { ar: "لوحة المشرف", en: "Super admin" },
   navCompanies: { ar: "الشركات", en: "Companies" },
   navProviders: { ar: "مزودو الخدمات", en: "Providers" },

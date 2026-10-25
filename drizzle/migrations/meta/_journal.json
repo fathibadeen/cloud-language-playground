@@ -106,6 +106,13 @@
       "when": 1792882860972,
       "tag": "0014_annual_billing_setup_fee",
       "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1792887116932,
+      "tag": "0015_notifications_center",
+      "breakpoints": true
     }
   ]
 }

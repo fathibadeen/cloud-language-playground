@@ -29,6 +29,7 @@ import { Route as DashboardCallsRouteImport } from './routes/dashboard/calls'
 import { Route as DashboardClinicRouteImport } from './routes/dashboard/clinic'
 import { Route as DashboardConversationsRouteImport } from './routes/dashboard/conversations'
 import { Route as DashboardKnowledgeRouteImport } from './routes/dashboard/knowledge'
+import { Route as DashboardNotificationsRouteImport } from './routes/dashboard/notifications'
 import { Route as DashboardNumbersRouteImport } from './routes/dashboard/numbers'
 import { Route as DashboardSettingsRouteImport } from './routes/dashboard/settings'
 import { Route as DashboardTeamRouteImport } from './routes/dashboard/team'
@@ -144,6 +145,11 @@ const DashboardKnowledgeRoute = DashboardKnowledgeRouteImport.update({
   path: '/knowledge',
   getParentRoute: () => DashboardRouteRoute,
 } as any)
+const DashboardNotificationsRoute = DashboardNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => DashboardRouteRoute,
+} as any)
 const DashboardNumbersRoute = DashboardNumbersRouteImport.update({
   id: '/numbers',
   path: '/numbers',
@@ -233,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/clinic': typeof DashboardClinicRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
+  '/dashboard/notifications': typeof DashboardNotificationsRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/team': typeof DashboardTeamRoute
@@ -267,6 +274,7 @@ export interface FileRoutesByTo {
   '/dashboard/clinic': typeof DashboardClinicRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
+  '/dashboard/notifications': typeof DashboardNotificationsRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/team': typeof DashboardTeamRoute
@@ -303,6 +311,7 @@ export interface FileRoutesById {
   '/dashboard/clinic': typeof DashboardClinicRoute
   '/dashboard/conversations': typeof DashboardConversationsRoute
   '/dashboard/knowledge': typeof DashboardKnowledgeRoute
+  '/dashboard/notifications': typeof DashboardNotificationsRoute
   '/dashboard/numbers': typeof DashboardNumbersRoute
   '/dashboard/settings': typeof DashboardSettingsRoute
   '/dashboard/team': typeof DashboardTeamRoute
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/dashboard/clinic'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
+    | '/dashboard/notifications'
     | '/dashboard/numbers'
     | '/dashboard/settings'
     | '/dashboard/team'
@@ -374,6 +384,7 @@ export interface FileRouteTypes {
     | '/dashboard/clinic'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
+    | '/dashboard/notifications'
     | '/dashboard/numbers'
     | '/dashboard/settings'
     | '/dashboard/team'
@@ -409,6 +420,7 @@ export interface FileRouteTypes {
     | '/dashboard/clinic'
     | '/dashboard/conversations'
     | '/dashboard/knowledge'
+    | '/dashboard/notifications'
     | '/dashboard/numbers'
     | '/dashboard/settings'
     | '/dashboard/team'
@@ -588,6 +600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardKnowledgeRouteImport
       parentRoute: typeof DashboardRouteRoute
     }
+    '/dashboard/notifications': {
+      id: '/dashboard/notifications'
+      path: '/notifications'
+      fullPath: '/dashboard/notifications'
+      preLoaderRoute: typeof DashboardNotificationsRouteImport
+      parentRoute: typeof DashboardRouteRoute
+    }
     '/dashboard/numbers': {
       id: '/dashboard/numbers'
       path: '/numbers'
@@ -691,6 +710,7 @@ interface DashboardRouteRouteChildren {
   DashboardClinicRoute: typeof DashboardClinicRoute
   DashboardConversationsRoute: typeof DashboardConversationsRoute
   DashboardKnowledgeRoute: typeof DashboardKnowledgeRoute
+  DashboardNotificationsRoute: typeof DashboardNotificationsRoute
   DashboardNumbersRoute: typeof DashboardNumbersRoute
   DashboardSettingsRoute: typeof DashboardSettingsRoute
   DashboardTeamRoute: typeof DashboardTeamRoute
@@ -709,6 +729,7 @@ const DashboardRouteRouteChildren: DashboardRouteRouteChildren = {
   DashboardClinicRoute: DashboardClinicRoute,
   DashboardConversationsRoute: DashboardConversationsRoute,
   DashboardKnowledgeRoute: DashboardKnowledgeRoute,
+  DashboardNotificationsRoute: DashboardNotificationsRoute,
   DashboardNumbersRoute: DashboardNumbersRoute,
   DashboardSettingsRoute: DashboardSettingsRoute,
   DashboardTeamRoute: DashboardTeamRoute,

@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 import { Activity, Building2, LayoutDashboard, Link2, Menu, MessageCircle, Webhook, ArrowRight, CreditCard, Wallet } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { AdminNotificationBell } from "@/components/NotificationBell";
 import { useI18n } from "@/lib/i18n";
 
 export type AdminSection = "overview" | "companies" | "plans" | "payments" | "whatsapp" | "requests" | "events";
@@ -58,7 +59,10 @@ export function AdminShell({ active, children }: { active: AdminSection; childre
             <Menu className="size-5" />
           </Button>
           <p className="font-display font-semibold">{ar ? "إدارة منصة صوتي" : "Sawti platform admin"}</p>
-          <LanguageToggle />
+          <div className="flex items-center gap-1">
+            <AdminNotificationBell />
+            <LanguageToggle />
+          </div>
         </header>
         <main className="min-w-0 flex-1 space-y-6 p-4 md:p-7">{children}</main>
       </div>
