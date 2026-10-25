@@ -31,6 +31,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { processKnowledgeDocument } from "@/lib/knowledge.functions";
 import { clearNabrahKnowledge, syncCompanyKnowledge } from "@/lib/nabrah.functions";
 import { humanizeDbError } from "@/lib/errors";
+import { INDUSTRY_KB_TEMPLATES } from "@/lib/kb-templates";
 
 const SYNC_ERRORS: Record<string, string> = {
   not_configured: "الوكيل الصوتي غير مفعّل بعد",
@@ -175,6 +176,23 @@ function KnowledgePage() {
               <DialogTitle>{t("newDocument")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
+              <div className="space-y-2 rounded-lg border border-dashed p-3">
+                <Label>قوالب جاهزة حسب النشاط</Label>
+                <div className="flex flex-wrap gap-2">
+                  {INDUSTRY_KB_TEMPLATES.map((tpl) => (
+                    <Button
+                      key={tpl.key}
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setForm({ ...form, title: tpl.title, source_type: "text", content: tpl.content })}
+                    >
+                      {tpl.label}
+                    </Button>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground">اختر قالبًا ثم استبدل ما بين الأقواس [ ] ببيانات منشأتك.</p>
+              </div>
               <div className="space-y-2">
                 <Label>{t("title")}</Label>
                 <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />

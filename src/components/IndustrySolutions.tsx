@@ -1,12 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Home, Scale, Scissors, Stethoscope, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, Check, Home, Scale, Scissors, Stethoscope, Truck, UtensilsCrossed } from "lucide-react";
 
-const SOLUTIONS = [
+const SOLUTIONS: { icon: typeof Stethoscope; badge: string; title: string; pain: string; points: string[]; to?: "/clinics" }[] = [
   { icon: Stethoscope, badge: "الأكثر طلبًا", title: "العيادات والمراكز الطبية", pain: "مواعيد ضائعة ومكالمات بلا رد وقت الذروة.", points: ["حجز وتعديل المواعيد حسب جدول كل طبيب", "تذكير قبل 24 ساعة وساعتين لتقليل التغيب", "تحويل الحالات الطارئة فورًا لموظف"], to: "/clinics" as const },
   { icon: Scale, badge: "سرية تامة", title: "مكاتب المحاماة والاستشارات", pain: "اتصالات العملاء تضيع أثناء الجلسات والاجتماعات.", points: ["استقبال الاستشارات الأولية وجمع بيانات القضية", "جدولة مواعيد مع المحامي المختص", "رد 24/7 بأسلوب مهني"] },
   { icon: Home, badge: "عملاء جادّون", title: "العقارات وإدارة الأملاك", pain: "تأخر الرد على المهتمين بالإعلانات يضيّع الصفقة.", points: ["فرز العملاء الجادين تلقائيًا", "حجز مواعيد المعاينة", "إرسال تفاصيل العقار عبر واتساب"] },
   { icon: UtensilsCrossed, badge: "وقت الذروة", title: "المطاعم والمقاهي", pain: "ضغط المكالمات وطلبات الحجز في أوقات الذروة.", points: ["تأكيد حجوزات الطاولات والمناسبات", "إرسال المنيو والموقع عبر واتساب", "الرد على الأسئلة المتكررة"] },
   { icon: Scissors, badge: "حجز أسهل", title: "الصالونات ومراكز التجميل", pain: "كثرة تعديل المواعيد والسؤال عن الأسعار.", points: ["اختيار الخدمة والأخصائية", "تذكير آلي بالموعد", "عرض البكجات والعروض"] },
+  { icon: Truck, badge: "تتبع 24/7", title: "شركات النقل واللوجستيات", pain: "سيل مكالمات «وين شحنتي؟» يستنزف فريق خدمة العملاء.", points: ["رد فوري على تتبع الشحنات عبر رقم البوليصة", "استقبال طلبات الاستلام ونقل العفش", "الأسعار ومناطق التغطية والمواد الممنوعة"] },
 ];
 
 export function IndustrySolutions() {
