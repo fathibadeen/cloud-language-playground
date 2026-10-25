@@ -48,9 +48,8 @@ function NotificationSettingsPage() {
     const { error } = await supabase.from("notification_preferences").upsert({
       company_id: companyId,
       category,
-      in_app: current.in_app,
-      email: current.email,
-      [field]: value,
+      in_app: field === "in_app" ? value : current.in_app,
+      email: field === "email" ? value : current.email,
       updated_at: new Date().toISOString(),
     });
     if (error) {

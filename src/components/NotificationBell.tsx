@@ -101,7 +101,7 @@ function BellView({
                 onClick={() => n.link && navigate({ to: n.link })}
                 className={`flex w-full gap-2 border-b p-3 text-start last:border-0 hover:bg-muted/60 ${n.is_read ? "" : "bg-muted/40"}`}
               >
-                <span className={`mt-1.5 size-2 shrink-0 rounded-full ${DOT[n.severity ?? "info"] ?? DOT.info}`} />
+                <span className={`mt-1.5 size-2 shrink-0 rounded-full ${DOT[n.severity ?? "info"] ?? DOT["info"]}`} />
                 <span className="min-w-0">
                   <span className="block text-sm font-medium">{n.title}</span>
                   {n.body ? <span className="block text-xs text-muted-foreground">{n.body}</span> : null}
