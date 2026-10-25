@@ -1,48 +1,29 @@
 /**
- * A5: sla-escalation job
- * Escalate conversations pending for >15 min without agent assignment
+ * sla-escalation job: open conversations waiting >15 min without a human become
+ * "needs_human"; the database trigger raises the Arabic handoff notification.
  */
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 const ESCALATION_THRESHOLD_MINUTES = 15;
 
 export async function run() {
-  const threshold = new Date();
-  threshold.setMinutes(threshold.getMinutes() - ESCALATION_THRESHOLD_MINUTES);
+  const threshold = new Date(Date.now() - ESCALATION_THRESHOLD_MINUTES * 60_000);
 
   const { data: pending } = await supabaseAdmin
     .from("conversations")
-    .select("*, companies(id, name)")
+    .select("id")
     .eq("status", "open")
     .is("assigned_user_id", null)
     .lte("created_at", threshold.toISOString());
 
   let processed = 0;
   let errors = 0;
-
   for (const conv of pending || []) {
-    try {
-      const company = conv.companies as any;
-      
-      await supabaseAdmin.from("notifications").insert({
-        company_id: company.id,
-        title: "Conversation requires attention",
-        body: `Conversation ${conv.id.slice(0, 8)} has been waiting for ${ESCALATION_THRESHOLD_MINUTES}+ minutes`,
-        type: "sla_escalation",
-      });
-
-      // Update conversation status to 'escalated'
-      await supabaseAdmin
-        .from("conversations")
-        .update({ status: "needs_human" })
-        .eq("id", conv.id);
-
-      processed++;
-    } catch (error) {
+    const { error } = await supabaseAdmin.from("conversations").update({ status: "needs_human" }).eq("id", conv.id);
+    if (error) {
       errors++;
       console.error(`[sla-escalation] Conversation ${conv.id}:`, error);
-    }
+    } else processed++;
   }
-
   return { processed, errors, details: { escalated: processed } };
 }
