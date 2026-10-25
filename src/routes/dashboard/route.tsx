@@ -20,6 +20,7 @@ import {
   LogOut,
   Menu,
   Plus,
+  BellRing,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -62,6 +63,7 @@ const nav = [
   { to: "/dashboard/team", key: "navTeam", icon: Users },
   { to: "/dashboard/usage", key: "navUsage", icon: Activity },
   { to: "/dashboard/billing", key: "navBilling", icon: CreditCard },
+  { to: "/dashboard/notifications", key: "navNotifications", icon: BellRing },
   { to: "/dashboard/settings", key: "navSettings", icon: Settings },
 ] as const;
 
