@@ -38,21 +38,19 @@ export const checkUsageAlerts = createServerFn({ method: "POST" })
       if (!level) continue;
 
       const type = `usage_${m.metric}_${level}_${month}`;
-      const { data: exists } = await supabaseAdmin
-        .from("notifications").select("id")
-        .eq("company_id", data.companyId).eq("type", type).maybeSingle();
-      if (exists) continue;
-
-      await supabaseAdmin.from("notifications").insert({
-        company_id: data.companyId,
-        title: level === 100 ? `انتهت ${m.ar} لهذا الشهر` : `اقتربت من حد ${m.ar}`,
-        body:
+      const { data: ok } = await supabaseAdmin.rpc("push_notification", {
+        _company_id: data.companyId,
+        _category: "usage",
+        _type: type,
+        _title: level === 100 ? `انتهت ${m.ar} لهذا الشهر` : `اقتربت من حد ${m.ar}`,
+        _body:
           level === 100
             ? `استهلكت كامل ${m.ar} في باقتك. رقّ باقتك لمواصلة الخدمة.`
             : `استهلكت ${Math.round(pct)}% من ${m.ar} في باقتك.`,
-        type,
+        _link: "/dashboard/usage",
+        _severity: level === 100 ? "error" : "warning",
       });
-      created.push(type);
+      if (ok) created.push(type);
     }
     return { created: created.length };
   });
