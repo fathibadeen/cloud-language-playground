@@ -118,17 +118,25 @@ export const createCheckout = createServerFn({ method: "POST" })
     const { checkoutNet } = await import("@/lib/products");
     const { isClinicIndustry } = await import("@/lib/industries");
     const { data: company } = await supabaseAdmin.from("companies").select("industry").eq("id", data.companyId).maybeSingle();
-    const { count: setupCount } = await supabaseAdmin
-      .from("payments")
-      .select("id", { count: "exact", head: true })
-      .eq("company_id", data.companyId)
-      .eq("applied", true)
-      .gt("setup_fee_halalas", 0);
+    // Setup fee is owed only on the first-ever subscription. Use the same rule as
+    // the billing page (any paid billing record), plus any applied payment.
+    const [{ count: paidRecords }, { count: appliedPayments }] = await Promise.all([
+      supabaseAdmin
+        .from("billing_records")
+        .select("id", { count: "exact", head: true })
+        .eq("company_id", data.companyId)
+        .eq("status", "paid"),
+      supabaseAdmin
+        .from("payments")
+        .select("id", { count: "exact", head: true })
+        .eq("company_id", data.companyId)
+        .eq("applied", true),
+    ]);
     const price = checkoutNet({
       monthlySar: Number(plan.price_sar),
       period: data.period,
       clinic: isClinicIndustry(company?.industry),
-      setupPaid: (setupCount ?? 0) > 0,
+      setupPaid: (paidRecords ?? 0) > 0 || (appliedPayments ?? 0) > 0,
     });
     const net = Math.round(price.total * 100);
     const vat = Math.round(net * VAT_RATE);
