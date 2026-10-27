@@ -197,6 +197,13 @@
   --primary: var(--mw-brand);
   --primary-foreground: oklch(0.99 0 0);
   --ring: var(--mw-bright);
+  --landing: var(--mw-bg);
+  --landing-foreground: var(--mw-ink);
+  --landing-muted: var(--mw-muted);
+  --saudi: oklch(0.94 0.02 200);
+  --saudi-bright: var(--mw-brand);
+  --gold: var(--mw-brand);
+  --gold-foreground: oklch(0.99 0 0);
   --mw-grad: linear-gradient(135deg, var(--mw-bright), oklch(0.72 0.15 170));
   --mw-text-grad: linear-gradient(90deg, var(--mw-bright), var(--mw-bright));
   --mw-glow: 0 14px 34px -8px color-mix(in oklab, var(--mw-bright) 45%, transparent);
