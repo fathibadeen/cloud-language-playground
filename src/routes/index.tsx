@@ -157,26 +157,39 @@ function Landing() {
   ];
   const faqs = ar ? faqAr : faqEn;
 
+  const openDemo = () => { setVoiceDemoLoaded(false); setVoiceDemoOpen(true); };
+  const pillars = [
+    { icon: Phone, title: ar ? "وكيل المكالمات" : "Voice agent", desc: ar ? "يرد على كل مكالمة 24/7 بلهجة سعودية طبيعية، يجيب الأسئلة ويحجز المواعيد ويحوّل للموظف عند الحاجة." : "Answers every call 24/7 in natural Saudi Arabic, books appointments and hands off when needed.", points: ar ? ["لا مكالمة فائتة", "حجز وتعديل وإلغاء", "تنبيه تسجيل المكالمة"] : ["No missed calls", "Book, change, cancel", "Recording notice"] },
+    { icon: MessageSquare, title: ar ? "وكيل واتساب" : "WhatsApp agent", desc: ar ? "يستقبل الاستفسارات ويرد فوراً من قاعدة معرفتك، ويرسل الموقع والتعليمات والتأكيدات داخل المحادثة." : "Replies instantly from your knowledge base and sends location, instructions and confirmations.", points: ar ? ["رد فوري بالعربي", "حجز من المحادثة", "ربط رسمي مع Meta"] : ["Instant Arabic replies", "Book in chat", "Official Meta link"] },
+    { icon: Workflow, title: ar ? "الأتمتة الذكية" : "Smart automation", desc: ar ? "تذكيرات تلقائية، متابعة بعد الزيارة، استرجاع المتغيبين، وتنبيهات فورية لفريقك — بدون تدخل يدوي." : "Automatic reminders, follow-ups, no-show recovery and team alerts — no manual work.", points: ar ? ["تذكير قبل 24 ساعة وساعتين", "متابعة المتغيبين", "مزامنة التقويم"] : ["24h & 2h reminders", "No-show follow-up", "Calendar sync"] },
+  ];
+  const flow = [
+    { icon: Phone, t: ar ? "العميل يتصل" : "Customer calls", d: ar ? "الوكيل يرد ويفهم الطلب ويحجز موعداً" : "The agent answers and books" },
+    { icon: MessageSquare, t: ar ? "تأكيد على واتساب" : "WhatsApp confirmation", d: ar ? "رسالة تأكيد فورية مع الموقع والتعليمات" : "Instant confirmation with location" },
+    { icon: BellRing, t: ar ? "تذكير تلقائي" : "Auto reminder", d: ar ? "قبل الموعد بـ24 ساعة وساعتين" : "24h and 2h before" },
+    { icon: CalendarCheck, t: ar ? "حضور ومتابعة" : "Visit & follow-up", d: ar ? "متابعة بعد الزيارة أو موعد بديل للمتغيب" : "Follow-up or a new slot for no-shows" },
+  ];
+
   return (
-    <div className="min-h-screen bg-landing text-landing-foreground">
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-landing-foreground/10 bg-landing/80 backdrop-blur-xl">
+    <div className="theme-meswar min-h-screen bg-landing text-landing-foreground">
+      <header className="fixed inset-x-0 top-0 z-40 border-b border-mw-bright/15 bg-mw-night/85 backdrop-blur-xl">
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 md:px-8">
-          <Link to="/" aria-label={ar ? "صوتي — الرئيسية" : "Sawti — Home"}><SawtiLogo /></Link>
-          <nav className="hidden items-center gap-7 text-base font-semibold text-landing-foreground/80 lg:flex">
-            <a href="#services" className="transition-colors hover:text-landing-foreground">{t("features")}</a>
-            <a href="#how" className="transition-colors hover:text-landing-foreground">{t("howItWorks")}</a>
-            <a href="#pricing" className="transition-colors hover:text-landing-foreground">{t("pricing")}</a>
-            <a href="#faq" className="transition-colors hover:text-landing-foreground">{t("faq")}</a>
+          <Link to="/" aria-label={ar ? "صوتي — الرئيسية" : "Sawti — Home"} className="rounded-xl bg-primary-foreground/95 px-3 py-1.5"><SawtiLogo compact /></Link>
+          <nav className="hidden items-center gap-7 text-base font-semibold text-mw-mint/85 lg:flex">
+            <a href="#services" className="hover:text-primary-foreground">{t("features")}</a>
+            <a href="#how" className="hover:text-primary-foreground">{t("howItWorks")}</a>
+            <a href="#pricing" className="hover:text-primary-foreground">{t("pricing")}</a>
+            <a href="#faq" className="hover:text-primary-foreground">{t("faq")}</a>
           </nav>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 text-primary-foreground">
             <LanguageToggle />
-            <Button asChild variant="ghost" size="sm" className="hidden text-landing-foreground hover:bg-landing-foreground/10 hover:text-landing-foreground sm:inline-flex">
+            <Button asChild variant="ghost" size="sm" className="hidden text-mw-mint hover:bg-mw-mint/10 hover:text-primary-foreground sm:inline-flex">
               <Link to={user ? "/dashboard" : "/auth"}>{user ? t("navHome") : t("login")}</Link>
             </Button>
-            {!user ? <Button asChild size="sm" className="bg-saudi-bright text-primary-foreground hover:bg-saudi-bright/90"><Link to="/auth" search={{ mode: "signup" }}>{copy.try}</Link></Button> : null}
+            {!user ? <Button asChild size="sm" className="bg-mw-bright font-bold text-mw-night hover:bg-mw-bright/90"><Link to="/auth" search={{ mode: "signup" }}>{copy.try}</Link></Button> : null}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-landing-foreground hover:bg-landing-foreground/10 lg:hidden" aria-label={ar ? "فتح القائمة" : "Open menu"}><Menu /></Button>
+                <Button variant="ghost" size="icon" className="text-mw-mint hover:bg-mw-mint/10 lg:hidden" aria-label={ar ? "فتح القائمة" : "Open menu"}><Menu /></Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuItem asChild><a href="#services" className="py-3 text-lg font-medium">{t("features")}</a></DropdownMenuItem>
@@ -191,33 +204,38 @@ function Landing() {
       </header>
 
       <main>
-        <section className="relative flex min-h-[760px] items-end overflow-hidden pt-24 md:min-h-[820px] md:items-center">
-          <img src={heroImage} alt={ar ? "رائد أعمال سعودي يستخدم منصة صوتي" : "Saudi business leader using Sawti"} width={1536} height={1024} className="absolute inset-0 size-full object-cover object-[62%_center] opacity-90" />
-           <div className="absolute inset-0 bg-linear-to-t from-landing via-landing/90 to-landing/20 md:bg-linear-to-r md:from-landing md:via-landing/95 md:to-landing/15" />
-          <div className="relative mx-auto grid w-full max-w-7xl items-center gap-12 px-4 pb-16 md:px-8 md:pb-12 lg:grid-cols-[1.15fr_0.85fr]">
-            <div className="max-w-3xl">
-              <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-saudi-bright/40 bg-saudi/40 px-4 py-2 text-sm text-saudi-bright backdrop-blur">
-                <span className="size-2 rounded-full bg-saudi-bright shadow-[0_0_16px_var(--saudi-bright)]" />{copy.badge}
-              </div>
-              <h1 className="font-display text-5xl font-bold leading-[1.16] md:text-7xl">{copy.title}<span className="mt-2 block text-gold">{copy.titleAccent}</span></h1>
-               <p className="mt-6 max-w-2xl text-xl font-semibold leading-9 text-landing-foreground/85 md:text-2xl md:leading-10">{copy.intro}</p>
+        <section className="mw-gridbg relative overflow-hidden bg-mw-night pt-24">
+          <div className="pointer-events-none absolute -top-40 right-[-10%] size-[520px] rounded-full bg-mw-bright/20 blur-3xl" />
+          <div className="pointer-events-none absolute bottom-[-30%] left-[-10%] size-[480px] rounded-full bg-mw-gold/20 blur-3xl" />
+          <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-10 md:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pt-16">
+            <div>
+              <span className="inline-flex items-center gap-2 rounded-full border border-mw-bright/40 bg-mw-bright/15 px-4 py-2 text-sm font-bold text-mw-mint">
+                <span className="size-2 animate-pulse rounded-full bg-mw-bright" /> {ar ? "صوتي • منتج ذكاء اصطناعي من مسور" : "Sawti • An AI product by Meswar"}
+              </span>
+              <h1 className="mt-7 font-kufi text-4xl font-black leading-[1.45] text-primary-foreground md:text-6xl">
+                {ar ? <>موظف ذكي يرد على عملائك <span className="mw-text-grad">بالصوت والواتساب</span> ويؤتمت الباقي</> : <>An AI employee that answers by <span className="mw-text-grad">voice and WhatsApp</span> and automates the rest</>}
+              </h1>
+              <p className="mt-6 max-w-xl text-lg leading-9 text-mw-mint/85 md:text-xl">
+                {ar ? "مكالمات تُجاب، رسائل تُرد، ومواعيد تُذكَّر تلقائياً — منصة واحدة تشتغل عنك 24 ساعة وتقلل الحجوزات الضائعة." : "Calls answered, messages replied, appointments reminded — one platform working for you 24/7."}
+              </p>
               <div className="mt-9 flex flex-wrap gap-3">
-                 <Button asChild size="lg" className="bg-saudi-bright text-primary-foreground shadow-md hover:bg-saudi-bright/90"><Link to="/auth" search={{ mode: "signup" }}>{copy.try}<ArrowLeft className="size-5 stroke-[2.5] rtl:rotate-0 ltr:rotate-180" /></Link></Button>
-                 <Button size="lg" variant="outline" className="border-saudi-bright/60 bg-landing/85 text-landing-foreground shadow-sm backdrop-blur hover:bg-landing hover:text-landing-foreground" onClick={() => { setVoiceDemoLoaded(false); setVoiceDemoOpen(true); }}><Volume2 className="size-5 text-saudi-bright" />{copy.voiceDemo}</Button>
-                <Button asChild size="lg" variant="outline" className="border-landing-foreground/20 bg-landing-foreground/5 text-landing-foreground backdrop-blur hover:bg-landing-foreground/10 hover:text-landing-foreground"><a href="#services">{copy.discover}</a></Button>
+                <button type="button" onClick={openDemo} className="mw-grad inline-flex items-center gap-2 rounded-2xl px-7 py-4 text-lg font-bold text-mw-night"><Volume2 className="size-5" />{ar ? "اسمع مكالمة تجريبية" : "Hear a demo call"}</button>
+                <Link to="/auth" search={{ mode: "signup" }} className="inline-flex items-center gap-2 rounded-2xl border border-primary-foreground/30 bg-primary-foreground/10 px-7 py-4 text-lg font-bold text-primary-foreground hover:bg-primary-foreground/15">{copy.try}<ArrowLeft className="size-5 ltr:rotate-180" /></Link>
               </div>
-              <div className="mt-12 grid max-w-2xl grid-cols-3 border-t border-landing-foreground/10 pt-7">
-                {[['24/7', copy.stat1], ['AR / EN', copy.stat2], ['2×', copy.stat3]].map(([value, label]) => <div key={label} className="border-e border-landing-foreground/10 px-4 first:px-s-0 last:border-0"><div className="font-display text-2xl font-semibold text-landing-foreground">{value}</div><div className="mt-1 text-sm text-landing-muted md:text-base">{label}</div></div>)}
+              <div className="mt-10 flex flex-wrap gap-8">
+                {[["24/7", ar ? "استقبال دائم" : "Always on"], [ar ? "3 قنوات" : "3 channels", ar ? "صوت • واتساب • أتمتة" : "Voice • WhatsApp • Automation"], ["AR / EN", ar ? "عربي وإنجليزي" : "Arabic & English"]].map(([n, l]) => (
+                  <div key={l}><div className="font-kufi text-3xl font-extrabold text-primary-foreground">{n}</div><div className="text-sm text-mw-mint/75">{l}</div></div>
+                ))}
               </div>
             </div>
-            <div className="hidden justify-center lg:flex">
-              <HeroVoiceCard ar={ar} onCall={() => { setVoiceDemoLoaded(false); setVoiceDemoOpen(true); }} />
+            <div className="flex justify-center">
+              <HeroVoiceCard ar={ar} onCall={openDemo} />
             </div>
           </div>
         </section>
 
          <Dialog open={voiceDemoOpen} onOpenChange={setVoiceDemoOpen}>
-           <DialogContent className="max-h-[92vh] max-w-3xl overflow-y-auto p-4 sm:p-6" dir={ar ? "rtl" : "ltr"}>
+            <DialogContent className="max-h-[92vh] max-w-3xl overflow-y-auto p-4 sm:p-6" dir={ar ? "rtl" : "ltr"}>
              <DialogHeader className="pe-8 text-start">
                <DialogTitle className="text-2xl">{ar ? "تحدّث مع وكيل صوتي الآن" : "Talk to a voice agent now"}</DialogTitle>
                <DialogDescription className="text-base leading-7">
@@ -231,12 +249,62 @@ function Landing() {
              <Button asChild variant="outline" className="w-full sm:w-auto">
                <a href={voiceDemoUrl} target="_blank" rel="noopener noreferrer"><ExternalLink className="size-4" />{ar ? "فتح التجربة في نافذة جديدة" : "Open the demo in a new window"}</a>
              </Button>
+             <Button asChild className="w-full sm:w-auto"><Link to="/contact">{ar ? "اطلب عرضاً مخصصاً لمنشأتك" : "Request a tailored offer"}</Link></Button>
            </DialogContent>
          </Dialog>
 
-        <section className="border-y border-landing-foreground/10 bg-saudi/55 py-6"><div className="mx-auto flex max-w-7xl flex-wrap items-center justify-center gap-6 px-4 text-base text-landing-muted md:justify-between md:px-8"><span className="flex items-center gap-2 font-semibold text-landing-foreground"><Sparkles className="size-5 text-gold" />{copy.trusted}</span><span>رؤية أوضح</span><span>استجابة أسرع</span><span>تجربة أهدى لفريقك</span></div></section>
+        <div className="overflow-hidden border-y border-mw-bright/15 bg-mw-night py-5" dir="ltr">
+          <div className="mw-marquee flex w-max gap-10 whitespace-nowrap font-kufi text-3xl font-extrabold">
+            {[0, 1].map((k) => (
+              <div key={k} className="flex gap-10">
+                {(ar ? ["وكيل صوتي", "واتساب ذكي", "أتمتة", "حجز مواعيد", "تذكيرات", "قاعدة معرفة"] : ["Voice agent", "Smart WhatsApp", "Automation", "Bookings", "Reminders", "Knowledge base"]).map((w, i) => (
+                  <span key={w} className="flex items-center gap-10"><span className={i % 2 ? "text-mw-mint/40" : "text-mw-bright"}>{w}</span><span className="text-mw-gold">✦</span></span>
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
 
-        <section id="services" className="py-24"><div className="mx-auto max-w-7xl px-4 md:px-8"><div className="max-w-3xl"><span className="text-base font-semibold text-gold">{ar ? "وش نقدّم لك" : "WHAT YOU GET"}</span><h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">{copy.servicesTitle}</h2><p className="mt-5 text-xl leading-9 text-landing-muted">{copy.servicesSub}</p></div><div className="mt-14 grid gap-px overflow-hidden rounded-lg border border-landing-foreground/10 bg-landing-foreground/10 md:grid-cols-2">{services.map((service) => <div key={service.title} className="bg-landing p-7 transition-colors hover:bg-saudi/45 md:p-9"><service.icon className="size-8 text-saudi-bright" /><h3 className="mt-7 text-2xl font-semibold">{service.title}</h3><p className="mt-3 max-w-md text-lg leading-8 text-landing-muted">{service.text}</p></div>)}</div></div></section>
+        <section id="services" className="mx-auto max-w-7xl px-4 py-24 md:px-8">
+          <SecHead tag={ar ? "منصة واحدة • ثلاث قوى" : "One platform • three powers"} title={ar ? "ليس مجرد رد على المكالمات" : "More than answering calls"} sub={ar ? "صوتي يجمع المكالمات وواتساب والأتمتة في وكيل واحد يعرف نشاطك وقاعدة معرفتك." : "Sawti combines calls, WhatsApp and automation in one agent that knows your business."} />
+          <div className="mt-14 grid gap-6 md:grid-cols-3">
+            {pillars.map((p) => (
+              <article key={p.title} className="rounded-3xl border border-mw-line bg-card p-8 transition hover:-translate-y-2 hover:shadow-xl">
+                <div className="mw-grad flex size-14 items-center justify-center rounded-2xl text-primary-foreground"><p.icon className="size-7" /></div>
+                <h3 className="mt-6 font-kufi text-2xl font-extrabold">{p.title}</h3>
+                <p className="mt-3 leading-8 text-mw-muted">{p.desc}</p>
+                <ul className="mt-6 space-y-2">{p.points.map((x) => <li key={x} className="flex items-center gap-2 font-semibold"><CheckCircle2 className="size-5 text-mw-brand" />{x}</li>)}</ul>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="bg-card py-24">
+          <div className="mx-auto max-w-7xl px-4 md:px-8">
+            <SecHead tag={ar ? "كيف تتكامل القنوات" : "How channels connect"} title={ar ? "رحلة عميل كاملة… تلقائياً" : "A full customer journey, automated"} sub={ar ? "من أول مكالمة إلى حضور الموعد، كل خطوة تتم بدون تدخل يدوي." : "From the first call to the visit, every step runs on its own."} />
+            <div className="mt-14 grid gap-6 md:grid-cols-4">
+              {flow.map((f, i) => (
+                <div key={f.t} className="rounded-3xl border border-mw-line bg-mw-bg p-7 text-center">
+                  <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-mw-night font-kufi text-xl font-black text-mw-bright">{i + 1}</div>
+                  <f.icon className="mx-auto mt-5 size-7 text-mw-brand" />
+                  <h4 className="mt-3 font-kufi text-lg font-extrabold">{f.t}</h4>
+                  <p className="mt-2 text-sm leading-7 text-mw-muted">{f.d}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto grid max-w-7xl gap-6 px-4 py-24 md:grid-cols-2 md:px-8">
+          <figure className="relative overflow-hidden rounded-3xl">
+            <img src={waImg} alt={ar ? "صاحب منشأة يتابع ردود واتساب الآلية من جواله" : "Owner following automated WhatsApp replies"} width={1024} height={1024} loading="lazy" className="h-[420px] w-full object-cover" />
+            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-mw-night to-transparent p-6 font-kufi text-xl font-extrabold text-primary-foreground">{ar ? "عملاؤك يُخدمون على واتساب… وأنت مرتاح" : "Customers served on WhatsApp, while you relax"}</figcaption>
+          </figure>
+          <figure className="relative overflow-hidden rounded-3xl">
+            <img src={autoImg} alt={ar ? "موجة صوتية تتحول إلى رسائل ومواعيد مؤتمتة" : "Voice turning into automated messages and bookings"} width={1280} height={800} loading="lazy" className="h-[420px] w-full object-cover" />
+            <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-mw-night to-transparent p-6 font-kufi text-xl font-extrabold text-primary-foreground">{ar ? "من مكالمة إلى موعد مؤكد… تلقائياً" : "From a call to a confirmed booking"}</figcaption>
+          </figure>
+        </section>
         <IndustrySolutions />
 
         <section id="how" className="border-y border-landing-foreground/10 bg-saudi/30 py-24"><div className="mx-auto max-w-7xl px-4 md:px-8"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><div><span className="text-base font-semibold text-gold">{ar ? "من التسجيل للتشغيل" : "FROM SIGNUP TO LIVE"}</span><h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">{copy.howTitle}</h2></div><p className="max-w-md text-lg leading-8 text-landing-muted">{ar ? "لا لف ولا دوران: عرّفنا على نشاطك، جهّز المعرفة، وصوتي يصير جاهزًا للاستقبال." : "Introduce your business, add its knowledge, and Sawti is ready to serve."}</p></div><div className="mt-14 grid gap-8 md:grid-cols-4">{[[Users, '01', ar ? 'عرّفنا بشركتك' : 'Add your company'], [BookOpen, '02', ar ? 'حمّل معلوماتك' : 'Share your knowledge'], [Headphones, '03', ar ? 'اضبط أسلوب الرد' : 'Shape the response'], [ShieldCheck, '04', ar ? 'تابع كل شيء' : 'Stay in control']].map(([Icon, n, label]) => { const StepIcon = Icon as typeof Users; return <div key={String(n)} className="border-t border-landing-foreground/15 pt-5"><div className="flex items-center justify-between"><StepIcon className="size-6 text-saudi-bright" /><span className="font-display text-base text-gold">{String(n)}</span></div><h3 className="mt-8 text-xl font-semibold">{String(label)}</h3></div>; })}</div></div></section>
