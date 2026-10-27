@@ -238,3 +238,19 @@
 @utility mw-float { animation: mw-float 14s ease-in-out infinite; }
 @utility mw-glow { &:hover { box-shadow: 0 20px 50px -20px color-mix(in oklab, var(--color-mw-bright, #00dc92) 45%, transparent); } }
 @media (prefers-reduced-motion: reduce) { .mw-kenburns, .mw-wave, .mw-float { animation: none; } }
+
+/* Classic Sawti look (old green + gold palette), toggled on the landing page */
+.theme-meswar.theme-classic {
+  --mw-night: oklch(0.26 0.045 165);
+  --mw-ink: oklch(0.3 0.035 160);
+  --mw-brand: oklch(0.42 0.075 160);
+  --mw-bright: oklch(0.74 0.1 82);
+  --mw-mint: oklch(0.93 0.03 140);
+  --mw-gold: oklch(0.68 0.075 82);
+  --mw-bg: oklch(0.985 0.008 92);
+  --mw-muted: oklch(0.48 0.025 165);
+  --mw-line: oklch(0.9 0.02 120);
+  --saudi: oklch(0.91 0.035 145);
+  --gold: oklch(0.68 0.075 82);
+  --mw-grad: linear-gradient(135deg, var(--mw-bright), oklch(0.62 0.09 75));
+}
