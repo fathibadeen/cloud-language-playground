@@ -17,6 +17,7 @@ import { Route as ContactRouteImport } from './routes/contact'
 import { Route as DashboardRouteRouteImport } from './routes/dashboard/route'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PartnersRouteImport } from './routes/partners'
+import { Route as PreviewMeswarRouteImport } from './routes/preview-meswar'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -82,6 +83,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const PartnersRoute = PartnersRouteImport.update({
   id: '/partners',
   path: '/partners',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PreviewMeswarRoute = PreviewMeswarRouteImport.update({
+  id: '/preview-meswar',
+  path: '/preview-meswar',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/onboarding': typeof OnboardingRoute
   '/partners': typeof PartnersRoute
+  '/preview-meswar': typeof PreviewMeswarRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
@@ -263,6 +270,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/onboarding': typeof OnboardingRoute
   '/partners': typeof PartnersRoute
+  '/preview-meswar': typeof PreviewMeswarRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
@@ -300,6 +308,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/onboarding': typeof OnboardingRoute
   '/partners': typeof PartnersRoute
+  '/preview-meswar': typeof PreviewMeswarRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
   '/terms': typeof TermsRoute
@@ -338,6 +347,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/onboarding'
     | '/partners'
+    | '/preview-meswar'
     | '/privacy'
     | '/reset-password'
     | '/terms'
@@ -373,6 +383,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/onboarding'
     | '/partners'
+    | '/preview-meswar'
     | '/privacy'
     | '/reset-password'
     | '/terms'
@@ -409,6 +420,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/onboarding'
     | '/partners'
+    | '/preview-meswar'
     | '/privacy'
     | '/reset-password'
     | '/terms'
@@ -446,6 +458,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   OnboardingRoute: typeof OnboardingRoute
   PartnersRoute: typeof PartnersRoute
+  PreviewMeswarRoute: typeof PreviewMeswarRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   TermsRoute: typeof TermsRoute
@@ -514,6 +527,13 @@ declare module '@tanstack/react-router' {
       path: '/partners'
       fullPath: '/partners'
       preLoaderRoute: typeof PartnersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/preview-meswar': {
+      id: '/preview-meswar'
+      path: '/preview-meswar'
+      fullPath: '/preview-meswar'
+      preLoaderRoute: typeof PreviewMeswarRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -752,6 +772,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   OnboardingRoute: OnboardingRoute,
   PartnersRoute: PartnersRoute,
+  PreviewMeswarRoute: PreviewMeswarRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   TermsRoute: TermsRoute,
