@@ -239,6 +239,8 @@
 @utility mw-kenburns { animation: mw-kenburns 22s ease-in-out infinite alternate; }
 @utility mw-wave { transform-origin: bottom; animation: mw-wave 1.2s ease-in-out infinite; }
 @utility mw-float { animation: mw-float 14s ease-in-out infinite; }
+@keyframes mw-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@utility mw-bob { animation: mw-bob 4.5s ease-in-out infinite; }
 @utility mw-glow { &:hover { box-shadow: 0 20px 50px -20px color-mix(in oklab, var(--color-mw-bright, #00dc92) 45%, transparent); } }
 @media (prefers-reduced-motion: reduce) { .mw-kenburns, .mw-wave, .mw-float { animation: none; } }
 

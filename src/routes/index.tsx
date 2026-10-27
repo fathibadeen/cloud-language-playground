@@ -247,8 +247,17 @@ function Landing() {
                 ))}
               </div>
             </div>
-            <div className="flex justify-center">
+            <div className="relative flex justify-center">
               <HeroVoiceCard ar={ar} onCall={openDemo} />
+              {[
+                { t: ar ? "📞 مكالمة واردة: حجز موعد أسنان" : "📞 Incoming: dental booking", c: "-top-4 start-0 md:-start-10", d: "0s" },
+                { t: ar ? "💬 واتساب: أُرسل الموقع ✅" : "💬 WhatsApp: location sent ✅", c: "top-1/2 -end-2 md:-end-12", d: "1.2s" },
+                { t: ar ? "🔔 تذكير قبل 24 ساعة • تم التأكيد" : "🔔 24h reminder • confirmed", c: "-bottom-5 start-4 md:-start-6", d: "2.4s" },
+              ].map((p) => (
+                <div key={p.t} style={{ animationDelay: p.d }} className={`mw-bob pointer-events-none absolute z-10 hidden rounded-2xl border border-mw-bright/30 bg-mw-night/85 px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-xl backdrop-blur sm:block ${p.c}`}>
+                  <span className="me-2 inline-block size-2 animate-pulse rounded-full bg-mw-bright" />{p.t}
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -323,6 +332,22 @@ function Landing() {
             <img src={autoImg} alt={ar ? "موجة صوتية تتحول إلى رسائل ومواعيد مؤتمتة" : "Voice turning into automated messages and bookings"} width={1280} height={800} loading="lazy" className="h-[420px] w-full object-cover" />
             <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-mw-night to-transparent p-6 font-kufi text-xl font-extrabold text-primary-foreground">{ar ? "من مكالمة إلى موعد مؤكد… تلقائياً" : "From a call to a confirmed booking"}</figcaption>
           </figure>
+        </section>
+
+        <section className="bg-mw-night py-24 text-primary-foreground">
+          <div className="mx-auto max-w-7xl px-4 md:px-8">
+            <div className="text-center"><span className="font-semibold text-mw-gold">{ar ? "الفرق واضح" : "The difference"}</span><h2 className="mt-3 font-kufi text-3xl font-extrabold md:text-5xl">{ar ? "قبل صوتي… وبعده" : "Before and after Sawti"}</h2></div>
+            <div className="mt-14 grid gap-6 md:grid-cols-2">
+              <div className="mw-glow rounded-3xl border border-primary-foreground/15 bg-primary-foreground/5 p-8 transition hover:-translate-y-2">
+                <h3 className="font-kufi text-2xl font-extrabold text-mw-mint/70">{ar ? "قبل" : "Before"}</h3>
+                <ul className="mt-6 space-y-4 text-lg">{(ar ? ["مكالمات تفوت بعد الدوام", "رسائل واتساب تنتظر ساعات", "مواعيد تُنسى بلا تذكير", "موظف مشغول بأسئلة متكررة"] : ["Missed after-hours calls", "WhatsApp waits for hours", "Forgotten appointments", "Staff stuck on repeat questions"]).map((x) => <li key={x} className="flex items-center gap-3 text-primary-foreground/70"><span className="text-xl">✕</span>{x}</li>)}</ul>
+              </div>
+              <div className="mw-glow rounded-3xl border border-mw-bright/40 bg-mw-bright/10 p-8 transition hover:-translate-y-2">
+                <h3 className="font-kufi text-2xl font-extrabold text-mw-bright">{ar ? "بعد صوتي" : "With Sawti"}</h3>
+                <ul className="mt-6 space-y-4 text-lg">{(ar ? ["رد فوري على كل مكالمة 24/7", "واتساب يرد ويحجز في ثوانٍ", "تذكير تلقائي قبل 24 ساعة وساعتين", "فريقك يتفرغ للعمل المهم"] : ["Every call answered 24/7", "WhatsApp replies and books in seconds", "Automatic 24h and 2h reminders", "Your team focuses on what matters"]).map((x) => <li key={x} className="flex items-center gap-3 font-semibold"><CheckCircle2 className="size-5 shrink-0 text-mw-bright" />{x}</li>)}</ul>
+              </div>
+            </div>
+          </div>
         </section>
         <IndustrySolutions />
 
