@@ -32,6 +32,7 @@ import { useI18n } from "@/lib/i18n";
 import { usePlans } from "@/lib/tenant";
 import { useAuth } from "@/lib/auth";
 import waImg from "@/assets/meswar-preview/whatsapp.jpg";
+import heroBg from "@/assets/saudi-ai-hero.jpg";
 import autoImg from "@/assets/meswar-preview/automation.jpg";
 import socialImage from "@/assets/sawti-social-share.jpg";
 import meswarLogo from "@/assets/brand/meswar-logo.jpg.asset.json";
@@ -209,7 +210,10 @@ function Landing() {
       </header>
 
       <main>
-        <section className="mw-gridbg relative overflow-hidden bg-mw-night pt-24">
+        <section className="relative overflow-hidden bg-mw-night pt-24">
+          <img src={heroBg} alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 size-full object-cover object-[70%_center] opacity-60 md:object-center" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-mw-night/90 via-mw-night/75 to-mw-night md:bg-gradient-to-l md:from-mw-night/95 md:via-mw-night/70 md:to-mw-night/40" />
+          <div className="mw-gridbg pointer-events-none absolute inset-0 opacity-60" />
           <div className="pointer-events-none absolute -top-40 right-[-10%] size-[520px] rounded-full bg-mw-bright/20 blur-3xl" />
           <div className="pointer-events-none absolute bottom-[-30%] left-[-10%] size-[480px] rounded-full bg-mw-gold/20 blur-3xl" />
           <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-10 md:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pt-16">
