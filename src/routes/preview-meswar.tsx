@@ -188,7 +188,7 @@ function SecHead({ tag, title, sub }: { tag: string; title: string; sub: string 
 
 function Bubble({ icon: Icon, label, text, accent }: { icon: typeof Phone; label: string; text: string; accent?: boolean }) {
   return (
-    <div className={`rounded-2xl border p-4 ${accent ? "border-mw-bright/40 bg-mw-bright/15" : "border-primary-foreground/10 bg-primary-foreground/5"}`}>
+    <div className={`rounded-2xl border p-4 ${accent ? "border-mw-bright/40 bg-mw-night/80" : "border-primary-foreground/10 bg-mw-night/70"} backdrop-blur-md`}>
       <div className="flex items-center gap-2 text-xs font-bold text-mw-mint/80"><Icon className="size-4" />{label}</div>
       <p className="mt-2 font-semibold leading-7 text-primary-foreground">{text}</p>
     </div>
