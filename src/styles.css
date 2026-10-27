@@ -180,3 +180,38 @@
 @utility logical-start {
   inset-inline-start: 0;
 }
+
+/* Meswar-aligned brand preview (scoped to .theme-meswar only) */
+.theme-meswar {
+  --mw-night: oklch(0.27 0.05 168);
+  --mw-ink: oklch(0.2 0.03 165);
+  --mw-brand: oklch(0.52 0.11 168);
+  --mw-bright: oklch(0.7 0.15 163);
+  --mw-mint: oklch(0.87 0.09 165);
+  --mw-gold: oklch(0.77 0.09 80);
+  --mw-bg: oklch(0.982 0.007 165);
+  --mw-muted: oklch(0.52 0.025 230);
+  --mw-line: oklch(0.93 0.015 165);
+  --background: var(--mw-bg);
+  --foreground: var(--mw-ink);
+  --primary: var(--mw-brand);
+  --primary-foreground: oklch(0.99 0 0);
+  --ring: var(--mw-bright);
+  --mw-grad: linear-gradient(135deg, var(--mw-bright), oklch(0.58 0.1 185));
+  --mw-text-grad: linear-gradient(90deg, var(--mw-bright), var(--mw-mint), var(--mw-gold));
+  --mw-glow: 0 14px 34px -8px color-mix(in oklab, var(--mw-bright) 45%, transparent);
+}
+@theme inline {
+  --color-mw-night: var(--mw-night);
+  --color-mw-ink: var(--mw-ink);
+  --color-mw-brand: var(--mw-brand);
+  --color-mw-bright: var(--mw-bright);
+  --color-mw-mint: var(--mw-mint);
+  --color-mw-gold: var(--mw-gold);
+  --color-mw-bg: var(--mw-bg);
+  --color-mw-muted: var(--mw-muted);
+  --color-mw-line: var(--mw-line);
+  --font-kufi: "Noto Kufi Arabic", "Tajawal", sans-serif;
+}
+@utility mw-grad { background-image: var(--mw-grad); box-shadow: var(--mw-glow); }
+@utility mw-text-grad { background-image: var(--mw-text-grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
