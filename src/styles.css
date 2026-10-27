@@ -279,3 +279,14 @@
   opacity: var(--landing-hero-opacity);
 }
 @utility landing-footer { background-color: var(--landing-footer); }
+
+/* Industry solution cards: looping live-chat simulation */
+.sol-card { transition: transform .4s ease, box-shadow .4s ease, border-color .4s ease; }
+.sol-card:hover { transform: translateY(-8px); border-color: color-mix(in oklab, var(--color-saudi-bright, #00dc92) 50%, transparent); box-shadow: 0 24px 50px -20px color-mix(in oklab, var(--color-saudi-bright, #00dc92) 45%, transparent); }
+.sol-msg, .sol-reply { animation: sol-in 7s ease-in-out infinite both; }
+.sol-reply { animation-name: sol-reply; }
+.sol-typing { animation: sol-typing 7s ease-in-out infinite both; }
+@keyframes sol-in { 0% { opacity: 0; transform: translateY(8px); } 6%, 90% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+@keyframes sol-typing { 0% { opacity: 0; height: 0; padding-block: 0; margin-top: 0; } 4%, 14% { opacity: 1; height: 26px; padding-block: .5rem; margin-top: .5rem; } 18%, 100% { opacity: 0; height: 0; padding-block: 0; margin-top: 0; } }
+@keyframes sol-reply { 0% { opacity: 0; transform: translateY(8px) scale(.96); } 6%, 75% { opacity: 1; transform: none; } 82%, 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sol-msg, .sol-reply, .sol-typing { animation: none; } .sol-typing { display: none; } }
