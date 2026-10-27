@@ -30,7 +30,7 @@ export async function sendAppointmentConfirmation(appointmentId: string): Promis
     timeStyle: "short",
     timeZone: bs?.timezone || "Asia/Riyadh",
   }).format(new Date(a.start_time));
-  const body = confirmationText({ business: co?.name ?? "", name: a.customer_name, when, service: a.service_name, mapUrl: cs?.map_url });
+  const body = confirmationText({ business: co?.name ?? "", name: a.customer_name, when, service: a.service_name, mapUrl: cs?.map_url ?? null });
   const res = await meta.sendMetaText(wa.phone_number_id, token, String(a.customer_phone).replace(/\D/g, ""), body);
   if (!res.ok) {
     await supabaseAdmin.from("notifications").insert({

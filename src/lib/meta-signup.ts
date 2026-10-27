@@ -30,7 +30,7 @@ function loadSdk(appId: string, version: string): Promise<FB> {
   return sdk;
 }
 
-export type SignupResult = { code?: string; redirectUri?: string; wabaId?: string; phoneNumberId?: string };
+export type SignupResult = { code?: string | undefined; redirectUri?: string | undefined; wabaId?: string | undefined; phoneNumberId?: string | undefined };
 
 export function runEmbeddedSignup(appId: string, configId: string, version: string): Promise<SignupResult> {
   const session: { wabaId?: string; phoneNumberId?: string } = {};
