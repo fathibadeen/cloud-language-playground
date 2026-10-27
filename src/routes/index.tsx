@@ -15,6 +15,10 @@ import {
   Sparkles,
   Users,
   Volume2,
+  Workflow,
+  BellRing,
+  CalendarCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -27,7 +31,8 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useI18n } from "@/lib/i18n";
 import { usePlans } from "@/lib/tenant";
 import { useAuth } from "@/lib/auth";
-import heroImage from "@/assets/saudi-ai-hero.jpg";
+import waImg from "@/assets/meswar-preview/whatsapp.jpg";
+import autoImg from "@/assets/meswar-preview/automation.jpg";
 import socialImage from "@/assets/sawti-social-share.jpg";
 import meswarLogo from "@/assets/brand/meswar-logo.jpg.asset.json";
 import aiConsultingLogo from "@/assets/brand/ai-consulting-logo.jpg.asset.json";
@@ -363,6 +368,15 @@ function Landing() {
         </section>
       </main>
        <footer className="border-t border-landing-foreground/10 py-10"><div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 text-base text-landing-muted md:px-8"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><SawtiLogo compact className="text-landing-foreground" /><p className="mt-1 text-sm">{ar ? "منتج من مسور" : "A Meswar product"}</p></div><nav className="flex flex-wrap gap-x-6 gap-y-2"><a href="#faq" className="hover:text-landing-foreground">{t("faq")}</a><Link to="/partners" className="hover:text-landing-foreground">{ar ? "الشركاء" : "Partners"}</Link><Link to="/contact" className="hover:text-landing-foreground">{t("contact")}</Link><Link to="/privacy" className="hover:text-landing-foreground">{ar ? "سياسة الخصوصية" : "Privacy"}</Link><Link to="/terms" className="hover:text-landing-foreground">{ar ? "الشروط والأحكام" : "Terms"}</Link></nav></div><div className="flex flex-col justify-between gap-2 border-t border-landing-foreground/10 pt-5 md:flex-row"><span>{ar ? "تقنية تخدم الناس.. مثل ما ينبغي" : "Technology that serves people properly"}</span><a href="mailto:meswar2030@gmail.com" dir="ltr" className="hover:text-landing-foreground">meswar2030@gmail.com</a><span>© {new Date().getFullYear()} Sawti</span></div></div></footer>
+    </div>
+  );
+}
+function SecHead({ tag, title, sub }: { tag: string; title: string; sub: string }) {
+  return (
+    <div className="mx-auto max-w-2xl text-center">
+      <span className="font-extrabold text-mw-brand">{tag}</span>
+      <h2 className="mt-3 font-kufi text-3xl font-black md:text-4xl">{title}</h2>
+      <p className="mt-4 text-lg leading-8 text-mw-muted">{sub}</p>
     </div>
   );
 }
