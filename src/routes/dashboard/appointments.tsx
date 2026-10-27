@@ -1,4 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { confirmAppointment } from "@/lib/appointments.functions";
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -158,13 +160,14 @@ function AppointmentsPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const confirmAppt = useServerFn(confirmAppointment);
   const [form, setForm] = useState({ name: "", phone: "", service: "", start: "", minutes: "", notes: "" });
   const createAppointment = useMutation({
     mutationFn: async () => {
       if (!form.start) throw new Error(ar ? "حدد وقت الموعد" : "Pick a time");
       const start = zonedToUtc(form.start, tz);
       const minutes = Number(form.minutes) > 0 ? Number(form.minutes) : settings?.slot_minutes ?? 30;
-      const { error } = await supabase.from("appointments").insert({
+      const { data: inserted, error } = await supabase.from("appointments").insert({
         company_id: companyId!,
         customer_name: form.name || null,
         customer_phone: form.phone || null,
@@ -174,8 +177,12 @@ function AppointmentsPage() {
         status: "confirmed",
         source: "manual",
         notes: form.notes || null,
-      });
+      }).select("id").single();
       if (error) throw error;
+      if (inserted && form.phone) {
+        const r = await confirmAppt({ data: { appointmentId: inserted.id } }).catch(() => null);
+        if (r?.sent) toast.success(ar ? "أُرسل تأكيد الموعد للعميل عبر واتساب" : "WhatsApp confirmation sent");
+      }
     },
     onSuccess: () => {
       toast.success(ar ? "تم حفظ الموعد" : "Appointment saved");

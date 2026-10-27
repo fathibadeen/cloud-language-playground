@@ -46,3 +46,15 @@ describe("clinic stats", () => {
     expect(s.topServices[0]).toEqual({ name: "تنظيف", count: 2 });
   });
 });
+
+import { needsInstantConfirmation } from "./clinic";
+describe("instant confirmation", () => {
+  it("is sent for voice and manual bookings with a phone", () => {
+    expect(needsInstantConfirmation("voice_call", "+966500000000")).toBe(true);
+    expect(needsInstantConfirmation("manual", "0500000000")).toBe(true);
+  });
+  it("is skipped for WhatsApp bookings and missing phones", () => {
+    expect(needsInstantConfirmation("whatsapp", "+966500000000")).toBe(false);
+    expect(needsInstantConfirmation("manual", null)).toBe(false);
+  });
+});

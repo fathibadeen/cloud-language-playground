@@ -21,6 +21,10 @@ import { useCompanyId, useCompanyTable, useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 import { humanizeDbError } from "@/lib/errors";
 import { AgentTester } from "@/components/AgentTester";
+import { useServerFn } from "@tanstack/react-start";
+import { useQuery } from "@tanstack/react-query";
+import { getMetaConfig, completeWhatsappConnect } from "@/lib/meta.functions";
+import { runEmbeddedSignup } from "@/lib/meta-signup";
 
 
 export const Route = createFileRoute("/dashboard/whatsapp")({
@@ -58,6 +62,42 @@ function WhatsappPage() {
   const { data: requests } = useCompanyTable<ConnectRequest>("connection_requests", companyId);
   const [form, setForm] = useState({ phone_number: "", business_name: "" });
   const [busy, setBusy] = useState(false);
+  const fetchMeta = useServerFn(getMetaConfig);
+  const finishConnect = useServerFn(completeWhatsappConnect);
+  const { data: metaCfg } = useQuery({ queryKey: ["meta-config"], queryFn: () => fetchMeta() });
+  const canManage = ["owner", "admin"].includes(String((membership as { role?: string } | null)?.role ?? ""));
+
+  async function connectMeta() {
+    if (!companyId || !metaCfg?.appId || !metaCfg.configId) {
+      toast.error("ربط Meta غير متاح حالياً، تواصل مع الدعم");
+      return;
+    }
+    setBusy(true);
+    try {
+      const r = await runEmbeddedSignup(metaCfg.appId, metaCfg.configId, metaCfg.graphVersion);
+      if (!r.code) {
+        toast.error("لم يكتمل الربط مع Meta، حاول مرة أخرى");
+        return;
+      }
+      await finishConnect({
+        data: {
+          companyId,
+          code: r.code,
+          redirectUri: r.redirectUri,
+          pageUrls: [window.location.href.split("#")[0], `${window.location.origin}/admin`, `${window.location.origin}/`],
+          wabaId: r.wabaId,
+          phoneNumberId: r.phoneNumberId,
+        },
+      });
+      toast.success("تم ربط رقم واتساب بنجاح");
+      qc.invalidateQueries({ queryKey: ["whatsapp_accounts"] });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(msg === "Forbidden" ? "الربط متاح لمالك الحساب أو المدير فقط" : `تعذر الربط: ${msg.split("|").pop()}`);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   const company = membership?.companies as { id: string; name: string; whatsapp_enabled: boolean } | null;
   const account = accounts?.[0];
@@ -193,6 +233,18 @@ function WhatsappPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            <div className="space-y-3 rounded-lg border border-primary/30 bg-primary/5 p-4">
+              <p className="font-semibold">اربط رقمك بنفسك عبر Meta (الأسرع)</p>
+              <p className="text-sm text-muted-foreground">
+                سجّل الدخول بحساب فيسبوك المرتبط بنشاطك، ثم اختر حساب واتساب للأعمال والرقم وأكّد برمز التحقق. يتفعّل الرد الآلي والتذكيرات فور اكتمال الربط.
+              </p>
+              <Button onClick={connectMeta} disabled={busy || !canManage}>
+                <MessageSquare className="size-4" />
+                ربط رقم واتساب عبر Meta
+              </Button>
+              {!canManage ? <p className="text-xs text-muted-foreground">الربط متاح لمالك الحساب أو المدير فقط.</p> : null}
+            </div>
+            <p className="text-sm text-muted-foreground">أو أرسل طلب ربط لفريقنا:</p>
             <p className="text-sm text-muted-foreground">{t("whatsappConnectDesc")}</p>
             {latestRequest?.status === "rejected" ? (
               <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">

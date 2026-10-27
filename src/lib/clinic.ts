@@ -87,6 +87,17 @@ export function reminderText(kind: ReminderKind, p: { clinic: string; name?: str
   }
 }
 
+/** Instant confirmation sent the moment an appointment is booked (call or manual). */
+export function confirmationText(p: { business: string; name?: string | null; when: string; service?: string | null; mapUrl?: string | null }): string {
+  const hi = p.name ? `أهلاً ${p.name}` : "أهلاً";
+  return `${hi}، تم تأكيد موعدك في ${p.business}${p.service ? ` (${p.service})` : ""} يوم ${p.when}.${p.mapUrl ? `\nالموقع: ${p.mapUrl}` : ""}\nسنرسل لك تذكيراً قبل الموعد. للتعديل أو الإلغاء ردّ على هذه الرسالة.`;
+}
+
+/** Bookings made inside a WhatsApp chat are already confirmed there by the agent. */
+export function needsInstantConfirmation(source: string, phone: string | null | undefined): boolean {
+  return source !== "whatsapp" && !!phone && phone.replace(/\D/g, "").length >= 8;
+}
+
 export type ClinicStats = {
   total: number;
   attended: number;

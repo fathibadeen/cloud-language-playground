@@ -22,6 +22,15 @@ import {
   unsubscribeWaba,
 } from "@/lib/meta.server";
 
+/** Super admin, or owner/admin of the company being connected. */
+async function assertCanConnect(context: { supabase: any; userId: string }, companyId: string) {
+  const { data: isAdmin } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "super_admin" });
+  if (isAdmin) return;
+  const { data, error } = await context.supabase.rpc("has_company_role", { _company_id: companyId, _roles: ["owner", "admin"] });
+  if (error) throw new Error(error.message);
+  if (!data) throw new Error("Forbidden");
+}
+
 async function assertSuperAdmin(context: { supabase: any; userId: string }) {
   const { data, error } = await context.supabase.rpc("has_role", {
     _user_id: context.userId,
@@ -65,7 +74,7 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
       .parse(data),
   )
   .handler(async ({ data, context }) => {
-    await assertSuperAdmin(context);
+    await assertCanConnect(context, data.companyId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const meta = await import("@/lib/meta.server");
 
