@@ -197,6 +197,13 @@ export async function bookFromConversation(
     type: `appointment_${inserted.id}`,
   });
 
+  try {
+    const { sendAppointmentConfirmation } = await import("@/lib/appointment-confirm.server");
+    await sendAppointmentConfirmation(inserted.id);
+  } catch {
+    // confirmation is best-effort
+  }
+
   return { created: true, appointmentId: inserted.id };
 }
 
