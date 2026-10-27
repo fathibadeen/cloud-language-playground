@@ -222,8 +222,9 @@ function Landing() {
           </div>
           <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-10 md:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pt-16">
             <div>
-              <span className="inline-flex items-center gap-2 rounded-full border border-mw-bright/40 bg-mw-bright/15 px-4 py-2 text-sm font-bold text-mw-mint">
-                <span className="size-2 animate-pulse rounded-full bg-mw-bright" /> {ar ? "صوتي • منتج ذكاء اصطناعي من مسور" : "Sawti • An AI product by Meswar"}
+              <span className="inline-flex items-center gap-3 rounded-full border border-mw-bright/40 bg-mw-bright/15 py-1.5 pe-1.5 ps-4 text-sm font-bold text-mw-mint">
+                <span className="size-2 animate-pulse rounded-full bg-mw-bright" /> {ar ? "صوتي منتج من مسور" : "Sawti, a Meswar product"}
+                <img src={meswarLogo.url} alt={ar ? "شعار مسور" : "Meswar logo"} width={72} height={34} className="h-8 w-auto rounded-full object-contain" />
               </span>
               <h1 className="mt-7 font-kufi text-4xl font-black leading-[1.45] text-primary-foreground md:text-6xl">
                 {ar ? <>موظف ذكي يرد على عملائك <span className="mw-text-grad">بالصوت والواتساب</span> ويؤتمت الباقي</> : <>An AI employee that answers by <span className="mw-text-grad">voice and WhatsApp</span> and automates the rest</>}
