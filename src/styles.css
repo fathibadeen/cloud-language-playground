@@ -192,6 +192,9 @@
   --mw-bg: oklch(0.975 0.008 200);
   --mw-muted: oklch(0.52 0.025 230);
   --mw-line: oklch(0.92 0.012 220);
+  --landing-hero-filter: none;
+  --landing-hero-opacity: 0.95;
+  --landing-footer: var(--mw-bg);
   --background: var(--mw-bg);
   --foreground: var(--mw-ink);
   --primary: var(--mw-brand);
@@ -250,7 +253,27 @@
   --mw-bg: oklch(0.985 0.008 92);
   --mw-muted: oklch(0.48 0.025 165);
   --mw-line: oklch(0.9 0.02 120);
+  --card: oklch(1 0.004 92);
+  --card-foreground: var(--mw-ink);
+  --secondary: oklch(0.95 0.015 160);
+  --secondary-foreground: var(--mw-ink);
+  --muted: oklch(0.955 0.01 160);
+  --muted-foreground: var(--mw-muted);
+  --accent: var(--mw-gold);
+  --accent-foreground: oklch(0.25 0.03 80);
+  --border: var(--mw-line);
+  --input: var(--mw-line);
+  --gold-foreground: oklch(0.25 0.03 80);
+  --landing-hero-filter: sepia(0.8) hue-rotate(75deg) saturate(0.65);
+  --landing-hero-opacity: 0.65;
+  --landing-footer: var(--saudi);
   --saudi: oklch(0.91 0.035 145);
   --gold: oklch(0.68 0.075 82);
   --mw-grad: linear-gradient(135deg, var(--mw-bright), oklch(0.62 0.09 75));
 }
+
+@utility landing-hero-photo {
+  filter: var(--landing-hero-filter);
+  opacity: var(--landing-hero-opacity);
+}
+@utility landing-footer { background-color: var(--landing-footer); }

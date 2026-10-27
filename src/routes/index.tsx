@@ -192,7 +192,7 @@ function Landing() {
             <a href="#faq" className="hover:text-primary-foreground">{t("faq")}</a>
           </nav>
           <div className="flex items-center gap-2 text-primary-foreground">
-            <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-mw-mint hover:bg-mw-mint/10 hover:text-primary-foreground" aria-label={ar ? "تغيير المظهر" : "Change theme"} title={classic ? (ar ? "مظهر مسور" : "Meswar look") : (ar ? "المظهر الكلاسيكي" : "Classic look")}><Palette /></Button>
+            <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-mw-mint hover:bg-mw-mint/10 hover:text-primary-foreground" aria-label={ar ? "تغيير المظهر" : "Change theme"} aria-pressed={classic} title={classic ? (ar ? "مظهر مسور" : "Meswar look") : (ar ? "المظهر الكلاسيكي" : "Classic look")}><Palette /></Button>
             <LanguageToggle />
             <Button asChild variant="ghost" size="sm" className="hidden text-mw-mint hover:bg-mw-mint/10 hover:text-primary-foreground sm:inline-flex">
               <Link to={user ? "/dashboard" : "/auth"}>{user ? t("navHome") : t("login")}</Link>
@@ -216,7 +216,7 @@ function Landing() {
 
       <main>
         <section className="relative overflow-hidden bg-mw-night pt-24">
-          <img src={heroBg} alt="" aria-hidden="true" className="mw-kenburns pointer-events-none absolute inset-0 size-full object-cover object-[70%_center] opacity-95 md:object-center" />
+          <img src={heroBg} alt="" aria-hidden="true" className="landing-hero-photo mw-kenburns pointer-events-none absolute inset-0 size-full object-cover object-[70%_center] md:object-center" />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-mw-night/80 via-mw-night/55 to-mw-night md:bg-gradient-to-l md:from-mw-night/90 md:via-mw-night/40 md:to-transparent" />
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-mw-night to-transparent" />
           <div className="mw-float pointer-events-none absolute -top-40 right-[-10%] size-[520px] rounded-full bg-mw-bright/15 blur-3xl" />
@@ -381,7 +381,7 @@ function Landing() {
           </div>
         </section>
       </main>
-       <footer className="border-t border-landing-foreground/10 py-10"><div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 text-base text-landing-muted md:px-8"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><SawtiLogo compact className="text-landing-foreground" /><p className="mt-1 text-sm">{ar ? "منتج من مسور" : "A Meswar product"}</p></div><nav className="flex flex-wrap gap-x-6 gap-y-2"><a href="#faq" className="hover:text-landing-foreground">{t("faq")}</a><Link to="/partners" className="hover:text-landing-foreground">{ar ? "الشركاء" : "Partners"}</Link><Link to="/contact" className="hover:text-landing-foreground">{t("contact")}</Link><Link to="/privacy" className="hover:text-landing-foreground">{ar ? "سياسة الخصوصية" : "Privacy"}</Link><Link to="/terms" className="hover:text-landing-foreground">{ar ? "الشروط والأحكام" : "Terms"}</Link></nav></div><div className="flex flex-col justify-between gap-2 border-t border-landing-foreground/10 pt-5 md:flex-row"><span>{ar ? "تقنية تخدم الناس.. مثل ما ينبغي" : "Technology that serves people properly"}</span><a href="mailto:meswar2030@gmail.com" dir="ltr" className="hover:text-landing-foreground">meswar2030@gmail.com</a><span>© {new Date().getFullYear()} Sawti</span></div></div></footer>
+       <footer className="landing-footer border-t border-landing-foreground/10 py-10"><div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 text-base text-landing-muted md:px-8"><div className="flex flex-col justify-between gap-5 md:flex-row md:items-center"><div><SawtiLogo compact className="text-landing-foreground" /><p className="mt-1 text-sm">{ar ? "منتج من مسور" : "A Meswar product"}</p></div><nav className="flex flex-wrap gap-x-6 gap-y-2"><a href="#faq" className="hover:text-landing-foreground">{t("faq")}</a><Link to="/partners" className="hover:text-landing-foreground">{ar ? "الشركاء" : "Partners"}</Link><Link to="/contact" className="hover:text-landing-foreground">{t("contact")}</Link><Link to="/privacy" className="hover:text-landing-foreground">{ar ? "سياسة الخصوصية" : "Privacy"}</Link><Link to="/terms" className="hover:text-landing-foreground">{ar ? "الشروط والأحكام" : "Terms"}</Link></nav></div><div className="flex flex-col justify-between gap-2 border-t border-landing-foreground/10 pt-5 md:flex-row"><span>{ar ? "تقنية تخدم الناس.. مثل ما ينبغي" : "Technology that serves people properly"}</span><a href="mailto:meswar2030@gmail.com" dir="ltr" className="hover:text-landing-foreground">meswar2030@gmail.com</a><span>© {new Date().getFullYear()} Sawti</span></div></div></footer>
     </div>
   );
 }
