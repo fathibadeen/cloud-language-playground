@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { addonPrice, CLINIC_SETUP_FEE_SAR, periodPrice, plansFor, productFeatures, productLabels, type BillingPeriod, type PlanRow, type Product } from "@/lib/products";
 import {
+  Palette,
   ArrowLeft,
   BarChart3,
   BookOpen,
@@ -164,6 +165,9 @@ function Landing() {
   const faqs = ar ? faqAr : faqEn;
 
   const openDemo = () => { setVoiceDemoLoaded(false); setVoiceDemoOpen(true); };
+  const [classic, setClassic] = useState(false);
+  useEffect(() => { setClassic(localStorage.getItem("sawti.landing-theme") === "classic"); }, []);
+  const toggleTheme = () => setClassic((c) => { localStorage.setItem("sawti.landing-theme", c ? "meswar" : "classic"); return !c; });
   const pillars = [
     { icon: Phone, title: ar ? "وكيل المكالمات" : "Voice agent", desc: ar ? "يرد على كل مكالمة 24/7 بلهجة سعودية طبيعية، يجيب الأسئلة ويحجز المواعيد ويحوّل للموظف عند الحاجة." : "Answers every call 24/7 in natural Saudi Arabic, books appointments and hands off when needed.", points: ar ? ["لا مكالمة فائتة", "حجز وتعديل وإلغاء", "تنبيه تسجيل المكالمة"] : ["No missed calls", "Book, change, cancel", "Recording notice"] },
     { icon: MessageSquare, title: ar ? "وكيل واتساب" : "WhatsApp agent", desc: ar ? "يستقبل الاستفسارات ويرد فوراً من قاعدة معرفتك، ويرسل الموقع والتعليمات والتأكيدات داخل المحادثة." : "Replies instantly from your knowledge base and sends location, instructions and confirmations.", points: ar ? ["رد فوري بالعربي", "حجز من المحادثة", "ربط رسمي مع Meta"] : ["Instant Arabic replies", "Book in chat", "Official Meta link"] },
@@ -177,7 +181,7 @@ function Landing() {
   ];
 
   return (
-    <div className="theme-meswar min-h-screen bg-landing text-landing-foreground">
+    <div className={`theme-meswar ${classic ? "theme-classic" : ""} min-h-screen bg-landing text-landing-foreground`}>
       <header className="fixed inset-x-0 top-0 z-40 border-b border-mw-bright/15 bg-mw-night/85 backdrop-blur-xl">
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 md:px-8">
           <Link to="/" aria-label={ar ? "صوتي — الرئيسية" : "Sawti — Home"} className="rounded-xl bg-primary-foreground/95 px-3 py-1.5"><SawtiLogo compact /></Link>
@@ -188,6 +192,7 @@ function Landing() {
             <a href="#faq" className="hover:text-primary-foreground">{t("faq")}</a>
           </nav>
           <div className="flex items-center gap-2 text-primary-foreground">
+            <Button variant="ghost" size="icon" onClick={toggleTheme} className="text-mw-mint hover:bg-mw-mint/10 hover:text-primary-foreground" aria-label={ar ? "تغيير المظهر" : "Change theme"} title={classic ? (ar ? "مظهر مسور" : "Meswar look") : (ar ? "المظهر الكلاسيكي" : "Classic look")}><Palette /></Button>
             <LanguageToggle />
             <Button asChild variant="ghost" size="sm" className="hidden text-mw-mint hover:bg-mw-mint/10 hover:text-primary-foreground sm:inline-flex">
               <Link to={user ? "/dashboard" : "/auth"}>{user ? t("navHome") : t("login")}</Link>
