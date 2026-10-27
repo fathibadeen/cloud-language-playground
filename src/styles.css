@@ -229,3 +229,12 @@
 }
 @keyframes mw-marquee { from { transform: translateX(0); } to { transform: translateX(50%); } }
 @utility mw-marquee { animation: mw-marquee 28s linear infinite; }
+
+@keyframes mw-kenburns { from { transform: scale(1); } to { transform: scale(1.08) translateX(-1.5%); } }
+@keyframes mw-wave { 0%, 100% { transform: scaleY(0.35); } 50% { transform: scaleY(1); } }
+@keyframes mw-float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-40px, 30px); } }
+@utility mw-kenburns { animation: mw-kenburns 22s ease-in-out infinite alternate; }
+@utility mw-wave { transform-origin: bottom; animation: mw-wave 1.2s ease-in-out infinite; }
+@utility mw-float { animation: mw-float 14s ease-in-out infinite; }
+@utility mw-glow { &:hover { box-shadow: 0 20px 50px -20px color-mix(in oklab, var(--color-mw-bright, #00dc92) 45%, transparent); } }
+@media (prefers-reduced-motion: reduce) { .mw-kenburns, .mw-wave, .mw-float { animation: none; } }

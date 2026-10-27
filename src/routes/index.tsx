@@ -211,11 +211,15 @@ function Landing() {
 
       <main>
         <section className="relative overflow-hidden bg-mw-night pt-24">
-          <img src={heroBg} alt="" aria-hidden="true" className="pointer-events-none absolute inset-0 size-full object-cover object-[70%_center] opacity-60 md:object-center" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-mw-night/90 via-mw-night/75 to-mw-night md:bg-gradient-to-l md:from-mw-night/95 md:via-mw-night/70 md:to-mw-night/40" />
-          <div className="mw-gridbg pointer-events-none absolute inset-0 opacity-60" />
-          <div className="pointer-events-none absolute -top-40 right-[-10%] size-[520px] rounded-full bg-mw-bright/20 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-[-30%] left-[-10%] size-[480px] rounded-full bg-mw-gold/20 blur-3xl" />
+          <img src={heroBg} alt="" aria-hidden="true" className="mw-kenburns pointer-events-none absolute inset-0 size-full object-cover object-[70%_center] opacity-95 md:object-center" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-mw-night/80 via-mw-night/55 to-mw-night md:bg-gradient-to-l md:from-mw-night/90 md:via-mw-night/40 md:to-transparent" />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-mw-night to-transparent" />
+          <div className="mw-float pointer-events-none absolute -top-40 right-[-10%] size-[520px] rounded-full bg-mw-bright/15 blur-3xl" />
+          <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 bottom-6 flex h-16 items-end justify-center gap-1.5 opacity-50" dir="ltr">
+            {Array.from({ length: 48 }).map((_, i) => (
+              <span key={i} className="mw-wave w-1 rounded-full bg-mw-bright" style={{ animationDelay: `${(i % 12) * 0.09}s`, height: `${20 + ((i * 37) % 60)}%` }} />
+            ))}
+          </div>
           <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-10 md:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pt-16">
             <div>
               <span className="inline-flex items-center gap-2 rounded-full border border-mw-bright/40 bg-mw-bright/15 px-4 py-2 text-sm font-bold text-mw-mint">
