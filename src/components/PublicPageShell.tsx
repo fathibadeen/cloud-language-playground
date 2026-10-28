@@ -32,6 +32,7 @@ export function PublicPageShell({ children }: { children: ReactNode }) {
           <nav className="flex flex-wrap gap-x-6 gap-y-2">
             <Link to="/" hash="faq" className="hover:text-landing-foreground">{ar ? "الأسئلة الشائعة" : "FAQ"}</Link>
             <Link to="/clinics" className="hover:text-landing-foreground">{ar ? "للعيادات" : "For clinics"}</Link>
+            <Link to="/solutions" className="hover:text-landing-foreground">{ar ? "حلولنا" : "Solutions"}</Link>
             <Link to="/partners" className="hover:text-landing-foreground">{ar ? "الشركاء" : "Partners"}</Link>
             <Link to="/contact" className="hover:text-landing-foreground">{ar ? "تواصل معنا" : "Contact"}</Link>
             <Link to="/privacy" className="hover:text-landing-foreground">{ar ? "الخصوصية" : "Privacy"}</Link>

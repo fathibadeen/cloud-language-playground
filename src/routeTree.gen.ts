@@ -19,6 +19,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PartnersRouteImport } from './routes/partners'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as SolutionsRouteImport } from './routes/solutions'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as DashboardIndexRouteImport } from './routes/dashboard/index'
 import { Route as DashboardAgentsRouteImport } from './routes/dashboard/agents'
@@ -92,6 +93,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SolutionsRoute = SolutionsRouteImport.update({
+  id: '/solutions',
+  path: '/solutions',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -230,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/partners': typeof PartnersRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/solutions': typeof SolutionsRoute
   '/terms': typeof TermsRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
   '/dashboard/appointments': typeof DashboardAppointmentsRoute
@@ -265,6 +272,7 @@ export interface FileRoutesByTo {
   '/partners': typeof PartnersRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/solutions': typeof SolutionsRoute
   '/terms': typeof TermsRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
   '/dashboard/appointments': typeof DashboardAppointmentsRoute
@@ -302,6 +310,7 @@ export interface FileRoutesById {
   '/partners': typeof PartnersRoute
   '/privacy': typeof PrivacyRoute
   '/reset-password': typeof ResetPasswordRoute
+  '/solutions': typeof SolutionsRoute
   '/terms': typeof TermsRoute
   '/dashboard/agents': typeof DashboardAgentsRoute
   '/dashboard/appointments': typeof DashboardAppointmentsRoute
@@ -340,6 +349,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/privacy'
     | '/reset-password'
+    | '/solutions'
     | '/terms'
     | '/dashboard/agents'
     | '/dashboard/appointments'
@@ -375,6 +385,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/privacy'
     | '/reset-password'
+    | '/solutions'
     | '/terms'
     | '/dashboard/agents'
     | '/dashboard/appointments'
@@ -411,6 +422,7 @@ export interface FileRouteTypes {
     | '/partners'
     | '/privacy'
     | '/reset-password'
+    | '/solutions'
     | '/terms'
     | '/dashboard/agents'
     | '/dashboard/appointments'
@@ -448,6 +460,7 @@ export interface RootRouteChildren {
   PartnersRoute: typeof PartnersRoute
   PrivacyRoute: typeof PrivacyRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  SolutionsRoute: typeof SolutionsRoute
   TermsRoute: typeof TermsRoute
   InviteTokenRoute: typeof InviteTokenRoute
   AdminCompaniesCompanyIdRoute: typeof AdminCompaniesCompanyIdRoute
@@ -528,6 +541,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/solutions': {
+      id: '/solutions'
+      path: '/solutions'
+      fullPath: '/solutions'
+      preLoaderRoute: typeof SolutionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -754,6 +774,7 @@ const rootRouteChildren: RootRouteChildren = {
   PartnersRoute: PartnersRoute,
   PrivacyRoute: PrivacyRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  SolutionsRoute: SolutionsRoute,
   TermsRoute: TermsRoute,
   InviteTokenRoute: InviteTokenRoute,
   AdminCompaniesCompanyIdRoute: AdminCompaniesCompanyIdRoute,
