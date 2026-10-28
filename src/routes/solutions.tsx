@@ -64,7 +64,7 @@ function SolutionsPage() {
         <section className="mx-auto max-w-4xl px-4 pb-24 text-center md:px-8">
           <h2 className="font-display text-3xl font-bold">جاهز تشوف صوتي في نشاطك؟</h2>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link to="/" className="rounded-2xl bg-saudi-bright px-7 py-4 text-lg font-bold text-saudi-foreground">اسمع مكالمة تجريبية</Link>
+            <Link to="/" className="rounded-2xl bg-saudi-bright px-7 py-4 text-lg font-bold text-mw-night">اسمع مكالمة تجريبية</Link>
             <Link to="/auth" search={{ mode: "signup" }} className="rounded-2xl border border-landing-foreground/30 px-7 py-4 text-lg font-bold">ابدأ مجاناً</Link>
           </div>
         </section>
