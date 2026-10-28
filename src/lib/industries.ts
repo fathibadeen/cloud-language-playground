@@ -5,6 +5,7 @@ export const INDUSTRIES = [
   { value: "real_estate", label: "عقارات ومقاولات" },
   { value: "retail", label: "تجارة وتجزئة" },
   { value: "logistics", label: "نقل ولوجستيات" },
+  { value: "collections", label: "تحصيل وتمويل وتقسيط" },
   { value: "beauty", label: "صالونات وتجميل" },
   { value: "education", label: "تعليم وتدريب" },
   { value: "services", label: "خدمات عامة" },
