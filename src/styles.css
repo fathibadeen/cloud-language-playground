@@ -60,6 +60,13 @@
 }
 
 :root {
+  --sol-mint: oklch(0.8 0.17 162);
+  --sol-gold: oklch(0.78 0.11 80);
+  --sol-sky: oklch(0.78 0.12 220);
+  --sol-amber: oklch(0.78 0.15 60);
+  --sol-rose: oklch(0.75 0.14 0);
+  --sol-violet: oklch(0.72 0.14 295);
+  --sol-blue: oklch(0.7 0.15 255);
   --radius: 0.75rem;
   --background: oklch(0.985 0.005 160);
   --foreground: oklch(0.22 0.03 190);

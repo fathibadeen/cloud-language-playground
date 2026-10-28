@@ -187,6 +187,7 @@ function Landing() {
           <Link to="/" aria-label={ar ? "صوتي — الرئيسية" : "Sawti — Home"} className="rounded-xl bg-primary-foreground/95 px-3 py-1.5"><SawtiLogo compact /></Link>
           <nav className="hidden items-center gap-7 text-base font-semibold text-mw-mint/85 lg:flex">
             <a href="#services" className="hover:text-primary-foreground">{t("features")}</a>
+            <Link to="/solutions" className="hover:text-primary-foreground">{ar ? "حلولنا" : "Solutions"}</Link>
             <a href="#how" className="hover:text-primary-foreground">{t("howItWorks")}</a>
             <a href="#pricing" className="hover:text-primary-foreground">{t("pricing")}</a>
             <a href="#faq" className="hover:text-primary-foreground">{t("faq")}</a>
@@ -204,6 +205,7 @@ function Landing() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-52">
                 <DropdownMenuItem asChild><a href="#services" className="py-3 text-lg font-medium">{t("features")}</a></DropdownMenuItem>
+                <DropdownMenuItem asChild><Link to="/solutions" className="py-3 text-lg font-medium">{ar ? "حلولنا" : "Solutions"}</Link></DropdownMenuItem>
                 <DropdownMenuItem asChild><a href="#how" className="py-3 text-lg font-medium">{t("howItWorks")}</a></DropdownMenuItem>
                 <DropdownMenuItem asChild><a href="#pricing" className="py-3 text-lg font-medium">{t("pricing")}</a></DropdownMenuItem>
                 <DropdownMenuItem asChild><a href="#faq" className="py-3 text-lg font-medium">{t("faq")}</a></DropdownMenuItem>
