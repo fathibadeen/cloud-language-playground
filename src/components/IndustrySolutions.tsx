@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Home, MessageCircle, Mic, Scale, Scissors, Stethoscope, Truck, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, Check, Wallet, Home, MessageCircle, Mic, Scale, Scissors, Stethoscope, Truck, UtensilsCrossed } from "lucide-react";
 
 type Solution = {
   icon: typeof Stethoscope;
@@ -20,6 +20,7 @@ const SOLUTIONS: Solution[] = [
   { icon: Home, badge: "عملاء جادّون", status: "رد فوري", channel: "whatsapp", title: "العقارات وإدارة الأملاك", pain: "تأخر الرد على المهتمين بالإعلانات يضيّع الصفقة.", ask: "مهتم بالفيلا المعروضة", reply: "أرسلنا التفاصيل والموقع، تحب نحجز موعد معاينة؟ 🏡", points: ["فرز العملاء الجادين تلقائيًا", "حجز مواعيد المعاينة", "إرسال تفاصيل العقار عبر واتساب"] },
   { icon: UtensilsCrossed, badge: "وقت الذروة", status: "بدون انتظار", channel: "voice", title: "المطاعم والمقاهي", pain: "ضغط المكالمات وطلبات الحجز في أوقات الذروة.", ask: "حجز طاولة لـ 4 يوم الجمعة", reply: "تم تأكيد حجزك الجمعة 8:30م وأرسلنا المنيو ✅", points: ["تأكيد حجوزات الطاولات والمناسبات", "إرسال المنيو والموقع عبر واتساب", "الرد على الأسئلة المتكررة"] },
   { icon: Scissors, badge: "حجز أسهل", status: "تذكير آلي", channel: "whatsapp", title: "الصالونات ومراكز التجميل", pain: "كثرة تعديل المواعيد والسؤال عن الأسعار.", ask: "أبغى جلسة عناية بالبشرة", reply: "تم حجز موعدك وأرسلنا تعليمات ما قبل الجلسة 💅", points: ["اختيار الخدمة والأخصائية", "تذكير آلي بالموعد", "عرض البكجات والعروض"] },
+  { icon: Wallet, badge: "تحصيل أسرع", status: "تذكير آلي", channel: "voice", title: "التحصيل والتذكير بالدفعات", pain: "متأخرات تتراكم وفريق يقضي يومه في مكالمات التذكير.", ask: "متى موعد القسط القادم؟", reply: "قسطك 1,250 ر.س يستحق الأحد، أرسلنا لك رابط سداد آمن 💳", points: ["اتصال وتذكير قبل الاستحقاق وبعده بلباقة", "إرسال رابط دفع رسمي عبر واتساب", "تسجيل وعود السداد وتحويل الاعتراضات لموظف"] },
   { icon: Truck, badge: "تتبع 24/7", status: "24/7", channel: "voice", title: "شركات النقل واللوجستيات", pain: "سيل مكالمات «وين شحنتي؟» يستنزف فريق خدمة العملاء.", ask: "وين شحنتي رقم 9821؟", reply: "شحنتك خرجت للتوصيل اليوم مع المندوب 🚚", points: ["رد فوري على تتبع الشحنات عبر رقم البوليصة", "استقبال طلبات الاستلام ونقل العفش", "الأسعار ومناطق التغطية والمواد الممنوعة"] },
 ];
 
