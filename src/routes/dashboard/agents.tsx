@@ -32,7 +32,7 @@ import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 import { humanizeDbError } from "@/lib/errors";
 import { AgentTester } from "@/components/AgentTester";
-import { syncNabrahAgentMeta, unlinkNabrahAgent } from "@/lib/nabrah.functions";
+import { provisionNabrahAgent, syncNabrahAgentMeta, unlinkNabrahAgent } from "@/lib/nabrah.functions";
 
 
 export const Route = createFileRoute("/dashboard/agents")({
@@ -92,7 +92,26 @@ function AgentsPage() {
 
   const syncMeta = useServerFn(syncNabrahAgentMeta);
   const unlink = useServerFn(unlinkNabrahAgent);
+  const provision = useServerFn(provisionNabrahAgent);
   const [busy, setBusy] = useState(false);
+
+  async function provisionAgent(agent: Agent) {
+    if (!companyId) return;
+    setBusy(true);
+    try {
+      const res = await provision({ data: { companyId, agentId: agent.id } });
+      if (!res.ok) toast.error(res.reason === "not_configured" ? "خدمة الصوت غير مفعلة" : `تعذر الإنشاء: ${res.reason}`);
+      else
+        toast.success(
+          `${res.created ? "تم إنشاء الوكيل" : "تم تحديث الوكيل"}${res.knowledge ? ` ورفع ${res.knowledge} مستند معرفة` : ""}`,
+        );
+      qc.invalidateQueries({ queryKey: ["ai_agents"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function syncWithNabrah() {
     if (!companyId) return;
@@ -272,6 +291,12 @@ function AgentsPage() {
                     agentName={a.name}
                     greeting={a.greeting}
                   />
+                  {a.channel === "voice" ? (
+                    <Button variant="outline" size="sm" className="gap-2" disabled={busy} onClick={() => provisionAgent(a)}>
+                      <RefreshCw className={`size-4 ${busy ? "animate-spin" : ""}`} />
+                      {a.provider_agent_id ? "تحديث الوكيل والمعرفة" : "إنشاء الوكيل تلقائياً"}
+                    </Button>
+                  ) : null}
                   {a.provider_agent_id ? (
                     <Button variant="ghost" size="sm" className="gap-2" onClick={() => unlinkAgent(a)}>
                       <Unlink className="size-4" />
