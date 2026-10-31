@@ -33,7 +33,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AgentTester } from "@/components/AgentTester";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { connectWhatsappDirect, disconnectMyWhatsapp } from "@/lib/meta.functions";
+import { completeWhatsappConnect, connectWhatsappDirect, disconnectMyWhatsapp, getMetaConfig } from "@/lib/meta.functions";
 
 
 export const Route = createFileRoute("/dashboard/whatsapp")({
@@ -92,7 +92,45 @@ function WhatsappPage() {
     }
   }
   const directWa = useServerFn(connectWhatsappDirect);
+  const metaCfg = useServerFn(getMetaConfig);
+  const completeWa = useServerFn(completeWhatsappConnect);
   const [direct, setDirect] = useState({ phoneNumber: "", phoneNumberId: "", wabaId: "", accessToken: "" });
+
+  async function connectAuto() {
+    if (!companyId) return;
+    setBusy(true);
+    try {
+      const cfg = await metaCfg();
+      if (!cfg.configured || !cfg.appId || !cfg.configId) {
+        toast.error("الربط التلقائي غير مفعّل حالياً، استخدم الربط المتقدم أو تواصل مع الدعم");
+        return;
+      }
+      const { runEmbeddedSignup } = await import("@/lib/meta-signup");
+      const s = await runEmbeddedSignup(cfg.appId, cfg.configId, cfg.graphVersion);
+      if (!s.code) {
+        toast.message("لم يكتمل الربط — أُغلقت نافذة واتساب قبل الانتهاء");
+        return;
+      }
+      const r = await completeWa({
+        data: { companyId, code: s.code, redirectUri: s.redirectUri, wabaId: s.wabaId, phoneNumberId: s.phoneNumberId },
+      });
+      if (r.inboxFailed) toast.warning("رُبط الرقم، لكن تفعيل الرد الآلي لم يكتمل — تواصل مع الدعم");
+      else toast.success(`تم ربط ${r.connected.map((c) => c.phoneNumber).join("، ")} بنجاح ✅`);
+      qc.invalidateQueries({ queryKey: ["whatsapp_accounts"] });
+      qc.invalidateQueries({ queryKey: ["membership"] });
+    } catch (e) {
+      const m = (e instanceof Error ? e.message : String(e)).split("|")[0]!;
+      const map: Record<string, string> = {
+        meta_number_in_use: "هذا الرقم مرتبط بحساب آخر",
+        meta_no_waba: "لم نجد حساب واتساب للأعمال — أكمل خطوات النافذة واختر الحساب",
+        meta_no_phone_numbers: "لم نجد رقماً موثقاً في حسابك، أكمل توثيق الرقم ثم أعد المحاولة",
+        Forbidden: "الربط متاح لمالك الحساب أو المدير فقط",
+      };
+      toast.error(map[m] ?? "تعذر إكمال الربط، أعد المحاولة أو استخدم الربط المتقدم");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function connectDirect() {
     if (!companyId) return;
@@ -230,8 +268,22 @@ function WhatsappPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-5">
+            <div className="rounded-xl border border-primary/30 bg-primary/5 p-5 space-y-3">
+              <p className="font-semibold">الربط التلقائي السريع</p>
+              <p className="text-sm text-muted-foreground">
+                اضغط الزر، سجّل الدخول بحساب فيسبوك الخاص بنشاطك، اختر أو أنشئ حساب واتساب للأعمال، ثم وثّق رقمك برمز التحقق. نكمل الباقي ويبدأ وكيلك بالرد تلقائياً.
+              </p>
+              <Button size="lg" onClick={connectAuto} disabled={busy || !canManage}>
+                <MessageSquare className="size-4" />
+                {busy ? "جارٍ الربط…" : "ربط واتساب"}
+              </Button>
+            </div>
+
+            <details className="rounded-xl border p-4 group">
+              <summary className="cursor-pointer text-sm font-semibold">الربط المتقدم (إدخال المعرفات يدوياً)</summary>
+              <div className="mt-4 space-y-5">
             <p className="text-sm text-muted-foreground">
-              أدخل بيانات حساب واتساب للأعمال الخاص بك، وخلال ثوانٍ يبدأ وكيلك الذكي بالرد على عملائك وإرسال التذكيرات تلقائياً.
+              إن كان لديك حساب واتساب للأعمال جاهز وبياناته عندك، أدخلها هنا مباشرة.
             </p>
 
             <div className="grid gap-3 md:grid-cols-2">
@@ -272,10 +324,12 @@ function WhatsappPage() {
               </ul>
             </div>
 
-            <Button size="lg" onClick={connectDirect} disabled={busy || !canManage || !direct.phoneNumber || !direct.phoneNumberId || !direct.wabaId || !direct.accessToken}>
+            <Button variant="outline" onClick={connectDirect} disabled={busy || !canManage || !direct.phoneNumber || !direct.phoneNumberId || !direct.wabaId || !direct.accessToken}>
               <CheckCircle2 className="size-4" />
               {busy ? "جارٍ التحقق…" : "تحقق واربط الرقم"}
             </Button>
+              </div>
+            </details>
             {!canManage ? <p className="text-xs text-muted-foreground">الربط متاح لمالك الحساب أو المدير فقط.</p> : null}
           </CardContent>
         </Card>
