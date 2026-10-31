@@ -435,3 +435,81 @@ export const syncProviderWhatsapp = createServerFn({ method: "POST" })
     }
     return { linked, taken, total: inboxes.length };
   });
+
+/**
+ * Direct connect: customer pastes Meta Cloud API credentials. We verify them
+ * against Graph, register the inbox with the voice/chat provider, and store
+ * the account + encrypted token. Owner/admin of the company only.
+ */
+export const connectWhatsappDirect = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) =>
+    z.object({
+      companyId: z.string().uuid(),
+      phoneNumber: z.string().trim().regex(/^\+?\d{8,15}$/),
+      phoneNumberId: z.string().trim().regex(/^\d{5,25}$/),
+      wabaId: z.string().trim().regex(/^\d{5,25}$/),
+      accessToken: z.string().trim().min(20).max(1000),
+    }).parse(data),
+  )
+  .handler(async ({ data, context }) => {
+    await assertCanConnect(context, data.companyId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const meta = await import("@/lib/meta.server");
+    const nabrah = await import("@/lib/nabrah.server");
+
+    const read = await meta.readPhoneNumber(data.accessToken, data.phoneNumberId);
+    if (!read.ok) throw new Error("invalid_credentials");
+
+    const { data: rows } = await supabaseAdmin
+      .from("whatsapp_accounts").select("id, company_id").eq("phone_number_id", data.phoneNumberId);
+    if ((rows ?? []).some((r) => r.company_id !== data.companyId)) throw new Error("number_taken");
+
+    const { data: company } = await supabaseAdmin.from("companies").select("name").eq("id", data.companyId).maybeSingle();
+    const phone = data.phoneNumber.startsWith("+") ? data.phoneNumber : `+${data.phoneNumber}`;
+
+    let inboxId: string | null = null;
+    if (nabrah.nabrahConfigured()) {
+      try {
+        const res = await nabrah.createWhatsappInbox({
+          name: `${company?.name ?? "WhatsApp"} WhatsApp`.slice(0, 80),
+          phone_number: phone,
+          phone_number_id: data.phoneNumberId,
+          business_account_id: data.wabaId,
+          api_key: data.accessToken,
+          enable_auto_assignment: true,
+        });
+        const id = res?.inbox_id ?? res?.id;
+        inboxId = id != null ? String(id) : null;
+      } catch (e) {
+        console.error("[direct inbox]", (e as Error).message);
+        throw new Error("provider_failed");
+      }
+    }
+
+    await meta.subscribeWaba(data.accessToken, data.wabaId);
+    await meta.saveCompanyWhatsappToken(data.companyId, { access_token: data.accessToken, token_type: "bearer" } as any);
+
+    const mine = (rows ?? []).find((r) => r.company_id === data.companyId);
+    const payload = {
+      provider: inboxId ? "nabrah_omni" : "meta",
+      phone_number: read.data?.display_phone_number ?? phone,
+      phone_number_id: data.phoneNumberId,
+      verified_name: read.data?.verified_name ?? null,
+      business_account_id: data.wabaId,
+      webhook_verify_token: inboxId,
+      status: "connected" as const,
+      is_active: true,
+      updated_at: new Date().toISOString(),
+    };
+    if (mine) await supabaseAdmin.from("whatsapp_accounts").update(payload).eq("id", mine.id);
+    else await supabaseAdmin.from("whatsapp_accounts").insert({ company_id: data.companyId, agent_id: null, ...payload });
+
+    await supabaseAdmin.from("companies")
+      .update({ whatsapp_enabled: true, updated_at: new Date().toISOString() }).eq("id", data.companyId);
+    await supabaseAdmin.from("audit_logs").insert({
+      company_id: data.companyId, user_id: context.userId, action: "whatsapp.connected_direct",
+      entity: "whatsapp_accounts", metadata: { number: payload.phone_number, inbox: inboxId },
+    });
+    return { ok: true, phone: payload.phone_number, inboxId };
+  });
