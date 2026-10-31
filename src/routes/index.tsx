@@ -237,7 +237,7 @@ function Landing() {
                 {ar ? <>موظف ذكي يرد على عملائك <span className="mw-text-grad">بالصوت والواتساب</span> ويؤتمت الباقي</> : <>An AI employee that answers by <span className="mw-text-grad">voice and WhatsApp</span> and automates the rest</>}
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-9 text-mw-mint/85 md:text-xl">
-                {ar ? "مكالمات تُجاب، رسائل تُرد، ومواعيد تُذكَّر تلقائياً — منصة واحدة تشتغل عنك 24 ساعة وتقلل الحجوزات الضائعة." : "Calls answered, messages replied, appointments reminded — one platform working for you 24/7."}
+                {ar ? "صوتك بجميع الوسائل مسموع" : "Your voice, heard on every channel."}
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
                 <button type="button" onClick={openDemo} className="mw-grad inline-flex items-center gap-2 rounded-2xl px-7 py-4 text-lg font-bold text-mw-night"><Volume2 className="size-5" />{ar ? "اسمع مكالمة تجريبية" : "Hear a demo call"}</button>
