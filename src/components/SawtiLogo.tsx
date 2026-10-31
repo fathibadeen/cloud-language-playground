@@ -22,7 +22,7 @@ export function SawtiLogo({ compact = false, className }: SawtiLogoProps) {
   return (
     <img
       src={sawtiLockupAsset.url}
-      alt="صوتي Sawti AI — منتج من مسور"
+      alt="صوتي ونصي — منتج من مسور"
       className={cn(
         "w-auto object-contain",
         compact ? "h-8" : "h-10 md:h-11",
