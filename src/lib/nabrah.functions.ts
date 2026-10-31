@@ -577,7 +577,7 @@ export const provisionNabrahAgent = createServerFn({ method: "POST" })
       ].filter(Boolean).join("\n").slice(0, 8000),
       allow_interruptions: true,
       languages,
-      support_data: kbText.slice(0, 10000) || undefined,
+      ...(kbText ? { support_data: kbText.slice(0, 10000) } : {}),
       post_call_callback: { url: nabrah.agentWebhookUrl(agent.id) },
     };
 
