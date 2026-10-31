@@ -1,7 +1,7 @@
 /**
  * Browser-side Meta WhatsApp Embedded Signup for the customer dashboard.
  * Returns the auth code (+ chosen WABA/phone) for completeWhatsappConnect.
- * The popup fallback returns through /admin, the redirect URI registered in Meta.
+ * The popup fallback returns through /dashboard/whatsapp, the redirect URI registered in Meta.
  */
 type FB = {
   init: (o: Record<string, unknown>) => void;
@@ -57,8 +57,8 @@ export function runEmbeddedSignup(appId: string, configId: string, version: stri
   const popup = (): Promise<SignupResult> =>
     new Promise((resolve) => {
       const redirectUri = window.location.hostname.endsWith("sawti-ai.com")
-        ? "https://www.sawti-ai.com/admin"
-        : `${window.location.origin}/admin`;
+        ? "https://www.sawti-ai.com/dashboard/whatsapp"
+        : `${window.location.origin}/dashboard/whatsapp`;
       const state = `meta_${crypto.randomUUID()}`;
       const url = new URL(`https://www.facebook.com/${version}/dialog/oauth`);
       url.searchParams.set("client_id", appId);
@@ -104,4 +104,15 @@ export function runEmbeddedSignup(appId: string, configId: string, version: stri
       }),
     () => popup(),
   );
+}
+
+/** Run on the page Meta redirects the popup back to: hand code to opener and close. */
+export function handleMetaOAuthReturn(): boolean {
+  if (typeof window === "undefined" || !window.opener) return false;
+  const params = new URLSearchParams(window.location.search);
+  const state = params.get("state");
+  if (!state?.startsWith("meta_")) return false;
+  window.opener.postMessage({ type: "meta_oauth", state, code: params.get("code") }, window.location.origin);
+  window.close();
+  return true;
 }
