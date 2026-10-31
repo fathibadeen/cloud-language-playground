@@ -257,6 +257,16 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
       console.error("[omni inbox] load", (e as Error).message);
     }
 
+    // Remember each provider inbox on its row so disconnect removes the right one.
+    for (const ib of inboxes) {
+      if (!ib.inboxId) continue;
+      await supabaseAdmin
+        .from("whatsapp_accounts")
+        .update({ provider: "nabrah_omni", webhook_verify_token: ib.inboxId })
+        .eq("company_id", data.companyId)
+        .eq("phone_number_id", ib.phoneNumberId);
+    }
+
     await supabaseAdmin.from("audit_logs").insert({
       company_id: data.companyId,
       user_id: context.userId,
@@ -265,7 +275,8 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
       metadata: { numbers: connected.map((c) => c.phoneNumber), webhook_ok: webhook.ok, inboxes },
     });
 
-    return { ok: true, connected, webhookOk: webhook.ok };
+    const inboxFailed = inboxes.some((i) => !i.inboxId);
+    return { ok: true, connected, webhookOk: webhook.ok, inboxFailed };
   });
 
 /** Connection test: token + WABA + phone number via Graph, plus agent assignment. */
