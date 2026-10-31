@@ -50,22 +50,35 @@ export async function run() {
       settingsCache.set(a.company_id, { cs, name: co?.name ?? "العيادة", phoneNumberId: wa?.phone_number_id });
     }
     const { cs, name, phoneNumberId } = settingsCache.get(a.company_id);
-    if (!cs || !cs[TOGGLE[kind]]) continue;
+    // Day-before reminder applies to every company; other kinds are clinic-only opt-ins.
+    if (cs ? !cs[TOGGLE[kind]] : kind !== "24h") continue;
 
     const token = (await meta.loadCompanyWhatsappToken(a.company_id)) ?? process.env["WHATSAPP_API_KEY"];
     // Stamp first so a crash never double-sends; failures are recorded below.
     await supabaseAdmin.from("appointments").update({ [COLUMN[kind]]: now.toISOString() } as never).eq("id", a.id);
+    const log = (status: "sent" | "failed" | "skipped", error?: string) =>
+      supabaseAdmin.from("audit_logs").insert({
+        company_id: a.company_id,
+        action: `whatsapp.reminder_${status}`,
+        entity: "appointments",
+        entity_id: a.id,
+        metadata: { kind, customer_name: a.customer_name, customer_phone: a.customer_phone, start_time: a.start_time, error: error ?? null },
+      });
     if (!token || !phoneNumberId) {
       skipped++;
+      await log("skipped", "لا يوجد رقم واتساب مربوط");
       continue;
     }
     const when = new Intl.DateTimeFormat("ar-SA", { dateStyle: "full", timeStyle: "short", timeZone: "Asia/Riyadh" }).format(new Date(a.start_time));
-    const instr = ((cs.pre_visit_instructions ?? {}) as Record<string, string>)[a.service_name ?? ""] ?? null;
-    const body = reminderText(kind, { clinic: name, name: a.customer_name, when, service: a.service_name, mapUrl: cs.map_url, instructions: instr });
+    const instr = ((cs?.pre_visit_instructions ?? {}) as Record<string, string>)[a.service_name ?? ""] ?? null;
+    const body = reminderText(kind, { clinic: name, name: a.customer_name, when, service: a.service_name, mapUrl: cs?.map_url, instructions: instr });
     const res = await meta.sendMetaText(phoneNumberId, token, String(a.customer_phone).replace(/\D/g, ""), body);
-    if (res.ok) processed++;
-    else {
+    if (res.ok) {
+      processed++;
+      await log("sent");
+    } else {
       errors++;
+      await log("failed", res.error ?? "خطأ");
       await supabaseAdmin.from("notifications").insert({
         company_id: a.company_id,
         title: "تعذر إرسال تذكير موعد",
