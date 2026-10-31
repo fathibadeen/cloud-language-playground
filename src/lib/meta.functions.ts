@@ -230,12 +230,39 @@ export const completeWhatsappConnect = createServerFn({ method: "POST" })
       reviewed_by: context.userId,
       reviewed_at: new Date().toISOString(),
     });
+    // 6) register each number as a unified inbox with the voice/chat provider (best effort)
+    const inboxes: { phoneNumberId: string; inboxId: string | null; error?: string }[] = [];
+    try {
+      const nabrah = await import("@/lib/nabrah.server");
+      if (nabrah.nabrahConfigured()) {
+        for (const c of connected) {
+          try {
+            const res = await nabrah.createWhatsappInbox({
+              name: `${company.name} WhatsApp`.slice(0, 80),
+              phone_number: c.phoneNumber.startsWith("+") ? c.phoneNumber : `+${c.phoneNumber.replace(/\D/g, "")}`,
+              phone_number_id: c.phoneNumberId,
+              business_account_id: c.wabaId,
+              api_key: token,
+              enable_auto_assignment: true,
+            });
+            const id = res?.inbox_id ?? res?.id;
+            inboxes.push({ phoneNumberId: c.phoneNumberId, inboxId: id != null ? String(id) : null });
+          } catch (e) {
+            console.error("[omni inbox]", (e as Error).message);
+            inboxes.push({ phoneNumberId: c.phoneNumberId, inboxId: null, error: (e as Error).message.slice(0, 200) });
+          }
+        }
+      }
+    } catch (e) {
+      console.error("[omni inbox] load", (e as Error).message);
+    }
+
     await supabaseAdmin.from("audit_logs").insert({
       company_id: data.companyId,
       user_id: context.userId,
       action: "whatsapp.connected",
       entity: "whatsapp_accounts",
-      metadata: { numbers: connected.map((c) => c.phoneNumber), webhook_ok: webhook.ok },
+      metadata: { numbers: connected.map((c) => c.phoneNumber), webhook_ok: webhook.ok, inboxes },
     });
 
     return { ok: true, connected, webhookOk: webhook.ok };
