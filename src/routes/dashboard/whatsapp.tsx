@@ -2,7 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, MessageSquare, XCircle } from "lucide-react";
+import { BellRing, CheckCircle2, MessageSquare, Unlink } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,12 +30,10 @@ import {
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { humanizeDbError } from "@/lib/errors";
 import { AgentTester } from "@/components/AgentTester";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { getMetaConfig, completeWhatsappConnect, syncProviderWhatsapp, connectWhatsappDirect } from "@/lib/meta.functions";
-import { runEmbeddedSignup } from "@/lib/meta-signup";
+import { connectWhatsappDirect, disconnectMyWhatsapp } from "@/lib/meta.functions";
 
 
 export const Route = createFileRoute("/dashboard/whatsapp")({
@@ -40,15 +49,6 @@ type Account = {
   agent_id: string | null;
 };
 
-type ConnectRequest = {
-  id: string;
-  channel: string;
-  status: "pending" | "approved" | "rejected";
-  payload: { phone_number?: string; business_name?: string };
-  admin_note: string | null;
-  created_at: string;
-};
-
 function WhatsappPage() {
   const { t } = useI18n();
   const qc = useQueryClient();
@@ -59,12 +59,38 @@ function WhatsappPage() {
     "ai_agents",
     companyId,
   );
-  const { data: requests } = useCompanyTable<ConnectRequest>("connection_requests", companyId);
-  const [form, setForm] = useState({ phone_number: "", business_name: "" });
   const [busy, setBusy] = useState(false);
-  const fetchMeta = useServerFn(getMetaConfig);
-  const finishConnect = useServerFn(completeWhatsappConnect);
-  const syncWa = useServerFn(syncProviderWhatsapp);
+  const disconnectWa = useServerFn(disconnectMyWhatsapp);
+  const { data: reminders } = useQuery({
+    queryKey: ["wa-reminders", companyId],
+    enabled: !!companyId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("audit_logs")
+        .select("id, action, metadata, created_at")
+        .eq("company_id", companyId!)
+        .like("action", "whatsapp.reminder_%")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      return (data ?? []) as { id: string; action: string; created_at: string; metadata: { kind?: string; customer_name?: string; customer_phone?: string; start_time?: string; error?: string | null } | null }[];
+    },
+  });
+
+  async function disconnectNumber() {
+    if (!companyId) return;
+    setBusy(true);
+    try {
+      await disconnectWa({ data: { companyId } });
+      toast.success("تم فصل الرقم وإيقاف الرد الآلي");
+      qc.invalidateQueries({ queryKey: ["whatsapp_accounts"] });
+      qc.invalidateQueries({ queryKey: ["membership"] });
+    } catch (e) {
+      const m = e instanceof Error ? e.message : String(e);
+      toast.error(m === "Forbidden" ? "الفصل متاح لمالك الحساب أو المدير فقط" : "تعذر فصل الرقم، حاول مرة أخرى");
+    } finally {
+      setBusy(false);
+    }
+  }
   const directWa = useServerFn(connectWhatsappDirect);
   const [direct, setDirect] = useState({ phoneNumber: "", phoneNumberId: "", wabaId: "", accessToken: "" });
 
@@ -90,89 +116,11 @@ function WhatsappPage() {
     }
   }
 
-  async function syncNumber() {
-    if (!companyId) return;
-    setBusy(true);
-    try {
-      const r = await syncWa({ data: { companyId } });
-      if (r.linked.length) {
-        toast.success(`تم ربط الرقم: ${r.linked.join("، ")}`);
-        qc.invalidateQueries({ queryKey: ["whatsapp_accounts"] });
-      } else if (r.taken) toast.error("الرقم المتاح مرتبط بحساب آخر، تواصل مع الدعم");
-      else toast.error("لم نجد رقماً جاهزاً بعد. أكمل الربط مع فريقنا ثم أعد المحاولة");
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error(msg === "Forbidden" ? "الربط متاح لمالك الحساب أو المدير فقط" : "تعذر التحقق من الرقم حالياً");
-    } finally {
-      setBusy(false);
-    }
-  }
-  const { data: metaCfg } = useQuery({ queryKey: ["meta-config"], queryFn: () => fetchMeta() });
   const canManage = ["owner", "admin"].includes(String((membership as { role?: string } | null)?.role ?? ""));
-
-  async function connectMeta() {
-    if (!companyId || !metaCfg?.appId || !metaCfg.configId) {
-      toast.error("ربط Meta غير متاح حالياً، تواصل مع الدعم");
-      return;
-    }
-    setBusy(true);
-    try {
-      const r = await runEmbeddedSignup(metaCfg.appId, metaCfg.configId, metaCfg.graphVersion);
-      if (!r.code) {
-        toast.error("لم يكتمل الربط مع Meta، حاول مرة أخرى");
-        return;
-      }
-      await finishConnect({
-        data: {
-          companyId,
-          code: r.code,
-          redirectUri: r.redirectUri,
-          pageUrls: [window.location.href.split("#")[0], `${window.location.origin}/admin`, `${window.location.origin}/`],
-          wabaId: r.wabaId,
-          phoneNumberId: r.phoneNumberId,
-        },
-      });
-      toast.success("تم ربط رقم واتساب بنجاح");
-      qc.invalidateQueries({ queryKey: ["whatsapp_accounts"] });
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error(msg === "Forbidden" ? "الربط متاح لمالك الحساب أو المدير فقط" : `تعذر الربط: ${msg.split("|").pop()}`);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   const company = membership?.companies as { id: string; name: string; whatsapp_enabled: boolean } | null;
   const account = accounts?.[0];
   const waAgents = (agents ?? []).filter((a) => a.channel === "whatsapp");
-
-  const latestRequest = (requests ?? [])
-    .filter((r) => r.channel === "whatsapp")
-    .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
-
-  async function requestConnect() {
-    if (!companyId) return;
-    setBusy(true);
-    try {
-      const { error } = await supabase.from("connection_requests").insert({
-        company_id: companyId,
-        channel: "whatsapp",
-        payload: {
-          phone_number: form.phone_number,
-          business_name: form.business_name || company?.name || "",
-        },
-      });
-      if (error) {
-        toast.error(humanizeDbError(error.message, t));
-        return;
-      }
-      toast.success(t("requestSent"));
-      setForm({ phone_number: "", business_name: "" });
-      qc.invalidateQueries({ queryKey: ["connection_requests"] });
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function toggleService(enabled: boolean) {
     if (!company) return;
