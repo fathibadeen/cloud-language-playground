@@ -23,7 +23,7 @@ import { humanizeDbError } from "@/lib/errors";
 import { AgentTester } from "@/components/AgentTester";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { getMetaConfig, completeWhatsappConnect } from "@/lib/meta.functions";
+import { getMetaConfig, completeWhatsappConnect, syncProviderWhatsapp } from "@/lib/meta.functions";
 import { runEmbeddedSignup } from "@/lib/meta-signup";
 
 
@@ -64,6 +64,25 @@ function WhatsappPage() {
   const [busy, setBusy] = useState(false);
   const fetchMeta = useServerFn(getMetaConfig);
   const finishConnect = useServerFn(completeWhatsappConnect);
+  const syncWa = useServerFn(syncProviderWhatsapp);
+
+  async function syncNumber() {
+    if (!companyId) return;
+    setBusy(true);
+    try {
+      const r = await syncWa({ data: { companyId } });
+      if (r.linked.length) {
+        toast.success(`تم ربط الرقم: ${r.linked.join("، ")}`);
+        qc.invalidateQueries({ queryKey: ["whatsapp_accounts"] });
+      } else if (r.taken) toast.error("الرقم المتاح مرتبط بحساب آخر، تواصل مع الدعم");
+      else toast.error("لم نجد رقماً جاهزاً بعد. أكمل الربط مع فريقنا ثم أعد المحاولة");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      toast.error(msg === "Forbidden" ? "الربط متاح لمالك الحساب أو المدير فقط" : "تعذر التحقق من الرقم حالياً");
+    } finally {
+      setBusy(false);
+    }
+  }
   const { data: metaCfg } = useQuery({ queryKey: ["meta-config"], queryFn: () => fetchMeta() });
   const canManage = ["owner", "admin"].includes(String((membership as { role?: string } | null)?.role ?? ""));
 
@@ -278,6 +297,11 @@ function WhatsappPage() {
                 <MessageSquare className="size-4" />
                 {busy ? "جارٍ الربط…" : "ربط واتساب"}
               </Button>
+              <Button size="lg" variant="outline" onClick={syncNumber} disabled={busy || !canManage} className="w-full sm:w-auto sm:ms-2">
+                <CheckCircle2 className="size-4" />
+                تحقق من رقمي المربوط
+              </Button>
+              <p className="text-xs text-muted-foreground">إذا ربط فريقنا رقمك مسبقاً، اضغط «تحقق من رقمي المربوط» ليظهر «متصل» فوراً.</p>
               {!canManage ? <p className="text-xs text-muted-foreground">الربط متاح لمالك الحساب أو المدير فقط.</p> : null}
             </div>
             <p className="text-sm text-muted-foreground">أو أرسل طلب ربط لفريقنا:</p>
