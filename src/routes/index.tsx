@@ -288,7 +288,7 @@ function Landing() {
             {[0, 1].map((k) => (
               <div key={k} className="flex gap-10">
                 {(ar ? ["وكيل صوتي", "واتساب ذكي", "أتمتة", "حجز مواعيد", "تذكيرات", "قاعدة معرفة"] : ["Voice agent", "Smart WhatsApp", "Automation", "Bookings", "Reminders", "Knowledge base"]).map((w, i) => (
-                  <span key={w} className="flex items-center gap-10"><span className={i % 2 ? "text-mw-mint/40" : "text-mw-bright"}>{w}</span><span className="text-mw-gold">✦</span></span>
+                  <span key={w} className="flex items-center gap-10"><span className="text-mw-bright">{w}</span><span className="text-mw-gold">✦</span></span>
                 ))}
               </div>
             ))}
