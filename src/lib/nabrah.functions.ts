@@ -526,3 +526,91 @@ export const unlinkNabrahSipLine = createServerFn({ method: "POST" })
       return { ok: false, reason: (e as Error).message as string | null };
     }
   });
+
+const provisionSchema = z.object({ companyId: z.string().uuid(), agentId: z.string().uuid() });
+
+/**
+ * Creates the agent in Nabrah (or updates it if already linked) from the Sawti
+ * agent settings + company industry, sets its post-call webhook, and pushes
+ * the company's ready knowledge documents to its Nabrah knowledge base.
+ */
+export const provisionNabrahAgent = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => provisionSchema.parse(d))
+  .handler(async ({ data, context }) => {
+    const r = await role(context.supabase as never, data.companyId, context.userId);
+    if (!r || !["owner", "admin"].includes(r)) throw new Error("Forbidden");
+    const nabrah = await import("./nabrah.server");
+    if (!nabrah.nabrahConfigured()) return { ok: false, created: false, knowledge: 0, reason: "not_configured" as string | null };
+
+    const { data: agent } = await context.supabase
+      .from("ai_agents")
+      .select("id, name, greeting, personality, system_instructions, fallback_response, language, provider_agent_id")
+      .eq("id", data.agentId).eq("company_id", data.companyId).maybeSingle();
+    if (!agent) throw new Error("agent_not_found");
+    const { data: company } = await context.supabase
+      .from("companies").select("name, industry").eq("id", data.companyId).maybeSingle();
+    const { industryLabel } = await import("./industries");
+    const companyName = company?.name ?? "Sawti";
+
+    const { data: docs } = await context.supabase
+      .from("knowledge_documents").select("title, content")
+      .eq("company_id", data.companyId).eq("status", "ready");
+    const ready = (docs ?? []).filter((d) => (d.content ?? "").trim().length > 0);
+    const kbText = ready.map((d) => `# ${d.title}\n${d.content}`).join("\n\n").slice(0, 50000);
+
+    const languages = agent.language === "en" ? ["en"] : agent.language === "ar" ? ["ar"] : ["ar", "en"];
+    const payload = {
+      name: `${companyName} - ${agent.name}`.slice(0, 80),
+      start_first: true,
+      first_sentence: agent.greeting || `أهلاً بك في ${companyName}، معك المساعد الذكي. كيف أقدر أخدمك؟`,
+      who_are_you:
+        agent.personality ||
+        `أنت موظف استقبال ذكي لدى ${companyName}${company?.industry ? ` (${industryLabel(company.industry)})` : ""}. تتحدث بلهجة سعودية مهذبة وواضحة.`,
+      goal: "الإجابة على استفسارات العملاء من المعلومات المتوفرة فقط، وحجز المواعيد أو تسجيل الطلبات، وتحويل الحالات الحساسة لموظف.",
+      steps: [
+        agent.system_instructions || "",
+        "نبّه في بداية المكالمة أنها مسجلة لتحسين الخدمة.",
+        "لا تختلق أي معلومة غير موجودة في بيانات الدعم.",
+        agent.fallback_response ? `إذا لم تعرف الإجابة قل: ${agent.fallback_response}` : "",
+        "قبل تأكيد أي موعد أعد ذكر الاسم والجوال والتاريخ والوقت.",
+      ].filter(Boolean).join("\n").slice(0, 8000),
+      allow_interruptions: true,
+      languages,
+      ...(kbText ? { support_data: kbText.slice(0, 10000) } : {}),
+      post_call_callback: { url: nabrah.agentWebhookUrl(agent.id) },
+    };
+
+    let remoteId = agent.provider_agent_id;
+    let created = false;
+    try {
+      if (remoteId) {
+        await nabrah.updateAgent(remoteId, payload);
+      } else {
+        const res = (await nabrah.createAgent(payload)) as unknown as Record<string, unknown>;
+        remoteId = String(res?.["agent_id"] ?? res?.["id"] ?? "");
+        if (!remoteId) throw new Error("nabrah_no_agent_id");
+        created = true;
+      }
+    } catch (e) {
+      await context.supabase.from("ai_agents")
+        .update({ provider_error: (e as Error).message.slice(0, 300) }).eq("id", agent.id);
+      return { ok: false, created: false, knowledge: 0, reason: (e as Error).message as string | null };
+    }
+
+    await context.supabase.from("ai_agents").update({
+      provider: "nabrah", provider_agent_id: remoteId, provider_status: "connected", provider_error: null,
+    }).eq("id", agent.id);
+
+    let knowledge = 0;
+    if (kbText) {
+      try {
+        const kb = await nabrah.ensureCompanyKb(data.companyId, companyName);
+        await nabrah.addTextDocument(kb.id, kbText);
+        knowledge = ready.length;
+      } catch (e) {
+        console.error("nabrah kb push failed", (e as Error).message);
+      }
+    }
+    return { ok: true, created, knowledge, reason: null as string | null };
+  });

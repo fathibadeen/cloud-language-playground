@@ -247,7 +247,7 @@ export function unlinkAgentFromInbound(agentId: string, inboundId: string) {
 }
 
 /**
- * Nabrah's External API is read-only for agents and documents right now:
+ * Legacy guard: older Nabrah API versions rejected agent/document writes
  * POST/PUT /agent -> 405/500 and POST /document/text -> 501. Only knowledge
  * bases can be created. Callers surface this instead of faking success.
  */
