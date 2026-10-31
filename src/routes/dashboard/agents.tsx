@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Plus, RefreshCw, Trash2, Unlink } from "lucide-react";
+import { Loader2, PhoneCall, Plus, RefreshCw, Trash2, Unlink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +48,53 @@ type Agent = {
   is_active: boolean;
   provider_agent_id: string | null;
   greeting: string | null;
+  direct_link: string | null;
 };
+
+function CallAgentButton({ name, link }: { name: string; link: string | null }) {
+  const [open, setOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  if (!link) {
+    return (
+      <Button variant="outline" size="sm" className="gap-2" disabled title="رابط الاتصال غير جاهز — تواصل مع الدعم">
+        <PhoneCall className="size-4" /> رابط الاتصال غير جاهز
+      </Button>
+    );
+  }
+  return (
+    <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) setLoaded(false); }}>
+      <DialogTrigger asChild>
+        <Button size="sm" className="gap-2">
+          <PhoneCall className="size-4" /> اتصل بالوكيل
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>اتصال تجريبي مع {name}</DialogTitle>
+        </DialogHeader>
+        <p className="text-xs text-muted-foreground">
+          اسمح للمتصفح باستخدام الميكروفون ثم تحدّث مع الوكيل. المكالمة مسجلة وتُحتسب من دقائق باقتك.
+        </p>
+        <div className="relative">
+          {!loaded ? (
+            <div className="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground">
+              <Loader2 className="me-2 size-4 animate-spin" /> جارٍ تجهيز الاتصال…
+            </div>
+          ) : null}
+          {open ? (
+            <iframe
+              title={`اتصال مع ${name}`}
+              src={link}
+              allow="microphone; autoplay"
+              onLoad={() => setLoaded(true)}
+              className="relative h-[60vh] min-h-[480px] w-full rounded-lg border"
+            />
+          ) : null}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 function AgentsPage() {
   const { t } = useI18n();
@@ -291,6 +337,8 @@ function AgentsPage() {
                     agentName={a.name}
                     greeting={a.greeting}
                   />
+                  {a.channel === "voice" ? <CallAgentButton name={a.name} link={a.direct_link} /> : null}
+
                   {a.channel === "voice" ? (
                     <Button variant="outline" size="sm" className="gap-2" disabled={busy} onClick={() => provisionAgent(a)}>
                       <RefreshCw className={`size-4 ${busy ? "animate-spin" : ""}`} />
