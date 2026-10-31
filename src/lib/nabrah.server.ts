@@ -287,3 +287,40 @@ export async function pushCompanyKnowledge(companyId: string, companyName: strin
 }
 
 
+
+/* ---------------- WhatsApp omnichannel (omni_v2) ---------------- */
+
+export type OmniInboxInput = {
+  name: string;
+  phone_number: string;
+  phone_number_id: string;
+  business_account_id: string;
+  api_key: string;
+  enable_auto_assignment?: boolean;
+  webhook_verify_token?: string;
+};
+
+export function createWhatsappInbox(input: OmniInboxInput) {
+  return call<{ id?: number | string; inbox_id?: number | string }>("/omni_v2/whatsapp/inboxes", {
+    method: "POST",
+    body: { enable_auto_assignment: true, ...input },
+  });
+}
+
+export function updateWhatsappInbox(inboxId: string, input: Partial<OmniInboxInput>) {
+  return call<unknown>(`/omni_v2/whatsapp/inboxes?inbox_id=${encodeURIComponent(inboxId)}`, {
+    method: "PATCH",
+    body: input,
+  });
+}
+
+export function startWhatsappConversation(inboxId: string, body: { contact_id?: number; contact_phone?: string }) {
+  return call<unknown>(`/omni_v2/whatsapp?inbox_id=${encodeURIComponent(inboxId)}`, { method: "POST", body });
+}
+
+export function filterWhatsappConversations(inboxId: string, page = 1, filters: unknown[] = []) {
+  return call<unknown>(
+    `/omni_v2/whatsapp/filter?page=${page}&inbox_id=${encodeURIComponent(inboxId)}`,
+    { method: "POST", body: { filters } },
+  );
+}

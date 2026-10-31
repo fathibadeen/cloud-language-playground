@@ -233,14 +233,50 @@ function WhatsappPage() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-3 rounded-lg border border-primary/30 bg-primary/5 p-4">
-              <p className="font-semibold">اربط رقمك بنفسك عبر Meta (الأسرع)</p>
-              <p className="text-sm text-muted-foreground">
-                سجّل الدخول بحساب فيسبوك المرتبط بنشاطك، ثم اختر حساب واتساب للأعمال والرقم وأكّد برمز التحقق. يتفعّل الرد الآلي والتذكيرات فور اكتمال الربط.
-              </p>
-              <Button onClick={connectMeta} disabled={busy || !canManage}>
+            <div className="space-y-5 rounded-xl border border-primary/30 bg-primary/5 p-5">
+              <div className="space-y-1">
+                <p className="text-lg font-bold">اربط رقم واتساب نشاطك</p>
+                <p className="text-sm text-muted-foreground">
+                  خلال دقائق يبدأ وكيلك الذكي بالرد على عملائك على مدار الساعة، ويرسل التذكيرات وتأكيد المواعيد تلقائياً.
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border bg-background p-4">
+                  <p className="mb-2 text-sm font-semibold">قبل أن تبدأ، جهّز:</p>
+                  <ul className="space-y-1.5 text-sm text-muted-foreground">
+                    <li>• رقم جوال للنشاط يستقبل رسالة أو مكالمة رمز التحقق</li>
+                    <li>• حساب فيسبوك لصاحب النشاط أو المسؤول عنه</li>
+                    <li>• اسم النشاط كما تريد أن يظهر للعملاء</li>
+                    <li>• (اختياري) السجل التجاري لتوثيق الحساب ورفع حدود الإرسال</li>
+                  </ul>
+                </div>
+                <div className="rounded-lg border bg-background p-4">
+                  <p className="mb-2 text-sm font-semibold">خطوات الربط:</p>
+                  <ol className="space-y-1.5 text-sm text-muted-foreground">
+                    <li>1. اضغط زر «ربط واتساب» بالأسفل</li>
+                    <li>2. سجّل الدخول بحساب فيسبوك</li>
+                    <li>3. أنشئ أو اختر حساب واتساب للأعمال</li>
+                    <li>4. أدخل رقم الجوال وأكّد برمز التحقق</li>
+                    <li>5. ارجع هنا — يظهر الرقم «متصل» تلقائياً</li>
+                  </ol>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
+                <p className="mb-2 text-sm font-semibold">ما يترتب على الربط — اقرأ بعناية:</p>
+                <ul className="space-y-1.5 text-sm text-muted-foreground">
+                  <li>• الرقم المربوط ينتقل لواتساب الأعمال الرسمي، ولن يعمل بعدها على تطبيق واتساب العادي في الجوال. إن كان مستخدماً حالياً، احذف حسابه من التطبيق أولاً أو استخدم رقماً جديداً.</li>
+                  <li>• الرسائل التي يبدأها النشاط (مثل التذكيرات) بعد مرور 24 ساعة على آخر رسالة من العميل تتطلب قوالب معتمدة، وقد تُحتسب عليها رسوم من واتساب.</li>
+                  <li>• يبدأ الحساب الجديد بحد يومي لعدد المحادثات، ويرتفع تلقائياً مع جودة التواصل وتوثيق النشاط.</li>
+                  <li>• تجنّب الرسائل المزعجة أو المرسلة لمن لم يطلبها، حفاظاً على تقييم الرقم وتجنباً للإيقاف.</li>
+                  <li>• يمكنك إيقاف الرد الآلي في أي وقت من المفتاح أعلى الصفحة.</li>
+                </ul>
+              </div>
+
+              <Button size="lg" onClick={connectMeta} disabled={busy || !canManage} className="w-full sm:w-auto">
                 <MessageSquare className="size-4" />
-                ربط رقم واتساب عبر Meta
+                {busy ? "جارٍ الربط…" : "ربط واتساب"}
               </Button>
               {!canManage ? <p className="text-xs text-muted-foreground">الربط متاح لمالك الحساب أو المدير فقط.</p> : null}
             </div>
