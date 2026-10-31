@@ -23,7 +23,7 @@ import { humanizeDbError } from "@/lib/errors";
 import { AgentTester } from "@/components/AgentTester";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { getMetaConfig, completeWhatsappConnect, syncProviderWhatsapp } from "@/lib/meta.functions";
+import { getMetaConfig, completeWhatsappConnect, syncProviderWhatsapp, connectWhatsappDirect } from "@/lib/meta.functions";
 import { runEmbeddedSignup } from "@/lib/meta-signup";
 
 
@@ -65,6 +65,30 @@ function WhatsappPage() {
   const fetchMeta = useServerFn(getMetaConfig);
   const finishConnect = useServerFn(completeWhatsappConnect);
   const syncWa = useServerFn(syncProviderWhatsapp);
+  const directWa = useServerFn(connectWhatsappDirect);
+  const [direct, setDirect] = useState({ phoneNumber: "", phoneNumberId: "", wabaId: "", accessToken: "" });
+
+  async function connectDirect() {
+    if (!companyId) return;
+    setBusy(true);
+    try {
+      const r = await directWa({ data: { companyId, ...direct, phoneNumber: direct.phoneNumber.replace(/[\s-]/g, "") } });
+      toast.success(`تم ربط الرقم ${r.phone} بنجاح ✅`);
+      setDirect({ phoneNumber: "", phoneNumberId: "", wabaId: "", accessToken: "" });
+      qc.invalidateQueries({ queryKey: ["whatsapp_accounts"] });
+    } catch (e) {
+      const m = e instanceof Error ? e.message : String(e);
+      const map: Record<string, string> = {
+        invalid_credentials: "البيانات غير صحيحة أو الرمز لا يملك صلاحية على هذا الرقم",
+        number_taken: "هذا الرقم مرتبط بحساب آخر",
+        provider_failed: "تحقّقنا من البيانات لكن تعذر تفعيل الرد الآلي، حاول لاحقاً أو تواصل مع الدعم",
+        Forbidden: "الربط متاح لمالك الحساب أو المدير فقط",
+      };
+      toast.error(map[m] ?? "تأكد من صيغة الحقول (أرقام فقط) وحاول مرة أخرى");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function syncNumber() {
     if (!companyId) return;
@@ -303,6 +327,24 @@ function WhatsappPage() {
               </Button>
               <p className="text-xs text-muted-foreground">إذا ربط فريقنا رقمك مسبقاً، اضغط «تحقق من رقمي المربوط» ليظهر «متصل» فوراً.</p>
               {!canManage ? <p className="text-xs text-muted-foreground">الربط متاح لمالك الحساب أو المدير فقط.</p> : null}
+
+              <details className="rounded-lg border p-4">
+                <summary className="cursor-pointer text-sm font-semibold">ربط متقدم: لديّ حساب واتساب أعمال مفعّل وبياناته جاهزة</summary>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  تجد هذه البيانات في developers.facebook.com ← تطبيقك ← WhatsApp ← إعداد واجهة API. استخدم رمز وصول دائم من «مستخدم النظام» في إعدادات الأعمال (الرمز المؤقت ينتهي خلال 24 ساعة).
+                </p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <div className="space-y-1"><Label>رقم الجوال</Label><Input dir="ltr" placeholder="+9665XXXXXXXX" value={direct.phoneNumber} onChange={(e) => setDirect({ ...direct, phoneNumber: e.target.value })} /></div>
+                  <div className="space-y-1"><Label>معرّف رقم الهاتف (Phone number ID)</Label><Input dir="ltr" value={direct.phoneNumberId} onChange={(e) => setDirect({ ...direct, phoneNumberId: e.target.value.trim() })} /></div>
+                  <div className="space-y-1"><Label>معرّف حساب واتساب للأعمال (WABA ID)</Label><Input dir="ltr" value={direct.wabaId} onChange={(e) => setDirect({ ...direct, wabaId: e.target.value.trim() })} /></div>
+                  <div className="space-y-1"><Label>رمز الوصول الدائم (Access token)</Label><Input dir="ltr" type="password" autoComplete="off" value={direct.accessToken} onChange={(e) => setDirect({ ...direct, accessToken: e.target.value.trim() })} /></div>
+                </div>
+                <Button className="mt-3" onClick={connectDirect} disabled={busy || !canManage || !direct.phoneNumber || !direct.phoneNumberId || !direct.wabaId || !direct.accessToken}>
+                  <CheckCircle2 className="size-4" />
+                  {busy ? "جارٍ التحقق…" : "تحقق واربط الرقم"}
+                </Button>
+                <p className="mt-2 text-xs text-muted-foreground">نتحقق من البيانات مع واتساب أولاً، ثم نفعّل الرد الآلي فوراً. الرمز يُحفظ مشفراً.</p>
+              </details>
             </div>
             <p className="text-sm text-muted-foreground">أو أرسل طلب ربط لفريقنا:</p>
             <p className="text-sm text-muted-foreground">{t("whatsappConnectDesc")}</p>
