@@ -2,7 +2,18 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CheckCircle2, Clock, MessageSquare, XCircle } from "lucide-react";
+import { BellRing, CheckCircle2, MessageSquare, Unlink } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,12 +30,10 @@ import {
 import { useI18n } from "@/lib/i18n";
 import { useCompanyId, useCompanyTable, useMembership } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
-import { humanizeDbError } from "@/lib/errors";
 import { AgentTester } from "@/components/AgentTester";
 import { useServerFn } from "@tanstack/react-start";
 import { useQuery } from "@tanstack/react-query";
-import { getMetaConfig, completeWhatsappConnect, syncProviderWhatsapp, connectWhatsappDirect } from "@/lib/meta.functions";
-import { runEmbeddedSignup } from "@/lib/meta-signup";
+import { connectWhatsappDirect, disconnectMyWhatsapp } from "@/lib/meta.functions";
 
 
 export const Route = createFileRoute("/dashboard/whatsapp")({
@@ -40,15 +49,6 @@ type Account = {
   agent_id: string | null;
 };
 
-type ConnectRequest = {
-  id: string;
-  channel: string;
-  status: "pending" | "approved" | "rejected";
-  payload: { phone_number?: string; business_name?: string };
-  admin_note: string | null;
-  created_at: string;
-};
-
 function WhatsappPage() {
   const { t } = useI18n();
   const qc = useQueryClient();
@@ -59,12 +59,38 @@ function WhatsappPage() {
     "ai_agents",
     companyId,
   );
-  const { data: requests } = useCompanyTable<ConnectRequest>("connection_requests", companyId);
-  const [form, setForm] = useState({ phone_number: "", business_name: "" });
   const [busy, setBusy] = useState(false);
-  const fetchMeta = useServerFn(getMetaConfig);
-  const finishConnect = useServerFn(completeWhatsappConnect);
-  const syncWa = useServerFn(syncProviderWhatsapp);
+  const disconnectWa = useServerFn(disconnectMyWhatsapp);
+  const { data: reminders } = useQuery({
+    queryKey: ["wa-reminders", companyId],
+    enabled: !!companyId,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("audit_logs")
+        .select("id, action, metadata, created_at")
+        .eq("company_id", companyId!)
+        .like("action", "whatsapp.reminder_%")
+        .order("created_at", { ascending: false })
+        .limit(30);
+      return (data ?? []) as { id: string; action: string; created_at: string; metadata: { kind?: string; customer_name?: string; customer_phone?: string; start_time?: string; error?: string | null } | null }[];
+    },
+  });
+
+  async function disconnectNumber() {
+    if (!companyId) return;
+    setBusy(true);
+    try {
+      await disconnectWa({ data: { companyId } });
+      toast.success("تم فصل الرقم وإيقاف الرد الآلي");
+      qc.invalidateQueries({ queryKey: ["whatsapp_accounts"] });
+      qc.invalidateQueries({ queryKey: ["membership"] });
+    } catch (e) {
+      const m = e instanceof Error ? e.message : String(e);
+      toast.error(m === "Forbidden" ? "الفصل متاح لمالك الحساب أو المدير فقط" : "تعذر فصل الرقم، حاول مرة أخرى");
+    } finally {
+      setBusy(false);
+    }
+  }
   const directWa = useServerFn(connectWhatsappDirect);
   const [direct, setDirect] = useState({ phoneNumber: "", phoneNumberId: "", wabaId: "", accessToken: "" });
 
@@ -90,89 +116,11 @@ function WhatsappPage() {
     }
   }
 
-  async function syncNumber() {
-    if (!companyId) return;
-    setBusy(true);
-    try {
-      const r = await syncWa({ data: { companyId } });
-      if (r.linked.length) {
-        toast.success(`تم ربط الرقم: ${r.linked.join("، ")}`);
-        qc.invalidateQueries({ queryKey: ["whatsapp_accounts"] });
-      } else if (r.taken) toast.error("الرقم المتاح مرتبط بحساب آخر، تواصل مع الدعم");
-      else toast.error("لم نجد رقماً جاهزاً بعد. أكمل الربط مع فريقنا ثم أعد المحاولة");
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error(msg === "Forbidden" ? "الربط متاح لمالك الحساب أو المدير فقط" : "تعذر التحقق من الرقم حالياً");
-    } finally {
-      setBusy(false);
-    }
-  }
-  const { data: metaCfg } = useQuery({ queryKey: ["meta-config"], queryFn: () => fetchMeta() });
   const canManage = ["owner", "admin"].includes(String((membership as { role?: string } | null)?.role ?? ""));
-
-  async function connectMeta() {
-    if (!companyId || !metaCfg?.appId || !metaCfg.configId) {
-      toast.error("ربط Meta غير متاح حالياً، تواصل مع الدعم");
-      return;
-    }
-    setBusy(true);
-    try {
-      const r = await runEmbeddedSignup(metaCfg.appId, metaCfg.configId, metaCfg.graphVersion);
-      if (!r.code) {
-        toast.error("لم يكتمل الربط مع Meta، حاول مرة أخرى");
-        return;
-      }
-      await finishConnect({
-        data: {
-          companyId,
-          code: r.code,
-          redirectUri: r.redirectUri,
-          pageUrls: [window.location.href.split("#")[0], `${window.location.origin}/admin`, `${window.location.origin}/`],
-          wabaId: r.wabaId,
-          phoneNumberId: r.phoneNumberId,
-        },
-      });
-      toast.success("تم ربط رقم واتساب بنجاح");
-      qc.invalidateQueries({ queryKey: ["whatsapp_accounts"] });
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
-      toast.error(msg === "Forbidden" ? "الربط متاح لمالك الحساب أو المدير فقط" : `تعذر الربط: ${msg.split("|").pop()}`);
-    } finally {
-      setBusy(false);
-    }
-  }
 
   const company = membership?.companies as { id: string; name: string; whatsapp_enabled: boolean } | null;
   const account = accounts?.[0];
   const waAgents = (agents ?? []).filter((a) => a.channel === "whatsapp");
-
-  const latestRequest = (requests ?? [])
-    .filter((r) => r.channel === "whatsapp")
-    .sort((a, b) => b.created_at.localeCompare(a.created_at))[0];
-
-  async function requestConnect() {
-    if (!companyId) return;
-    setBusy(true);
-    try {
-      const { error } = await supabase.from("connection_requests").insert({
-        company_id: companyId,
-        channel: "whatsapp",
-        payload: {
-          phone_number: form.phone_number,
-          business_name: form.business_name || company?.name || "",
-        },
-      });
-      if (error) {
-        toast.error(humanizeDbError(error.message, t));
-        return;
-      }
-      toast.success(t("requestSent"));
-      setForm({ phone_number: "", business_name: "" });
-      qc.invalidateQueries({ queryKey: ["connection_requests"] });
-    } finally {
-      setBusy(false);
-    }
-  }
 
   async function toggleService(enabled: boolean) {
     if (!company) return;
@@ -227,13 +175,35 @@ function WhatsappPage() {
       {account ? (
         <Card>
           <CardContent className="space-y-4 p-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant={account.status === "connected" ? "default" : "secondary"}>
-                {t(account.status === "connected" ? "requestApproved" : "requestPending")}
-              </Badge>
-              <span dir="ltr" className="text-sm font-medium">
-                {account.phone_number}
-              </span>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant={account.status === "connected" ? "default" : "secondary"}>
+                  {account.status === "connected" ? "متصل" : "قيد التفعيل"}
+                </Badge>
+                <span dir="ltr" className="text-sm font-medium">{account.phone_number}</span>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" disabled={busy || !canManage} className="text-destructive">
+                    <Unlink className="size-4" />
+                    فصل الرقم
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>فصل رقم واتساب؟</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      سيتوقف الرد الآلي والتذكيرات على الرقم <span dir="ltr">{account.phone_number}</span> فوراً. تبقى المحادثات السابقة محفوظة، ويمكنك ربط الرقم مجدداً في أي وقت.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                    <AlertDialogAction onClick={disconnectNumber} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      نعم، افصل الرقم
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
             <div className="space-y-2 md:w-72">
               <Label>{t("assignedAgent")}</Label>
@@ -243,27 +213,11 @@ function WhatsappPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">—</SelectItem>
-                  {(agents ?? [])
-                    .filter((a) => a.channel === "whatsapp")
-                    .map((a) => (
-                      <SelectItem key={a.id} value={a.id}>
-                        {a.name}
-                      </SelectItem>
-                    ))}
+                  {waAgents.map((a) => (
+                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
-            </div>
-          </CardContent>
-        </Card>
-      ) : latestRequest?.status === "pending" ? (
-        <Card>
-          <CardContent className="flex items-start gap-4 p-6">
-            <Clock className="mt-1 size-6 text-primary" />
-            <div className="space-y-1">
-              <p className="font-semibold">{t("requestPending")}</p>
-              <p className="text-sm text-muted-foreground" dir="ltr">
-                {latestRequest.payload.phone_number}
-              </p>
             </div>
           </CardContent>
         </Card>
@@ -272,124 +226,105 @@ function WhatsappPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
               <MessageSquare className="size-4 text-primary" />
-              {t("whatsappConnectTitle")}
+              اربط رقم واتساب نشاطك
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-5 rounded-xl border border-primary/30 bg-primary/5 p-5">
-              <div className="space-y-1">
-                <p className="text-lg font-bold">اربط رقم واتساب نشاطك</p>
-                <p className="text-sm text-muted-foreground">
-                  خلال دقائق يبدأ وكيلك الذكي بالرد على عملائك على مدار الساعة، ويرسل التذكيرات وتأكيد المواعيد تلقائياً.
-                </p>
-              </div>
+          <CardContent className="space-y-5">
+            <p className="text-sm text-muted-foreground">
+              أدخل بيانات حساب واتساب للأعمال الخاص بك، وخلال ثوانٍ يبدأ وكيلك الذكي بالرد على عملائك وإرسال التذكيرات تلقائياً.
+            </p>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border bg-background p-4">
-                  <p className="mb-2 text-sm font-semibold">قبل أن تبدأ، جهّز:</p>
-                  <ul className="space-y-1.5 text-sm text-muted-foreground">
-                    <li>• رقم جوال للنشاط يستقبل رسالة أو مكالمة رمز التحقق</li>
-                    <li>• حساب فيسبوك لصاحب النشاط أو المسؤول عنه</li>
-                    <li>• اسم النشاط كما تريد أن يظهر للعملاء</li>
-                    <li>• (اختياري) السجل التجاري لتوثيق الحساب ورفع حدود الإرسال</li>
-                  </ul>
-                </div>
-                <div className="rounded-lg border bg-background p-4">
-                  <p className="mb-2 text-sm font-semibold">خطوات الربط:</p>
-                  <ol className="space-y-1.5 text-sm text-muted-foreground">
-                    <li>1. اضغط زر «ربط واتساب» بالأسفل</li>
-                    <li>2. سجّل الدخول بحساب فيسبوك</li>
-                    <li>3. أنشئ أو اختر حساب واتساب للأعمال</li>
-                    <li>4. أدخل رقم الجوال وأكّد برمز التحقق</li>
-                    <li>5. ارجع هنا — يظهر الرقم «متصل» تلقائياً</li>
-                  </ol>
-                </div>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="rounded-lg border bg-muted/30 p-4">
+                <p className="mb-2 text-sm font-semibold">أين أجد المعرفات؟</p>
+                <ol className="space-y-1.5 text-sm text-muted-foreground">
+                  <li>1. افتح developers.facebook.com واختر تطبيقك</li>
+                  <li>2. من القائمة: WhatsApp ← API Setup</li>
+                  <li>3. انسخ «Phone number ID» و«WhatsApp Business Account ID»</li>
+                  <li>4. اكتب رقم الجوال بالصيغة الدولية مثل ‎+9665XXXXXXXX</li>
+                </ol>
               </div>
-
-              <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-4">
-                <p className="mb-2 text-sm font-semibold">ما يترتب على الربط — اقرأ بعناية:</p>
-                <ul className="space-y-1.5 text-sm text-muted-foreground">
-                  <li>• الرقم المربوط ينتقل لواتساب الأعمال الرسمي، ولن يعمل بعدها على تطبيق واتساب العادي في الجوال. إن كان مستخدماً حالياً، احذف حسابه من التطبيق أولاً أو استخدم رقماً جديداً.</li>
-                  <li>• الرسائل التي يبدأها النشاط (مثل التذكيرات) بعد مرور 24 ساعة على آخر رسالة من العميل تتطلب قوالب معتمدة، وقد تُحتسب عليها رسوم من واتساب.</li>
-                  <li>• يبدأ الحساب الجديد بحد يومي لعدد المحادثات، ويرتفع تلقائياً مع جودة التواصل وتوثيق النشاط.</li>
-                  <li>• تجنّب الرسائل المزعجة أو المرسلة لمن لم يطلبها، حفاظاً على تقييم الرقم وتجنباً للإيقاف.</li>
-                  <li>• يمكنك إيقاف الرد الآلي في أي وقت من المفتاح أعلى الصفحة.</li>
-                </ul>
-              </div>
-
-              <Button size="lg" onClick={connectMeta} disabled={busy || !canManage} className="w-full sm:w-auto">
-                <MessageSquare className="size-4" />
-                {busy ? "جارٍ الربط…" : "ربط واتساب"}
-              </Button>
-              <Button size="lg" variant="outline" onClick={syncNumber} disabled={busy || !canManage} className="w-full sm:w-auto sm:ms-2">
-                <CheckCircle2 className="size-4" />
-                تحقق من رقمي المربوط
-              </Button>
-              <p className="text-xs text-muted-foreground">إذا ربط فريقنا رقمك مسبقاً، اضغط «تحقق من رقمي المربوط» ليظهر «متصل» فوراً.</p>
-              {!canManage ? <p className="text-xs text-muted-foreground">الربط متاح لمالك الحساب أو المدير فقط.</p> : null}
-
-              <details className="rounded-lg border p-4">
-                <summary className="cursor-pointer text-sm font-semibold">ربط متقدم: لديّ حساب واتساب أعمال مفعّل وبياناته جاهزة</summary>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  تجد هذه البيانات في developers.facebook.com ← تطبيقك ← WhatsApp ← إعداد واجهة API. استخدم رمز وصول دائم من «مستخدم النظام» في إعدادات الأعمال (الرمز المؤقت ينتهي خلال 24 ساعة).
-                </p>
-                <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                  <div className="space-y-1"><Label>رقم الجوال</Label><Input dir="ltr" placeholder="+9665XXXXXXXX" value={direct.phoneNumber} onChange={(e) => setDirect({ ...direct, phoneNumber: e.target.value })} /></div>
-                  <div className="space-y-1"><Label>معرّف رقم الهاتف (Phone number ID)</Label><Input dir="ltr" value={direct.phoneNumberId} onChange={(e) => setDirect({ ...direct, phoneNumberId: e.target.value.trim() })} /></div>
-                  <div className="space-y-1"><Label>معرّف حساب واتساب للأعمال (WABA ID)</Label><Input dir="ltr" value={direct.wabaId} onChange={(e) => setDirect({ ...direct, wabaId: e.target.value.trim() })} /></div>
-                  <div className="space-y-1"><Label>رمز الوصول الدائم (Access token)</Label><Input dir="ltr" type="password" autoComplete="off" value={direct.accessToken} onChange={(e) => setDirect({ ...direct, accessToken: e.target.value.trim() })} /></div>
-                </div>
-                <Button className="mt-3" onClick={connectDirect} disabled={busy || !canManage || !direct.phoneNumber || !direct.phoneNumberId || !direct.wabaId || !direct.accessToken}>
-                  <CheckCircle2 className="size-4" />
-                  {busy ? "جارٍ التحقق…" : "تحقق واربط الرقم"}
-                </Button>
-                <p className="mt-2 text-xs text-muted-foreground">نتحقق من البيانات مع واتساب أولاً، ثم نفعّل الرد الآلي فوراً. الرمز يُحفظ مشفراً.</p>
-              </details>
-            </div>
-            <p className="text-sm text-muted-foreground">أو أرسل طلب ربط لفريقنا:</p>
-            <p className="text-sm text-muted-foreground">{t("whatsappConnectDesc")}</p>
-            {latestRequest?.status === "rejected" ? (
-              <div className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
-                <XCircle className="mt-0.5 size-4 text-destructive" />
-                <div>
-                  <p className="font-medium">{t("requestRejected")}</p>
-                  {latestRequest.admin_note ? (
-                    <p className="text-muted-foreground">{latestRequest.admin_note}</p>
-                  ) : null}
-                </div>
-              </div>
-            ) : null}
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label>{t("whatsappNumberLabel")}</Label>
-                <Input
-                  dir="ltr"
-                  placeholder="+9665xxxxxxxx"
-                  value={form.phone_number}
-                  onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>{t("businessName")}</Label>
-                <Input
-                  value={form.business_name}
-                  onChange={(e) => setForm({ ...form, business_name: e.target.value })}
-                />
+              <div className="rounded-lg border bg-muted/30 p-4">
+                <p className="mb-2 text-sm font-semibold">كيف أحصل على رمز الوصول الدائم؟</p>
+                <ol className="space-y-1.5 text-sm text-muted-foreground">
+                  <li>1. business.facebook.com ← الإعدادات ← مستخدمو النظام</li>
+                  <li>2. أنشئ مستخدماً بدور «مسؤول» وعيّن له التطبيق وحساب واتساب</li>
+                  <li>3. اضغط «إنشاء رمز» واختر المدة «أبداً»</li>
+                  <li>4. فعّل صلاحيتي whatsapp_business_messaging و whatsapp_business_management</li>
+                </ol>
               </div>
             </div>
-            <Button onClick={requestConnect} disabled={busy || !form.phone_number.trim()}>
-              {t("requestWhatsappConnect")}
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1"><Label>رقم الجوال</Label><Input dir="ltr" placeholder="+9665XXXXXXXX" value={direct.phoneNumber} onChange={(e) => setDirect({ ...direct, phoneNumber: e.target.value })} /></div>
+              <div className="space-y-1"><Label>معرّف رقم الهاتف (Phone number ID)</Label><Input dir="ltr" value={direct.phoneNumberId} onChange={(e) => setDirect({ ...direct, phoneNumberId: e.target.value.trim() })} /></div>
+              <div className="space-y-1"><Label>معرّف حساب واتساب للأعمال (WABA ID)</Label><Input dir="ltr" value={direct.wabaId} onChange={(e) => setDirect({ ...direct, wabaId: e.target.value.trim() })} /></div>
+              <div className="space-y-1"><Label>رمز الوصول الدائم (Access token)</Label><Input dir="ltr" type="password" autoComplete="off" value={direct.accessToken} onChange={(e) => setDirect({ ...direct, accessToken: e.target.value.trim() })} /></div>
+            </div>
+
+            <div className="rounded-lg border border-primary/30 bg-primary/5 p-4">
+              <p className="mb-2 text-sm font-semibold">قبل الضغط على «ربط الرقم»:</p>
+              <ul className="space-y-1.5 text-sm text-muted-foreground">
+                <li>• الرمز المؤقت من صفحة API Setup ينتهي خلال 24 ساعة، استخدم الرمز الدائم.</li>
+                <li>• الرقم المربوط لا يعمل على تطبيق واتساب العادي في الجوال.</li>
+                <li>• الرسائل التي يبدأها نشاطك بعد 24 ساعة من آخر رسالة للعميل تحتاج قوالب معتمدة من واتساب.</li>
+                <li>• الرمز يُحفظ مشفراً ولا يظهر لأحد بعد الحفظ.</li>
+              </ul>
+            </div>
+
+            <Button size="lg" onClick={connectDirect} disabled={busy || !canManage || !direct.phoneNumber || !direct.phoneNumberId || !direct.wabaId || !direct.accessToken}>
+              <CheckCircle2 className="size-4" />
+              {busy ? "جارٍ التحقق…" : "تحقق واربط الرقم"}
             </Button>
+            {!canManage ? <p className="text-xs text-muted-foreground">الربط متاح لمالك الحساب أو المدير فقط.</p> : null}
           </CardContent>
         </Card>
       )}
 
-      {account?.status === "connected" ? (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <CheckCircle2 className="size-4 text-primary" />
-          {t("whatsappActive")}
-        </div>
-      ) : null}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <BellRing className="size-4 text-primary" />
+            سجل تذكيرات المواعيد
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">يُرسل تذكير تلقائي لكل عميل قبل موعده بيوم عبر واتساب، ويطلب منه التأكيد أو إعادة الجدولة.</p>
+          {(reminders ?? []).length === 0 ? (
+            <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">لا توجد تذكيرات مرسلة بعد.</p>
+          ) : (
+            <div className="divide-y rounded-lg border">
+              {(reminders ?? []).map((r) => {
+                const m = r.metadata ?? {};
+                const st = r.action.replace("whatsapp.reminder_", "");
+                return (
+                  <div key={r.id} className="flex flex-wrap items-center justify-between gap-2 p-3 text-sm">
+                    <div>
+                      <p className="font-medium">{m.customer_name ?? "عميل"} <span dir="ltr" className="text-muted-foreground">{m.customer_phone}</span></p>
+                      <p className="text-xs text-muted-foreground">
+                        {KIND_LABEL[m.kind ?? ""] ?? "تذكير"}
+                        {m.start_time ? ` • الموعد: ${fmt(m.start_time)}` : ""}
+                        {m.error ? ` • ${m.error}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={st === "sent" ? "default" : st === "failed" ? "destructive" : "secondary"}>
+                        {st === "sent" ? "أُرسل" : st === "failed" ? "فشل" : "لم يُرسل"}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">{fmt(r.created_at)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
+}
+
+const KIND_LABEL: Record<string, string> = { "24h": "تذكير قبل يوم", "2h": "تذكير قبل ساعتين", followup: "متابعة بعد الزيارة", noshow: "استرداد موعد فائت" };
+function fmt(d: string) {
+  return new Intl.DateTimeFormat("ar-SA", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Riyadh" }).format(new Date(d));
 }

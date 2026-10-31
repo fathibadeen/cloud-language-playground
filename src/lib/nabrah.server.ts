@@ -338,3 +338,8 @@ export async function listWhatsappInboxes(): Promise<OmniInbox[]> {
   const res = await call<{ inboxes?: OmniInbox[] } | OmniInbox[]>("/omni_v2/whatsapp/inboxes");
   return Array.isArray(res) ? res : (res?.inboxes ?? []);
 }
+
+/** Removes a WhatsApp inbox so the provider's agent stops replying on that number. */
+export function deleteWhatsappInbox(inboxId: string) {
+  return call<unknown>(`/omni_v2/whatsapp/inboxes?inbox_id=${encodeURIComponent(inboxId)}`, { method: "DELETE" });
+}

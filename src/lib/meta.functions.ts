@@ -513,3 +513,54 @@ export const connectWhatsappDirect = createServerFn({ method: "POST" })
     });
     return { ok: true, phone: payload.phone_number, inboxId };
   });
+
+/**
+ * Customer-side disconnect (owner/admin): remove the provider inbox so the
+ * agent stops replying, unsubscribe Meta, drop the token, keep history.
+ */
+export const disconnectMyWhatsapp = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ companyId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    await assertCanConnect(context, data.companyId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const meta = await import("@/lib/meta.server");
+    const nabrah = await import("@/lib/nabrah.server");
+
+    const { data: accounts } = await supabaseAdmin
+      .from("whatsapp_accounts")
+      .select("id, business_account_id, provider, webhook_verify_token")
+      .eq("company_id", data.companyId);
+    if (!accounts?.length) throw new Error("whatsapp_not_connected");
+
+    let providerOk = true;
+    for (const acc of accounts) {
+      if (acc.provider === "nabrah_omni" && acc.webhook_verify_token) {
+        try {
+          await nabrah.deleteWhatsappInbox(acc.webhook_verify_token);
+        } catch (e) {
+          providerOk = false;
+          console.error("[omni inbox delete]", (e as Error).message);
+        }
+      }
+    }
+    const token = await meta.loadCompanyWhatsappToken(data.companyId);
+    const waba = accounts.find((a) => a.business_account_id)?.business_account_id;
+    if (token && waba) await meta.unsubscribeWaba(token, waba);
+
+    // Delete rows so the number can be linked again (to this or another company).
+    await supabaseAdmin.from("whatsapp_accounts").delete().eq("company_id", data.companyId);
+    await meta.deleteCompanyWhatsappToken(data.companyId);
+    await supabaseAdmin
+      .from("companies")
+      .update({ whatsapp_enabled: false, updated_at: new Date().toISOString() })
+      .eq("id", data.companyId);
+    await supabaseAdmin.from("audit_logs").insert({
+      company_id: data.companyId,
+      user_id: context.userId,
+      action: "whatsapp.disconnected",
+      entity: "whatsapp_accounts",
+      metadata: { provider_ok: providerOk },
+    });
+    return { ok: true, providerOk };
+  });
