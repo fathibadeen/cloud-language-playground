@@ -385,3 +385,53 @@ export const assignWhatsappAgent = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+/**
+ * Links WhatsApp numbers already connected on the voice/chat provider side
+ * to this company (no Meta popup needed). Each number belongs to one company.
+ */
+export const syncProviderWhatsapp = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data: unknown) => z.object({ companyId: z.string().uuid() }).parse(data))
+  .handler(async ({ data, context }) => {
+    await assertCanConnect(context, data.companyId);
+    const nabrah = await import("@/lib/nabrah.server");
+    if (!nabrah.nabrahConfigured()) throw new Error("not_configured");
+    const inboxes = await nabrah.listWhatsappInboxes();
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const linked: string[] = [];
+    let taken = 0;
+    for (const ib of inboxes) {
+      const inboxId = String(ib.inbox_id ?? ib.id ?? "");
+      const pid = String(ib.phone_number_id ?? (inboxId ? `inbox:${inboxId}` : ""));
+      if (!pid) continue;
+      const { data: rows } = await supabaseAdmin
+        .from("whatsapp_accounts").select("id, company_id").eq("phone_number_id", pid);
+      const other = (rows ?? []).find((r) => r.company_id !== data.companyId);
+      if (other) { taken++; continue; }
+      const mine = (rows ?? []).find((r) => r.company_id === data.companyId);
+      const payload = {
+        provider: "nabrah_omni",
+        phone_number: (ib.phone_number as string) ?? null,
+        phone_number_id: pid,
+        verified_name: (ib.name as string) ?? null,
+        business_account_id: (ib.business_account_id as string) ?? null,
+        webhook_verify_token: inboxId || null,
+        status: "connected" as const,
+        is_active: true,
+        updated_at: new Date().toISOString(),
+      };
+      if (mine) await supabaseAdmin.from("whatsapp_accounts").update(payload).eq("id", mine.id);
+      else await supabaseAdmin.from("whatsapp_accounts").insert({ company_id: data.companyId, agent_id: null, ...payload });
+      linked.push(payload.phone_number ?? pid);
+    }
+    if (linked.length) {
+      await supabaseAdmin.from("companies")
+        .update({ whatsapp_enabled: true, updated_at: new Date().toISOString() }).eq("id", data.companyId);
+      await supabaseAdmin.from("audit_logs").insert({
+        company_id: data.companyId, user_id: context.userId, action: "whatsapp.synced",
+        entity: "whatsapp_accounts", metadata: { numbers: linked },
+      });
+    }
+    return { linked, taken, total: inboxes.length };
+  });

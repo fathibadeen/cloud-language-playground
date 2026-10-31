@@ -324,3 +324,17 @@ export function filterWhatsappConversations(inboxId: string, page = 1, filters: 
     { method: "POST", body: { filters } },
   );
 }
+
+export type OmniInbox = Record<string, unknown> & {
+  id?: number | string;
+  inbox_id?: number | string;
+  name?: string;
+  phone_number?: string;
+  phone_number_id?: string;
+  business_account_id?: string;
+};
+
+export async function listWhatsappInboxes(): Promise<OmniInbox[]> {
+  const res = await call<{ inboxes?: OmniInbox[] } | OmniInbox[]>("/omni_v2/whatsapp/inboxes");
+  return Array.isArray(res) ? res : (res?.inboxes ?? []);
+}
