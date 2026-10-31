@@ -33,6 +33,7 @@ import { addonPrice, companyProduct, productChannels, type PlanRow } from "@/lib
 import { supabase } from "@/integrations/supabase/client";
 import { dashboardAccess } from "@/lib/dashboard-access";
 import { isClinicIndustry } from "@/lib/industries";
+import { handleMetaOAuthReturn } from "@/lib/meta-signup";
 
 export const Route = createFileRoute("/dashboard")({
   ssr: false,
@@ -83,6 +84,11 @@ function DashboardLayout() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
+    handleMetaOAuthReturn();
+  }, []);
+
+  useEffect(() => {
+    if (window.opener && new URLSearchParams(window.location.search).get("state")?.startsWith("meta_")) return;
     if (!loading && !user) navigate({ to: "/auth", replace: true });
   }, [user, loading, navigate]);
 
