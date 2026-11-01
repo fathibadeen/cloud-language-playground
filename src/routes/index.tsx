@@ -250,7 +250,6 @@ function Landing() {
             <div className="relative flex justify-center">
               <HeroVoiceCard ar={ar} onCall={openDemo} />
             </div>
-            </div>
           </div>
         </section>
 
