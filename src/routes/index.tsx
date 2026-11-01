@@ -229,24 +229,21 @@ function Landing() {
           </div>
           <div className="relative mx-auto grid max-w-7xl gap-12 px-4 pb-20 pt-10 md:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center lg:pt-16">
             <div>
-              <span className="inline-flex items-center gap-3 rounded-full border border-mw-bright/40 bg-mw-bright/15 py-1.5 pe-1.5 ps-4 text-sm font-bold text-mw-mint">
-                <span className="size-2 animate-pulse rounded-full bg-mw-bright" /> {ar ? "صوتي منتج من مسور" : "Sawti, a Meswar product"}
-                <img src={meswarLogo.url} alt={ar ? "شعار مسور" : "Meswar logo"} width={72} height={34} className="h-8 w-auto rounded-full object-contain" />
-              </span>
-              <h1 className="mt-7 font-kufi text-4xl font-black leading-[1.45] text-primary-foreground md:text-6xl">
-                {ar ? <>موظف ذكي يرد على عملائك <span className="mw-text-grad">بالصوت والواتساب</span> ويؤتمت الباقي</> : <>An AI employee that answers by <span className="mw-text-grad">voice and WhatsApp</span> and automates the rest</>}
+              <h1 className="flex items-center gap-4 font-kufi text-5xl font-black leading-tight text-primary-foreground md:text-7xl">
+                <SawtiMarkLarge />
+                <span>{ar ? "صوتي مسور" : "Sawti Meswar"}</span>
               </h1>
-              <p className="mt-6 max-w-xl text-lg leading-9 text-mw-mint/85 md:text-xl">
-                {ar ? "صوتك بجميع الوسائل مسموع" : "Your voice, heard on every channel."}
+              <p className="mt-6 max-w-2xl text-lg leading-9 text-primary-foreground/90 md:text-xl md:leading-10">
+                {ar
+                  ? "مساعد ذكي يتولى الرد على مكالمات عملائكم ورسائل الواتساب باستخدام الذكاء الاصطناعي، بلهجات متعددة تشمل اللهجة السعودية وذلك وفق اختياركم. يستند في ردوده إلى خدماتكم ومعلومات منشأتكم، مع إمكانية التكامل بربط منصاتكم وأنظمتكم الداخلية لتقديم تجربة متكاملة لعملائكم."
+                  : "An AI assistant that answers your customers' calls and WhatsApp messages in multiple dialects, including Saudi, based on your services and business information — with integrations to your platforms and internal systems for a complete customer experience."}
+              </p>
+              <p className="mt-6 font-kufi text-2xl font-extrabold text-mw-bright md:text-3xl">
+                {ar ? "صوتي مسور: صوتك يصل مسموع ومقروء." : "Sawti Meswar: your voice, heard and read."}
               </p>
               <div className="mt-9 flex flex-wrap gap-3">
                 <button type="button" onClick={openDemo} className="mw-grad inline-flex items-center gap-2 rounded-2xl px-7 py-4 text-lg font-bold text-mw-night"><Volume2 className="size-5" />{ar ? "اسمع مكالمة تجريبية" : "Hear a demo call"}</button>
                 <Link to="/auth" search={{ mode: "signup" }} className="inline-flex items-center gap-2 rounded-2xl border border-primary-foreground/30 bg-primary-foreground/10 px-7 py-4 text-lg font-bold text-primary-foreground hover:bg-primary-foreground/15">{copy.try}<ArrowLeft className="size-5 ltr:rotate-180" /></Link>
-              </div>
-              <div className="mt-10 flex flex-wrap gap-8">
-                {[["24/7", ar ? "استقبال دائم" : "Always on"], [ar ? "3 قنوات" : "3 channels", ar ? "صوت • واتساب • أتمتة" : "Voice • WhatsApp • Automation"], ["AR / EN", ar ? "عربي وإنجليزي" : "Arabic & English"]].map(([n, l]) => (
-                  <div key={l}><div className="font-kufi text-3xl font-extrabold text-primary-foreground">{n}</div><div className="text-sm text-mw-mint/75">{l}</div></div>
-                ))}
               </div>
             </div>
             <div className="relative flex justify-center">
