@@ -249,15 +249,6 @@ function Landing() {
             </div>
             <div className="relative flex justify-center">
               <HeroVoiceCard ar={ar} onCall={openDemo} />
-              {[
-                { t: ar ? "📞 مكالمة واردة: حجز موعد أسنان" : "📞 Incoming: dental booking", c: "-top-4 start-0 md:-start-10", d: "0s" },
-                { t: ar ? "💬 واتساب: أُرسل الموقع ✅" : "💬 WhatsApp: location sent ✅", c: "top-1/2 -end-2 md:-end-12", d: "1.2s" },
-                { t: ar ? "🔔 تذكير قبل 24 ساعة • تم التأكيد" : "🔔 24h reminder • confirmed", c: "-bottom-5 start-4 md:-start-6", d: "2.4s" },
-              ].map((p) => (
-                <div key={p.t} style={{ animationDelay: p.d }} className={`mw-bob pointer-events-none absolute z-10 hidden rounded-2xl border border-mw-bright/30 bg-mw-night/85 px-4 py-2.5 text-sm font-bold text-primary-foreground shadow-xl backdrop-blur sm:block ${p.c}`}>
-                  <span className="me-2 inline-block size-2 animate-pulse rounded-full bg-mw-bright" />{p.t}
-                </div>
-              ))}
             </div>
           </div>
         </section>
