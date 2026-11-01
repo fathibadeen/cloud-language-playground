@@ -26,7 +26,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { SawtiLogo, SawtiMark } from "@/components/SawtiLogo";
-const SawtiMarkLarge = () => <SawtiMark className="h-14 gap-1.5 md:h-20 [&>span]:w-2 [&>span]:mw-wave" />;
+const SawtiMarkLarge = () => <SawtiMark className="h-14 gap-1.5 md:h-20 [&>span]:w-2" />;
 import { HeroVoiceCard } from "@/components/HeroVoiceCard";
 import { IndustrySolutions } from "@/components/IndustrySolutions";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
