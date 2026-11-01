@@ -185,7 +185,7 @@ function Landing() {
     <div className={`theme-meswar ${classic ? "theme-classic" : ""} min-h-screen bg-landing text-landing-foreground`}>
       <header className="fixed inset-x-0 top-0 z-40 border-b border-mw-bright/15 bg-mw-night/85 backdrop-blur-xl">
         <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 md:px-8">
-          <Link to="/" aria-label={ar ? "صوتي — الرئيسية" : "Sawti — Home"} className="rounded-xl px-1 py-1.5"><SawtiLogo compact /></Link>
+          <Link to="/" aria-label={ar ? "صوتي — الرئيسية" : "Sawti — Home"} className="rounded-xl px-1 py-1.5"><SawtiLogo compact className="text-primary-foreground" /></Link>
           <nav className="hidden items-center gap-7 text-base font-semibold text-mw-mint/85 lg:flex">
             <a href="#services" className="hover:text-primary-foreground">{t("features")}</a>
             <Link to="/solutions" className="hover:text-primary-foreground">{ar ? "حلولنا" : "Solutions"}</Link>

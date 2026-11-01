@@ -23,7 +23,7 @@ export function SawtiLogo({ compact = false, className }: SawtiLogoProps) {
       role="img"
       aria-label="صوتي مسور"
       dir="rtl"
-      className={cn("inline-flex items-center gap-2 font-kufi font-black text-primary-foreground", compact ? "text-xl" : "text-2xl md:text-3xl", className)}
+      className={cn("inline-flex items-center gap-2 font-kufi font-black", compact ? "text-xl" : "text-2xl md:text-3xl", className)}
     >
       <SawtiMark className={compact ? "h-7" : "h-9"} />
       <span className="leading-none">صوتي مسور</span>
