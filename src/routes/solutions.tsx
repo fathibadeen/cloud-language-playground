@@ -1,37 +1,45 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { ArrowLeft, Check, MessageCircle, Mic, Zap } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, MessageCircle, Mic, Zap } from "lucide-react";
 import { PublicPageShell } from "@/components/PublicPageShell";
-import { SOLUTIONS } from "@/components/IndustrySolutions";
-import callcenter from "@/assets/solutions/callcenter.jpg.asset.json";
-import clinic from "@/assets/solutions/clinic.jpg.asset.json";
-import law from "@/assets/solutions/law.jpg.asset.json";
-import realestate from "@/assets/solutions/realestate.jpg.asset.json";
-import restaurant from "@/assets/solutions/restaurant.jpg.asset.json";
-import salon from "@/assets/solutions/salon.jpg.asset.json";
-import logistics from "@/assets/solutions/logistics.jpg.asset.json";
+import { getSolutions } from "@/components/IndustrySolutions";
+import { useI18n } from "@/lib/i18n";
+import callcenter from "@//assets/solutions/callcenter.jpg.asset.json";
+import clinic from "@//assets/solutions/clinic.jpg.asset.json";
+import law from "@//assets/solutions/law.jpg.asset.json";
+import realestate from "@//assets/solutions/realestate.jpg.asset.json";
+import restaurant from "@//assets/solutions/restaurant.jpg.asset.json";
+import salon from "@//assets/solutions/salon.jpg.asset.json";
+import logistics from "@//assets/solutions/logistics.jpg.asset.json";
 
 const IMAGES = [clinic, law, realestate, restaurant, salon, callcenter, logistics].map((a) => a.url);
 
-const title = "حلولنا لكل قطاع | صوتي — منتج من مسور";
-const description = "وكيل ذكي يكلّم عملاءك بلهجتهم: مكالمات وواتساب وأتمتة للعيادات والمحاماة والعقارات والمطاعم والصالونات والتحصيل واللوجستيات.";
+const arTitle = "حلولنا لكل قطاع | صوتي — منتج من مسور";
+const arDescription = "وكيل ذكي يكلّم عملاءك بلهجتهم: مكالمات وواتساب وأتمتة للعيادات والمحاماة والعقارات والمطاعم والصالونات والتحصيل واللوجستيات.";
+const enTitle = "Solutions for Every Industry | Sawti — A Meswar Product";
+const enDescription = "A smart agent that speaks your customers' dialect: calls and WhatsApp automation for clinics, law firms, real estate, restaurants, salons, collections and logistics.";
 
 export const Route = createFileRoute("/solutions")({
-  head: () => ({
-    meta: [
-      { title },
-      { name: "description", content: description },
-      { property: "og:title", content: title },
-      { property: "og:description", content: description },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary" },
-    ],
-    links: [{ rel: "canonical", href: "https://www.sawti-ai.com/solutions" }],
-  }),
+  head: () => {
+    const en = typeof window !== "undefined" && document.documentElement.lang === "en";
+    const title = en ? enTitle : arTitle;
+    const description = en ? enDescription : arDescription;
+    return {
+      meta: [
+        { title },
+        { name: "description", content: description },
+        { property: "og:title", content: title },
+        { property: "og:description", content: description },
+        { property: "og:type", content: "website" },
+        { name: "twitter:card", content: "summary" },
+      ],
+      links: [{ rel: "canonical", href: "https://www.sawti-ai.com/solutions" }],
+    };
+  },
   component: SolutionsPage,
 });
 
-function Reveal({ from, children }: { from: "right" | "left"; children: ReactNode }) {
+function Reveal({ from, children }: { from: "start" | "end"; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [shown, setShown] = useState(false);
   useEffect(() => {
@@ -41,7 +49,7 @@ function Reveal({ from, children }: { from: "right" | "left"; children: ReactNod
     io.observe(el);
     return () => io.disconnect();
   }, []);
-  const off = from === "right" ? "translate-x-24" : "-translate-x-24";
+  const off = from === "start" ? "translate-x-24 rtl:-translate-x-24" : "-translate-x-24 rtl:translate-x-24";
   return (
     <div ref={ref} className={`transition-all duration-1000 ease-out ${shown ? "translate-x-0 opacity-100" : `${off} opacity-0`}`}>
       {children}
@@ -50,27 +58,32 @@ function Reveal({ from, children }: { from: "right" | "left"; children: ReactNod
 }
 
 function SolutionsPage() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+  const Arrow = ar ? ArrowLeft : ArrowRight;
+  const SOLUTIONS = getSolutions(locale);
+
   return (
     <PublicPageShell>
-      <div dir="rtl" className="overflow-x-hidden">
+      <div dir={ar ? "rtl" : "ltr"} className="overflow-x-hidden">
         <section className="mx-auto max-w-5xl px-4 py-20 text-center md:px-8">
-          <span className="text-base font-semibold text-saudi-bright">حلولنا</span>
-          <h1 className="mt-4 font-display text-4xl font-bold md:text-6xl">وكيل ذكي يكلّم عملاءك بلهجتهم.</h1>
-          <p className="mx-auto mt-6 max-w-3xl text-xl leading-9 text-landing-muted">وكيل صوتي بلهجة سعودية طبيعية مع أتمتة واتساب — يرد خلال ثانيتين، 24/7، ويحوّل للموظف متى احتاج العميل.</p>
+          <span className="text-base font-semibold text-saudi-bright">{ar ? "حلولنا" : "Our solutions"}</span>
+          <h1 className="mt-4 font-display text-4xl font-bold md:text-6xl">{ar ? "وكيل ذكي يكلّم عملاءك بلهجتهم." : "A smart agent that speaks your customers' dialect."}</h1>
+          <p className="mx-auto mt-6 max-w-3xl text-xl leading-9 text-landing-muted">{ar ? "وكيل صوتي بلهجة سعودية طبيعية مع أتمتة واتساب — يرد خلال ثانيتين، 24/7، ويحوّل للموظف متى احتاج العميل." : "A voice agent with a natural Saudi dialect and WhatsApp automation — answers within two seconds, 24/7, and hands off to staff whenever the customer needs a human."}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 text-sm">
-            {[{ i: Mic, t: "مكالمات" }, { i: MessageCircle, t: "واتساب" }, { i: Zap, t: "أتمتة" }].map(({ i: I, t }) => (
-              <span key={t} className="inline-flex items-center gap-2 rounded-full border border-landing-foreground/15 px-4 py-2"><I className="size-4 text-saudi-bright" />{t}</span>
+            {[{ i: Mic, ar: "مكالمات", en: "Calls" }, { i: MessageCircle, ar: "واتساب", en: "WhatsApp" }, { i: Zap, ar: "أتمتة", en: "Automation" }].map(({ i: I, ar: tAr, en: tEn }) => (
+              <span key={tEn} className="inline-flex items-center gap-2 rounded-full border border-landing-foreground/15 px-4 py-2"><I className="size-4 text-saudi-bright" />{ar ? tAr : tEn}</span>
             ))}
           </div>
         </section>
 
         <section className="mx-auto max-w-6xl space-y-16 px-4 pb-20 md:px-8">
           <div className="text-center">
-            <span className="text-sm font-semibold text-saudi-bright">تفاصيل الحلول</span>
-            <h2 className="mt-3 font-display text-3xl font-bold md:text-5xl">حل لكل قطاع، <span className="text-saudi-bright">بنفس الذكاء.</span></h2>
+            <span className="text-sm font-semibold text-saudi-bright">{ar ? "تفاصيل الحلول" : "Solution details"}</span>
+            <h2 className="mt-3 font-display text-3xl font-bold md:text-5xl">{ar ? "حل لكل قطاع،" : "A solution for every industry,"} <span className="text-saudi-bright">{ar ? "بنفس الذكاء." : "with the same intelligence."}</span></h2>
           </div>
           {SOLUTIONS.map((s, i) => (
-            <Reveal key={s.title} from={i % 2 === 0 ? "right" : "left"}>
+            <Reveal key={s.title} from={i % 2 === 0 ? "start" : "end"}>
               <article className="sol-card grid items-center gap-8 overflow-hidden rounded-3xl border border-landing-foreground/15 bg-landing md:grid-cols-2"
                 style={{ ["--a" as string]: s.accent }}>
                 <div className={`h-64 overflow-hidden md:h-full ${i % 2 ? "md:order-2" : ""}`}>
@@ -84,7 +97,7 @@ function SolutionsPage() {
                     {s.points.map((p) => <li key={p} className="flex gap-2 leading-7"><Check className="mt-1 size-5 shrink-0 text-[var(--a)]" />{p}</li>)}
                   </ul>
                   <Link to={s.to ?? "/contact"} className="mt-7 inline-flex items-center gap-2 font-semibold text-[var(--a)] hover:underline">
-                    {s.to ? "اكتشف الحل" : "اطلب تجربة مخصصة"}<ArrowLeft className="size-4" />
+                    {s.to ? (ar ? "اكتشف الحل" : "Discover the solution") : (ar ? "اطلب تجربة مخصصة" : "Request a custom demo")}<Arrow className="size-4" />
                   </Link>
                 </div>
               </article>
@@ -93,11 +106,11 @@ function SolutionsPage() {
         </section>
 
         <section className="mx-auto max-w-4xl px-4 pb-24 text-center md:px-8">
-          <h2 className="font-display text-3xl font-bold">جرّب الوكيل الصوتي على نشاطك</h2>
-          <p className="mt-3 text-landing-muted">نجهز لك تجربة مخصصة بلهجة سعودية وواتساب.</p>
+          <h2 className="font-display text-3xl font-bold">{ar ? "جرّب الوكيل الصوتي على نشاطك" : "Try the voice agent on your business"}</h2>
+          <p className="mt-3 text-landing-muted">{ar ? "نجهز لك تجربة مخصصة بلهجة سعودية وواتساب." : "We'll prepare a custom trial with a Saudi dialect and WhatsApp."}</p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link to="/" className="rounded-2xl bg-saudi-bright px-7 py-4 text-lg font-bold text-mw-night">اسمع مكالمة تجريبية</Link>
-            <Link to="/contact" className="rounded-2xl border border-landing-foreground/30 px-7 py-4 text-lg font-bold">اطلب تجربة مخصصة</Link>
+            <Link to="/" className="rounded-2xl bg-saudi-bright px-7 py-4 text-lg font-bold text-mw-night">{ar ? "اسمع مكالمة تجريبية" : "Hear a sample call"}</Link>
+            <Link to="/contact" className="rounded-2xl border border-landing-foreground/30 px-7 py-4 text-lg font-bold">{ar ? "اطلب تجربة مخصصة" : "Request a custom demo"}</Link>
           </div>
         </section>
       </div>

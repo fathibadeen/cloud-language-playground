@@ -1,5 +1,16 @@
 import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Wallet, Home, MessageCircle, Mic, Scale, Scissors, Stethoscope, Truck, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Wallet, Home, MessageCircle, Mic, Scale, Scissors, Stethoscope, Truck, UtensilsCrossed } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
+
+type Localized = {
+  badge: string;
+  status: string;
+  title: string;
+  pain: string;
+  ask: string;
+  reply: string;
+  points: string[];
+};
 
 type Solution = {
   icon: typeof Stethoscope;
@@ -15,27 +26,76 @@ type Solution = {
   accent: string;
 };
 
-export const SOLUTIONS: Solution[] = [
-  { accent: "var(--sol-mint)", icon: Stethoscope, badge: "الأكثر طلبًا", status: "رد فوري", channel: "voice", title: "العيادات والمراكز الطبية", pain: "مواعيد ضائعة ومكالمات بلا رد وقت الذروة.", ask: "أحتاج موعد أسنان بكرة", reply: "تم تأكيد موعدك غدًا 4:00م مع الطبيب وأرسلنا الموقع 📍", points: ["حجز وتعديل المواعيد حسب جدول كل طبيب", "تذكير قبل 24 ساعة وساعتين لتقليل التغيب", "تحويل الحالات الطارئة فورًا لموظف"], to: "/clinics" },
-  { accent: "var(--sol-gold)", icon: Scale, badge: "سرية تامة", status: "24/7", channel: "whatsapp", title: "مكاتب المحاماة والاستشارات", pain: "اتصالات العملاء تضيع أثناء الجلسات والاجتماعات.", ask: "عندي استشارة عمالية مستعجلة", reply: "سجّلنا التفاصيل وحجزنا لك استشارة اليوم ⚖️", points: ["استقبال الاستشارات الأولية وجمع بيانات القضية", "جدولة مواعيد مع المحامي المختص", "رد 24/7 بأسلوب مهني"] },
-  { accent: "var(--sol-sky)", icon: Home, badge: "عملاء جادّون", status: "رد فوري", channel: "whatsapp", title: "العقارات وإدارة الأملاك", pain: "تأخر الرد على المهتمين بالإعلانات يضيّع الصفقة.", ask: "مهتم بالفيلا المعروضة", reply: "أرسلنا التفاصيل والموقع، تحب نحجز موعد معاينة؟ 🏡", points: ["فرز العملاء الجادين تلقائيًا", "حجز مواعيد المعاينة", "إرسال تفاصيل العقار عبر واتساب"] },
-  { accent: "var(--sol-amber)", icon: UtensilsCrossed, badge: "وقت الذروة", status: "بدون انتظار", channel: "voice", title: "المطاعم والمقاهي", pain: "ضغط المكالمات وطلبات الحجز في أوقات الذروة.", ask: "حجز طاولة لـ 4 يوم الجمعة", reply: "تم تأكيد حجزك الجمعة 8:30م وأرسلنا المنيو ✅", points: ["تأكيد حجوزات الطاولات والمناسبات", "إرسال المنيو والموقع عبر واتساب", "الرد على الأسئلة المتكررة"] },
-  { accent: "var(--sol-rose)", icon: Scissors, badge: "حجز أسهل", status: "تذكير آلي", channel: "whatsapp", title: "الصالونات ومراكز التجميل", pain: "كثرة تعديل المواعيد والسؤال عن الأسعار.", ask: "أبغى جلسة عناية بالبشرة", reply: "تم حجز موعدك وأرسلنا تعليمات ما قبل الجلسة 💅", points: ["اختيار الخدمة والأخصائية", "تذكير آلي بالموعد", "عرض البكجات والعروض"] },
-  { accent: "var(--sol-violet)", icon: Wallet, badge: "تحصيل أسرع", status: "تذكير آلي", channel: "voice", title: "التحصيل والتذكير بالدفعات", pain: "متأخرات تتراكم وفريق يقضي يومه في مكالمات التذكير.", ask: "متى موعد القسط القادم؟", reply: "قسطك 1,250 ر.س يستحق الأحد، أرسلنا لك رابط سداد آمن 💳", points: ["اتصال وتذكير قبل الاستحقاق وبعده بلباقة", "إرسال رابط دفع رسمي عبر واتساب", "تسجيل وعود السداد وتحويل الاعتراضات لموظف"] },
-  { accent: "var(--sol-blue)", icon: Truck, badge: "تتبع 24/7", status: "24/7", channel: "voice", title: "شركات النقل واللوجستيات", pain: "سيل مكالمات «وين شحنتي؟» يستنزف فريق خدمة العملاء.", ask: "وين شحنتي رقم 9821؟", reply: "شحنتك خرجت للتوصيل اليوم مع المندوب 🚚", points: ["رد فوري على تتبع الشحنات عبر رقم البوليصة", "استقبال طلبات الاستلام ونقل العفش", "الأسعار ومناطق التغطية والمواد الممنوعة"] },
+const DATA: Array<{
+  accent: string;
+  icon: typeof Stethoscope;
+  channel: "voice" | "whatsapp";
+  to?: "/clinics";
+  ar: Localized;
+  en: Localized;
+}> = [
+  {
+    accent: "var(--sol-mint)", icon: Stethoscope, channel: "voice", to: "/clinics",
+    ar: { badge: "الأكثر طلبًا", status: "رد فوري", title: "العيادات والمراكز الطبية", pain: "مواعيد ضائعة ومكالمات بلا رد وقت الذروة.", ask: "أحتاج موعد أسنان بكرة", reply: "تم تأكيد موعدك غدًا 4:00م مع الطبيب وأرسلنا الموقع 📍", points: ["حجز وتعديل المواعيد حسب جدول كل طبيب", "تذكير قبل 24 ساعة وساعتين لتقليل التغيب", "تحويل الحالات الطارئة فورًا لموظف"] },
+    en: { badge: "Most requested", status: "Instant answer", title: "Clinics & Medical Centers", pain: "Missed appointments and unanswered calls at peak hours.", ask: "I need a dental appointment tomorrow", reply: "Your appointment is confirmed for tomorrow 4 PM — location sent 📍", points: ["Book and reschedule per each doctor's schedule", "Reminders 24h and 2h before to cut no-shows", "Instant escalation of emergencies to staff"] },
+  },
+  {
+    accent: "var(--sol-gold)", icon: Scale, channel: "whatsapp",
+    ar: { badge: "سرية تامة", status: "24/7", title: "مكاتب المحاماة والاستشارات", pain: "اتصالات العملاء تضيع أثناء الجلسات والاجتماعات.", ask: "عندي استشارة عمالية مستعجلة", reply: "سجّلنا التفاصيل وحجزنا لك استشارة اليوم ⚖️", points: ["استقبال الاستشارات الأولية وجمع بيانات القضية", "جدولة مواعيد مع المحامي المختص", "رد 24/7 بأسلوب مهني"] },
+    en: { badge: "Full confidentiality", status: "24/7", title: "Law Firms & Consultations", pain: "Client calls get lost during sessions and meetings.", ask: "I have an urgent labor case consultation", reply: "We logged your details and booked a consultation today ⚖️", points: ["First-line intake and case detail collection", "Scheduling with the right attorney", "Professional 24/7 replies"] },
+  },
+  {
+    accent: "var(--sol-sky)", icon: Home, channel: "whatsapp",
+    ar: { badge: "عملاء جادّون", status: "رد فوري", title: "العقارات وإدارة الأملاك", pain: "تأخر الرد على المهتمين بالإعلانات يضيّع الصفقة.", ask: "مهتم بالفيلا المعروضة", reply: "أرسلنا التفاصيل والموقع، تحب نحجز موعد معاينة؟ 🏡", points: ["فرز العملاء الجادين تلقائيًا", "حجز مواعيد المعاينة", "إرسال تفاصيل العقار عبر واتساب"] },
+    en: { badge: "Serious buyers", status: "Instant reply", title: "Real Estate & Property Management", pain: "Slow replies to listing inquiries cost you the deal.", ask: "Interested in the villa listing", reply: "Details and location sent — shall we book a viewing? 🏡", points: ["Automatic qualification of serious buyers", "Booking property viewings", "Sending listing details over WhatsApp"] },
+  },
+  {
+    accent: "var(--sol-amber)", icon: UtensilsCrossed, channel: "voice",
+    ar: { badge: "وقت الذروة", status: "بدون انتظار", title: "المطاعم والمقاهي", pain: "ضغط المكالمات وطلبات الحجز في أوقات الذروة.", ask: "حجز طاولة لـ 4 يوم الجمعة", reply: "تم تأكيد حجزك الجمعة 8:30م وأرسلنا المنيو ✅", points: ["تأكيد حجوزات الطاولات والمناسبات", "إرسال المنيو والموقع عبر واتساب", "الرد على الأسئلة المتكررة"] },
+    en: { badge: "Peak hours", status: "No waiting", title: "Restaurants & Cafés", pain: "Call volume and booking requests spike at peak hours.", ask: "A table for 4 on Friday, please", reply: "Your Friday 8:30 PM table is confirmed — menu sent ✅", points: ["Confirming table and event bookings", "Menu and location over WhatsApp", "Answers to frequent questions"] },
+  },
+  {
+    accent: "var(--sol-rose)", icon: Scissors, channel: "whatsapp",
+    ar: { badge: "حجز أسهل", status: "تذكير آلي", title: "الصالونات ومراكز التجميل", pain: "كثرة تعديل المواعيد والسؤال عن الأسعار.", ask: "أبغى جلسة عناية بالبشرة", reply: "تم حجز موعدك وأرسلنا تعليمات ما قبل الجلسة 💅", points: ["اختيار الخدمة والأخصائية", "تذكير آلي بالموعد", "عرض البكجات والعروض"] },
+    en: { badge: "Easier booking", status: "Auto reminders", title: "Salons & Beauty Centers", pain: "Endless rescheduling and price inquiries.", ask: "I'd like a skincare session", reply: "Your session is booked — pre-care instructions sent 💅", points: ["Picking the service and specialist", "Automatic appointment reminders", "Showcasing packages and offers"] },
+  },
+  {
+    accent: "var(--sol-violet)", icon: Wallet, channel: "voice",
+    ar: { badge: "تحصيل أسرع", status: "تذكير آلي", title: "التحصيل والتذكير بالدفعات", pain: "متأخرات تتراكم وفريق يقضي يومه في مكالمات التذكير.", ask: "متى موعد القسط القادم؟", reply: "قسطك 1,250 ر.س يستحق الأحد، أرسلنا لك رابط سداد آمن 💳", points: ["اتصال وتذكير قبل الاستحقاق وبعده بلباقة", "إرسال رابط دفع رسمي عبر واتساب", "تسجيل وعود السداد وتحويل الاعتراضات لموظف"] },
+    en: { badge: "Faster collection", status: "Auto reminders", title: "Collections & Payment Reminders", pain: "Receivables pile up while your team spends its day on reminder calls.", ask: "When is my next installment due?", reply: "Your SAR 1,250 installment is due Sunday — secure payment link sent 💳", points: ["Polite calls before and after due dates", "Official payment link over WhatsApp", "Logging payment promises and escalating disputes to staff"] },
+  },
+  {
+    accent: "var(--sol-blue)", icon: Truck, channel: "voice",
+    ar: { badge: "تتبع 24/7", status: "24/7", title: "شركات النقل واللوجستيات", pain: "سيل مكالمات «وين شحنتي؟» يستنزف فريق خدمة العملاء.", ask: "وين شحنتي رقم 9821؟", reply: "شحنتك خرجت للتوصيل اليوم مع المندوب 🚚", points: ["رد فوري على تتبع الشحنات عبر رقم البوليصة", "استقبال طلبات الاستلام ونقل العفش", "الأسعار ومناطق التغطية والمواد الممنوعة"] },
+    en: { badge: "24/7 tracking", status: "24/7", title: "Transport & Logistics", pain: "A flood of \"where's my shipment?\" calls drains your support team.", ask: "Where's my shipment #9821?", reply: "Your shipment is out for delivery today with the courier 🚚", points: ["Instant tracking by waybill number", "Pickup and moving requests intake", "Pricing, coverage zones and restricted items"] },
+  },
 ];
 
+/** Arabic flat list — kept identical to the previous shape for existing consumers. */
+export const SOLUTIONS: Solution[] = DATA.map((d) => ({ accent: d.accent, icon: d.icon, channel: d.channel, to: d.to, ...d.ar }));
+
+/** Localized flat list for the requested locale ("ar" by default). */
+export function getSolutions(locale: string): Solution[] {
+  const key = locale === "en" ? "en" : "ar";
+  return DATA.map((d) => ({ accent: d.accent, icon: d.icon, channel: d.channel, to: d.to, ...d[key] }));
+}
+
 export function IndustrySolutions() {
+  const { locale } = useI18n();
+  const ar = locale === "ar";
+  const list = getSolutions(locale);
+  const Arrow = ar ? ArrowLeft : ArrowRight;
+
   return (
-    <section id="solutions" aria-labelledby="solutions-title" className="border-y border-landing-foreground/10 bg-saudi/30 py-24" dir="rtl">
+    <section id="solutions" aria-labelledby="solutions-title" className="border-y border-landing-foreground/10 bg-saudi/30 py-24" dir={ar ? "rtl" : "ltr"}>
       <div className="mx-auto max-w-7xl px-4 md:px-8">
-        <span className="text-base font-semibold text-gold">حلول حسب قطاعك</span>
-        <h2 id="solutions-title" className="mt-4 font-display text-3xl font-bold md:text-5xl">حلول مصممة لنشاطك</h2>
-        <p className="mt-5 max-w-3xl text-xl leading-9 text-landing-muted">اسحب لتكتشف كيف يرد صوتي على عملاء قطاعك فعليًا.</p>
+        <span className="text-base font-semibold text-gold">{ar ? "حلول حسب قطاعك" : "Solutions by industry"}</span>
+        <h2 id="solutions-title" className="mt-4 font-display text-3xl font-bold md:text-5xl">{ar ? "حلول مصممة لنشاطك" : "Solutions built for your business"}</h2>
+        <p className="mt-5 max-w-3xl text-xl leading-9 text-landing-muted">{ar ? "اسحب لتكتشف كيف يرد صوتي على عملاء قطاعك فعليًا." : "Swipe through to see exactly how Sawti answers customers in your industry."}</p>
       </div>
       <div className="mx-auto mt-12 max-w-7xl">
         <div className="flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-8 pt-2 md:px-8 [scrollbar-width:thin]">
-          {SOLUTIONS.map((s, i) => {
+          {list.map((s, i) => {
             const Channel = s.channel === "voice" ? Mic : MessageCircle;
             const d = (n: number) => ({ animationDelay: `${i * 0.4 + n}s` });
             return (
@@ -50,7 +110,7 @@ export function IndustrySolutions() {
 
                 <div className="relative mt-5 rounded-xl border border-landing-foreground/10 bg-landing-foreground/5 p-4">
                   <div className="mb-3 flex items-center justify-between text-xs text-landing-muted">
-                    <span className="inline-flex items-center gap-1.5"><Channel className="size-3.5 text-[var(--a)]" />{s.channel === "voice" ? "مكالمة" : "واتساب"}</span>
+                    <span className="inline-flex items-center gap-1.5"><Channel className="size-3.5 text-[var(--a)]" />{s.channel === "voice" ? (ar ? "مكالمة" : "Call") : (ar ? "واتساب" : "WhatsApp")}</span>
                     <span className="inline-flex items-center gap-1.5"><span className="relative flex size-2"><span className="absolute inline-flex size-full animate-ping rounded-full bg-[var(--a)] opacity-70" /><span className="relative inline-flex size-2 rounded-full bg-[var(--a)]" /></span>{s.status}</span>
                   </div>
                   <p className="sol-msg ms-auto w-fit max-w-[85%] rounded-2xl rounded-tl-sm bg-landing-foreground/10 px-3 py-2 text-sm" style={d(0)}>{s.ask}</p>
@@ -67,7 +127,7 @@ export function IndustrySolutions() {
                 </ul>
                 <div className="relative mt-auto pt-6">
                   <Link to={s.to ?? "/contact"} className="inline-flex items-center gap-2 font-semibold text-[var(--a)] hover:underline">
-                    {s.to ? "اكتشف الحل" : "اطلب تجربة مخصصة"}<ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
+                    {s.to ? (ar ? "اكتشف الحل" : "Discover the solution") : (ar ? "اطلب تجربة مخصصة" : "Request a custom demo")}<Arrow className={`size-4 transition-transform ${ar ? "group-hover:-translate-x-1" : "group-hover:translate-x-1"}`} />
                   </Link>
                 </div>
               </article>
