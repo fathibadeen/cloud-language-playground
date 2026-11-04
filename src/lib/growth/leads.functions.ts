@@ -207,10 +207,9 @@ export const enrichLeads = createServerFn({ method: "POST" })
       if (!lead) throw new Error("Forbidden: lead not in your company");
     }
 
-    const { enrichLeadsBatch, setEnrichmentProvider } = await import("@/lib/growth/enrichment");
-    // Wire the platform's LLM provider here (Phase 6 wires the real one).
-    // Without a provider configured, enrichment returns honestly.
-    void setEnrichmentProvider;
+    const { enrichLeadsBatch } = await import("@/lib/growth/enrichment");
+    // The platform's LLM provider is wired in a later phase; until then
+    // enrichment returns an honest "provider_not_configured" per lead.
 
     const result = await enrichLeadsBatch(data.leadIds);
     return result;
@@ -239,7 +238,7 @@ export const addConsentRecord = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!lead) throw new Error("Forbidden: lead not in your company");
 
-    const { supabaseAdmin } = await import("@/integrations/subase/client.server");
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { error } = await supabaseAdmin.from("consent_records").insert({
       company_id: lead.company_id,
