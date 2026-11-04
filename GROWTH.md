@@ -1,47 +1,81 @@
-# Sawti Growth — المرحلة 2 (Discovery + CRM + الإثراء)
+# Sawti Growth — المرحلة 3 (الامتثال + الموافقات + الحملات)
 
-> **إضافي 100%** — كل ملفات هذه المرحلة جديدة. لا يعدّل أي ملف قائم.
+> **إضافي 100%** — لا يُعدَّل أي ملف قائم. حتى نقطة الـ cron مستقلة
+> (`/api/cron/growth`) وتستخدم نفس دالة المصادقة HMAC القائمة كما هي.
 
-## ما تم في المرحلة 2
+## ما تم في المرحلة 3
 
 | الملف | الوصف |
 |---|---|
-| `src/lib/growth/enrichment.ts` | خط إثراء AI: مخطط zod مقنّن، إصدار Prompt (`PROMPT_VERSION`)، عزل المحتوى غير الموثوق داخل `<<<UNTRUSTED_DATA>>>`، محاولات محدودة (2)، إخراج منخفض الثقة يفرض مراجعة بشرية |
-| `src/lib/growth/leads.functions.ts` | Server Functions (نمط `*.functions.ts` القائم): استيراد CSV + اكتشاف موقع + تشغيل الإثراء + توثيق موافقة + إدارة حجب — كلها خلف `requireSupabaseAuth` + RLS + فحص دور |
-| `src/routes/dashboard/growth-leads.tsx` | صفحة العملاء المحتملين عربية RTL: جدول، بحث، فلاتر، حالة فارغة، حالة تحميل/خطأ، حوار استيراد CSV (مع توثيق الأساس القانوني إلزامياً)، حوار اكتشاف من موقع، أزرار إثراء/حجب حسب الدور |
-| `src/lib/growth/enrichment.test.ts` | اختبارات استخراج JSON من مخرجات النموذج + عزل Prompt-injection |
+| `src/lib/growth/approval.functions.ts` | مركز الموافقات: إنشاء دفعة، قرار لكل عنصر، قرار دفعة — كله مُسجَّل في `audit_logs` |
+| `src/lib/growth/campaign-scheduler.ts` | المجدول: يقرأ الحملات المعتمدة → ينشئ `call_jobs` للعملاء المعتمدين فقط → يحترم الحد اليومي → **يعيد فحص الامتثال لكل عميل وقت الاتصال** |
+| `src/routes/api/cron/growth.ts` | نقطة cron مستقلة (لا تمس `registry.ts` القائم) — نفس `authenticateCronRequest` ونفس `LOVABLE_CRON_SECRET` |
+| `src/routes/dashboard/growth-approvals.tsx` | صفحة مركز الموافقات (عربية RTL): دفعات + مراجعة عميل-بعميل + اعتماد/رفض حسب الدور |
+| `src/routes/dashboard/growth-campaigns.tsx` | صفحة الحملات (عربية RTL): إنشاء حملة (وكيل نبرة، حد يومي، نافذة زمنية، مقدمة تعريف AI صادقة) + إيقاف/استئناف + إرسال تلقائي للاعتماد البشري |
+| `GROWTH.md` | هذا التوثيق |
 
-## مسار الاستخدام
+## دورة الحياة الكاملة (كما نُفذت)
 
-1. **استيراد CSV:** لوحة العملاء المحتملين → «استيراد CSV» → لصق محتوى الملف → **توثيق الأساس القانوني إلزامي** (موافقة صريحة / عقد قائم / مصلحة مشروعة B2B) + مصدر الموافقة. بدون توثيق: يُرفض الاستيراد.
-2. **اكتشاف من موقع:** إدخال رابط موقع النشاط الرسمي — يُستخرج الهاتف الظاهر على صفحة التواصل العامة فقط (بيانات نشاط تجاري، ليست أرقاماً شخصية). لا يوجد أي كشط لـ Google Maps أو LinkedIn أو Meta.
-3. **الإثراء:** زر «إثراء» لكل عميل — يعمل بعد ربط مزوّد LLM (المرحلة 6). قبل الربط يرجع بصدق: `enrichment_provider_not_configured`.
-4. **الحجب:** owner/admin فقط — يضيف الرقم لقائمة حجب المستأجر (فورية: تمنع أي تواصل لاحق).
-
-## قواعد امتثال مطبقة في هذه المرحلة
-
-- **الموافقة قبل البيانات:** كل استيراد ينشئ سجل `consent_records` لكل عميل لكل قناة (call + whatsapp) مع الغرض والمصدر والدليل والوقت. الموافقة بلا توثيق = رفض الاستيراد.
-- **الأرقام الشخصية:** الاكتشاف من المواقع يستهدف أرقام أعمال ظاهرة للجمهور فقط، ويوثّق `legitimate_interest_b2b` بحدوده.
-- **عزل تعليمات:** أي نص من CSV/موقع يدخل نافذة `UNTRUSTED_DATA` فقط ولا يصل System Prompt مهما احتوى.
-- **الاستاتس التلقائي:** ثقة ≥ 0.6 → `enriched`؛ أقل → يبقى `new` بانتظار مراجعة بشرية (`human_reviewed=false`).
-
-## ما ينقص لتشغيل المرحلة 2 بالكامل
-
-| المتطلب | الحالة |
-|---|---|
-| تنفيذ `0016_growth_core.sql` في Supabase | عليك (Dashboard → SQL Editor) |
-| مزوّد LLM للإثراء | يُربط في المرحلة 6 — حتى ذلك الحين يعيد `provider_not_configured` بصدق |
-| إضافة رابط `/dashboard/growth-leads` لقائمة التنقل | يتطلب تعديل ملف قائم (`route.tsx`) — **بانتظار موافقتك** لأنه ملف قائم |
-
-## الاختبارات
-
-```bash
-npx vitest run src/lib/growth/enrichment.test.ts src/lib/growth/compliance.test.ts
 ```
+استيراد/اكتشاف عملاء (مرحلة 2)
+        ↓
+إنشاء حملة: مسودة + اختيار عملاء → إرسال للاعتماد
+        ↓
+مركز الموافقات: اعتماد بشري (دفعة أو عميل-بعميل) ← بوابة إلزامية
+        ↓
+المجدول (cron كل 5 دقائق): حملة معتمدة + مشغّل ON
+        ↓
+إنشاء call_jobs (حد يومي: 20 افتراضياً لكل مستأجر — سقف لا إذن)
+        ↓
+وقت التنفيذ: evaluateOutreach() لكل عميل فردياً:
+  Kill-switch عام → إيقاف المستأجر → Suppression → Consent للقناة →
+  نافذة زمنية سعودية → الحد اليومي → مراجعة قانونية → Caller ID → تعريف AI
+        ↓  (أي فشل = compliance_blocked — لا اتصال)
+مكالمة نبرة عبر nabrah.server.ts القائم (Idempotency + Retry)
+```
+
+## تفعيل المجدول (اختر واحداً)
+
+**GitHub Actions** (`.github/workflows/growth-cron.yml`):
+```yaml
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+jobs:
+  growth:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -X POST "${{ secrets.APP_URL }}/api/cron/growth" \
+            -H "Authorization: Bearer ${{ secrets.LOVABLE_CRON_SECRET }}"
+```
+
+**Vercel Cron** (`vercel.json`):
+```json
+{ "crons": [ { "path": "/api/cron/growth", "schedule": "*/5 * * * *" } ] }
+```
+
+> نفس `LOVABLE_CRON_SECRET` القائم — لا مفاتيح جديدة.
+
+## الصفحات الجديدة (روابط مباشرة — بدون تعديل ملفات صوتي)
+
+- `/dashboard/growth-leads` — العملاء المحتملون
+- `/dashboard/growth-approvals` — مركز الموافقات
+- `/dashboard/growth-campaigns` — الحملات
+
+## قائمة التفعيل قبل أي مكالمة حقيقية (fail-closed)
+
+1. تنفيذ `0016_growth_core.sql` في Supabase
+2. تأكيد `legal_review_confirmed` في `growth_settings` (مراجعة PDPL)
+3. تأكيد `caller_id_verified` (Caller ID سعودي معتمد + SIP صادر من نبرة)
+4. رفع Kill-switch العام من طرف المشرف (`service_role` فقط)
+5. إلغاء إيقاف الحملات للمستأجر (`campaigns_paused = false`)
+6. جدولة `/api/cron/growth` كل 5 دقائق
+
+**لن تخرج أي مكالمة قبل الخطوات الست كلها — بالتصميم.**
 
 ## المراحل القادمة
 
-- **المرحلة 3:** مركز الموافقات + مجدول الحملات + مهمة cron
-- **المرحلة 4:** دورة حياة المكالمات (SIP فعلي)
-- **المرحلة 5:** WhatsApp Outreach + التحويلات
-- **المرحلة 6:** تحليلات + ربط LLM + بيانات Demo موسومة
+- **المرحلة 4:** مزامنة حالة المكالمات (polling آمن + backoff) + صفحة المكالمات
+- **المرحلة 5:** WhatsApp Outreach + التحويلات (Moyasar)
+- **المرحلة 6:** تحليلات + ربط LLM الإثراء + تصلب أمني
