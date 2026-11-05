@@ -38,7 +38,7 @@ export const Route = createFileRoute("/api/public/webhooks/moyasar")({
         }
 
         const candidates = [body?.data?.invoice_id, body?.data?.id, body?.id];
-        const invoiceId = candidates.find((v) => typeof v === "string" && ID_RE.test(v));
+        const invoiceId = candidates.find((v): v is string => typeof v === "string" && ID_RE.test(v));
         if (!invoiceId) return new Response("ignored", { status: 200 });
 
         try {
