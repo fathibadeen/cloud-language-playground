@@ -20,7 +20,11 @@ export const Route = createFileRoute("/api/public/webhooks/moyasar")({
         const secret = s?.webhook_secret ?? "";
         if (!secret) return new Response("forbidden", { status: 403 });
 
-        const body = (await request.json().catch(() => null)) as Record<string, any> | null;
+        const body = (await request.json().catch(() => null)) as {
+          secret_token?: unknown;
+          id?: unknown;
+          data?: { id?: unknown; invoice_id?: unknown };
+        } | null;
         const urlKey = new URL(request.url).searchParams.get("key") ?? "";
         const token = typeof body?.secret_token === "string" ? body.secret_token : "";
 
