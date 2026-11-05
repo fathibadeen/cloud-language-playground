@@ -1,11 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { z } from "zod";
-
-const schema = z.object({
-  secret_token: z.string().max(500).optional(),
-  type: z.string().max(100).optional(),
-  data: z.object({ invoice_id: z.string().max(100).nullable().optional() }).passthrough().optional(),
-});
 
 function safeEqual(a: string, b: string) {
   if (a.length !== b.length) return false;
@@ -14,26 +7,41 @@ function safeEqual(a: string, b: string) {
   return r === 0;
 }
 
+const ID_RE = /^[A-Za-z0-9_-]{1,100}$/;
+
+// Payload is never trusted: we only extract the invoice id, then applyInvoice
+// re-fetches the invoice from Moyasar and checks status + amount itself.
 export const Route = createFileRoute("/api/public/webhooks/moyasar")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const parsed = schema.safeParse(await request.json().catch(() => null));
-        if (!parsed.success) return new Response("bad request", { status: 400 });
         const { loadMoyasarSettings, applyInvoice } = await import("@/lib/moyasar.server");
         const s = await loadMoyasarSettings();
-        const token = parsed.data.secret_token ?? "";
-        if (!s?.webhook_secret || !safeEqual(token, s.webhook_secret)) {
-          return new Response("unauthorized", { status: 401 });
+        const secret = s?.webhook_secret ?? "";
+        if (!secret) return new Response("forbidden", { status: 403 });
+
+        const body = (await request.json().catch(() => null)) as Record<string, any> | null;
+        const urlKey = new URL(request.url).searchParams.get("key") ?? "";
+        const token = typeof body?.secret_token === "string" ? body.secret_token : "";
+
+        // Reject only a wrong token; accept a valid URL key or a valid body token.
+        if (token && !safeEqual(token, secret)) {
+          console.error("[moyasar webhook] wrong secret_token");
+          return new Response("forbidden", { status: 403 });
         }
-        const invoiceId = parsed.data.data?.invoice_id;
-        if (invoiceId) {
-          try {
-            await applyInvoice(invoiceId);
-          } catch (e) {
-            console.error("[moyasar webhook]", e);
-            return new Response("retry", { status: 500 });
-          }
+        if (!(urlKey && safeEqual(urlKey, secret)) && !token) {
+          return new Response("forbidden", { status: 403 });
+        }
+
+        const candidates = [body?.data?.invoice_id, body?.data?.id, body?.id];
+        const invoiceId = candidates.find((v) => typeof v === "string" && ID_RE.test(v));
+        if (!invoiceId) return new Response("ignored", { status: 200 });
+
+        try {
+          await applyInvoice(invoiceId);
+        } catch (e) {
+          console.error("[moyasar webhook]", e);
+          return new Response("retry", { status: 500 });
         }
         return Response.json({ ok: true });
       },

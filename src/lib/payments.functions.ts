@@ -159,6 +159,9 @@ export const createCheckout = createServerFn({ method: "POST" })
           description: `اشتراك صوتي — ${plan.name_ar} — ${data.period === "yearly" ? "سنوي" : "شهري"}${price.setup ? " + رسوم تأسيس العيادة" : ""} (شامل ضريبة 15%)`,
           success_url: `${origin}/dashboard/billing-callback?pid=${pay.id}`,
           back_url: `${origin}/dashboard/billing`,
+          ...(s.webhook_secret
+            ? { callback_url: `${origin}/api/public/webhooks/moyasar?key=${encodeURIComponent(s.webhook_secret)}` }
+            : {}),
           metadata: { payment_id: pay.id, company_id: data.companyId },
         }),
       });
