@@ -342,7 +342,7 @@ function Landing() {
         </section>
         <IndustrySolutions />
 
-        <section id="how" className="border-y border-landing-foreground/10 bg-saudi/30 py-24"><div className="mx-auto max-w-7xl px-4 md:px-8"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><div><span className="text-base font-semibold text-gold">{ar ? "من التسجيل للتشغيل" : "FROM SIGNUP TO LIVE"}</span><h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">{copy.howTitle}</h2></div><p className="max-w-md text-lg leading-8 text-landing-muted">{ar ? "لا لف ولا دوران: عرّفنا على نشاطك، جهّز المعرفة، وصوتي يصير جاهزًا للاستقبال." : "Introduce your business, add its knowledge, and Sawti is ready to serve."}</p></div><div className="mt-14 grid gap-8 md:grid-cols-4">{[[Users, '01', ar ? 'عرّفنا بشركتك' : 'Add your company'], [BookOpen, '02', ar ? 'حمّل معلوماتك' : 'Share your knowledge'], [Headphones, '03', ar ? 'اضبط أسلوب الرد' : 'Shape the response'], [ShieldCheck, '04', ar ? 'تابع كل شيء' : 'Stay in control']].map(([Icon, n, label]) => { const StepIcon = Icon as typeof Users; return <div key={String(n)} className="border-t border-landing-foreground/15 pt-5"><div className="flex items-center justify-between"><StepIcon className="size-6 text-saudi-bright" /><span className="font-display text-base text-gold">{String(n)}</span></div><h3 className="mt-8 text-xl font-semibold">{String(label)}</h3></div>; })}</div></div></section>
+        <section id="how" className="border-y border-landing-foreground/10 bg-saudi/30 py-24"><div className="mx-auto max-w-7xl px-4 md:px-8"><div className="flex flex-col justify-between gap-6 md:flex-row md:items-end"><div><span className="text-base font-semibold text-gold">{ar ? "من التسجيل للتشغيل" : "FROM SIGNUP TO LIVE"}</span><h2 className="mt-4 font-display text-3xl font-bold md:text-5xl">{copy.howTitle}</h2></div><p className="max-w-md text-lg leading-8 text-landing-muted">{ar ? "عرّفنا على نشاطك، وصوتي يصير جاهزًا للاستقبال." : "Introduce your business, add its knowledge, and Sawti is ready to serve."}</p></div><div className="mt-14 grid gap-8 md:grid-cols-4">{[[Users, '01', ar ? 'عرّفنا بشركتك' : 'Add your company'], [BookOpen, '02', ar ? 'حمّل معلوماتك' : 'Share your knowledge'], [Headphones, '03', ar ? 'اضبط أسلوب الرد' : 'Shape the response'], [ShieldCheck, '04', ar ? 'تابع كل شيء' : 'Stay in control']].map(([Icon, n, label]) => { const StepIcon = Icon as typeof Users; return <div key={String(n)} className="border-t border-landing-foreground/15 pt-5"><div className="flex items-center justify-between"><StepIcon className="size-6 text-saudi-bright" /><span className="font-display text-base text-gold">{String(n)}</span></div><h3 className="mt-8 text-xl font-semibold">{String(label)}</h3></div>; })}</div></div></section>
 
         <section id="pricing" className="py-24"><div className="mx-auto max-w-7xl px-4 md:px-8"><div className="text-center"><h2 className="font-display text-3xl font-bold md:text-5xl">{copy.pricingTitle}</h2><p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-landing-muted">{copy.pricingSub}</p></div>
           <div className="mx-auto mt-10 flex max-w-2xl flex-wrap justify-center gap-2 rounded-full border border-landing-foreground/10 p-1.5">{(["whatsapp", "voice", "bundle"] as const).map((p) => <button key={p} type="button" onClick={() => setProduct(p)} className={`flex-1 rounded-full px-4 py-2.5 text-base font-semibold transition-colors ${product === p ? 'bg-primary text-primary-foreground' : 'text-landing-muted hover:text-landing-foreground'}`}>{ar ? productLabels[p].ar : productLabels[p].en}</button>)}</div>
@@ -368,12 +368,6 @@ function Landing() {
                 </AccordionItem>
               ))}
             </Accordion>
-          </div>
-        </section>
-
-        <section className="py-16">
-          <div className="mx-auto max-w-7xl px-4 md:px-8">
-            <img src={socialImage} alt={ar ? "صوتي — صوت أعمالك حاضر لعملائك" : "Sawti — your business voice, always present"} loading="lazy" width={1200} height={630} className="w-full rounded-lg border border-landing-foreground/10 object-cover" />
           </div>
         </section>
 
