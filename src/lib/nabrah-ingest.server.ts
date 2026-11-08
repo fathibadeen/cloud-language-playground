@@ -7,11 +7,27 @@
  */
 type Json = Record<string, unknown>;
 
-function pick(o: Json, keys: string[]): unknown {
+// Nabrah sometimes sends nested objects (e.g. call_details) as a JSON string;
+// unwrap them so dotted paths and downstream reads work either way.
+function unwrap(v: unknown): unknown {
+  if (typeof v !== "string") return v;
+  const t = v.trim();
+  if (!t.startsWith("{") && !t.startsWith("[")) return v;
+  try {
+    return JSON.parse(t) as unknown;
+  } catch {
+    return v;
+  }
+}
+
+export function pick(o: Json, keys: string[]): unknown {
   for (const k of keys) {
     const parts = k.split(".");
     let cur: unknown = o;
-    for (const p of parts) cur = cur && typeof cur === "object" ? (cur as Json)[p] : undefined;
+    for (const p of parts) {
+      cur = unwrap(cur);
+      cur = cur && typeof cur === "object" ? (cur as Json)[p] : undefined;
+    }
     if (cur !== undefined && cur !== null && cur !== "") return cur;
   }
   return undefined;
@@ -94,7 +110,16 @@ export async function ingestNabrahCall(
     ended_at: toIso(ended),
   };
 
-  const transcript = pick(call, ["transcript", "transcript_object", "messages", "conversation"]);
+  const transcript = pick(call, [
+    "transcript",
+    "transcript_object",
+    "messages",
+    "conversation",
+    "call_details.transcript",
+    "call_details.transcript_object",
+    "call_details.messages",
+    "call_details.conversation",
+  ]) ?? pick(payload, ["call_details.transcript", "call_details.transcript_object"]);
   const rowWithTranscript = transcript
     ? { ...row, transcript: transcript as unknown as never }
     : row;
