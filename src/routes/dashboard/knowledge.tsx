@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Plus, RefreshCw } from "lucide-react";
+import { Pencil, Plus, RefreshCw, Trash2, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,7 +29,8 @@ import { useCompanyId, useCompanyTable } from "@/lib/tenant";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { processKnowledgeDocument } from "@/lib/knowledge.functions";
-import { clearNabrahKnowledge, syncCompanyKnowledge } from "@/lib/nabrah.functions";
+import { clearNabrahKnowledge, provisionNabrahAgent } from "@/lib/nabrah.functions";
+import { Link } from "@tanstack/react-router";
 import { humanizeDbError } from "@/lib/errors";
 import { INDUSTRY_KB_TEMPLATES } from "@/lib/kb-templates";
 
@@ -64,10 +65,33 @@ function KnowledgePage() {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ title: "", source_type: "text", content: "", source_url: "" });
   const processDoc = useServerFn(processKnowledgeDocument);
-  const syncKb = useServerFn(syncCompanyKnowledge);
+  const provision = useServerFn(provisionNabrahAgent);
+  const { data: agents } = useCompanyTable<{ id: string; name: string; channel: string; provider_agent_id: string | null }>("ai_agents", companyId);
+  const [editId, setEditId] = useState<string | null>(null);
   const clearKb = useServerFn(clearNabrahKnowledge);
   const [syncing, setSyncing] = useState(false);
 
+
+  function openEdit(d: Doc) {
+    setEditId(d.id);
+    setForm({ title: d.title, source_type: d.source_type, content: d.content ?? "", source_url: "" });
+    setOpen(true);
+  }
+
+  async function saveDoc() {
+    if (!editId) return createDoc();
+    const { error } = await supabase
+      .from("knowledge_documents")
+      .update({ title: form.title, content: form.content || null, status: "processing" })
+      .eq("id", editId);
+    if (error) { toast.error(humanizeDbError(error.message, t)); return; }
+    const id = editId;
+    setOpen(false); setEditId(null);
+    setForm({ title: "", source_type: "text", content: "", source_url: "" });
+    toast.success("تم حفظ التعديل — اضغط «تحديث الوكلاء بالمعرفة» ليستلمها الوكيل الصوتي");
+    try { await processDoc({ data: { documentId: id } }); } catch { /* ignore */ }
+    qc.invalidateQueries({ queryKey: ["knowledge_documents"] });
+  }
 
   async function createDoc() {
     if (!companyId) return;
@@ -123,9 +147,18 @@ function KnowledgePage() {
     if (!companyId) return;
     setSyncing(true);
     try {
-      const res = await syncKb({ data: { companyId } });
-      if (res.ok) toast.success(`تمت مزامنة ${res.synced} مستند مع الوكيل الصوتي`);
-      else toast.error(SYNC_ERRORS[String(res.reason)] ?? String(res.reason));
+      const linked = (agents ?? []).filter((a) => a.channel === "voice" && a.provider_agent_id);
+      if (linked.length === 0) {
+        toast.error("لا يوجد وكيل صوتي مفعّل بعد — أنشئه من صفحة الوكلاء الذكيين أولاً");
+        return;
+      }
+      let ok = 0;
+      for (const a of linked) {
+        const res = await provision({ data: { companyId, agentId: a.id } });
+        if (res.ok) ok++;
+        else toast.error(`${a.name}: ${SYNC_ERRORS[String(res.reason)] ?? String(res.reason)}`);
+      }
+      if (ok) toast.success(`تم تحديث ${ok} وكيل صوتي بآخر بيانات المعرفة بنجاح`);
     } catch (e) {
       toast.error((e as Error).message);
     } finally {
@@ -158,12 +191,15 @@ function KnowledgePage() {
         <div className="flex flex-wrap items-center gap-2">
         <Button variant="outline" className="gap-2" onClick={syncAll} disabled={syncing}>
           <RefreshCw className={`size-4 ${syncing ? "animate-spin" : ""}`} />
-          مزامنة شاملة
+          تحديث الوكلاء بالمعرفة
+        </Button>
+        <Button asChild variant="outline" className="gap-2">
+          <Link to="/dashboard/agents"><Bot className="size-4" /> جرّب الوكيل</Link>
         </Button>
         <Button variant="ghost" className="gap-2" onClick={clearRemote} disabled={syncing}>
           حذف النسخة لدى الوكيل
         </Button>
-        <Dialog open={open} onOpenChange={setOpen}>
+        <Dialog open={open} onOpenChange={(v) => { setOpen(v); if (!v) { setEditId(null); setForm({ title: "", source_type: "text", content: "", source_url: "" }); } }}>
 
           <DialogTrigger asChild>
             <Button className="gap-2">
@@ -173,10 +209,10 @@ function KnowledgePage() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>{t("newDocument")}</DialogTitle>
+              <DialogTitle>{editId ? "تعديل المستند" : t("newDocument")}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="space-y-2 rounded-lg border border-dashed p-3">
+              {!editId ? <div className="space-y-2 rounded-lg border border-dashed p-3">
                 <Label>قوالب جاهزة حسب النشاط</Label>
                 <div className="flex flex-wrap gap-2">
                   {INDUSTRY_KB_TEMPLATES.map((tpl) => (
@@ -192,7 +228,7 @@ function KnowledgePage() {
                   ))}
                 </div>
                 <p className="text-xs text-muted-foreground">اختر قالبًا ثم استبدل ما بين الأقواس [ ] ببيانات منشأتك.</p>
-              </div>
+              </div> : null}
               <div className="space-y-2">
                 <Label>{t("title")}</Label>
                 <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
@@ -232,8 +268,8 @@ function KnowledgePage() {
                   />
                 </div>
               )}
-              <Button className="w-full" onClick={createDoc} disabled={!form.title}>
-                {t("create")}
+              <Button className="w-full" onClick={saveDoc} disabled={!form.title}>
+                {editId ? "حفظ التعديل" : t("create")}
               </Button>
             </div>
           </DialogContent>
@@ -256,9 +292,14 @@ function KnowledgePage() {
                   <Badge variant="secondary">{d.source_type}</Badge>
                 </div>
                 <p className="line-clamp-3 text-sm text-muted-foreground">{d.content}</p>
-                <Button variant="ghost" size="sm" onClick={() => remove(d.id)}>
-                  {t("delete")}
-                </Button>
+                <div className="flex gap-2 border-t pt-2">
+                  <Button variant="outline" size="sm" className="gap-1" onClick={() => openEdit(d)}>
+                    <Pencil className="size-3.5" /> تعديل
+                  </Button>
+                  <Button variant="ghost" size="sm" className="gap-1 text-destructive hover:text-destructive" onClick={() => { if (confirm(`حذف "${d.title}"؟`)) remove(d.id); }}>
+                    <Trash2 className="size-3.5" /> {t("delete")}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           ))}

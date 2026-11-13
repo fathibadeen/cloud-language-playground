@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
@@ -327,9 +326,18 @@ function AgentsPage() {
                 {a.greeting ? (
                   <p className="line-clamp-2 text-sm text-muted-foreground">{a.greeting}</p>
                 ) : null}
-                <Badge variant={a.provider_agent_id ? "default" : "secondary"}>
-                  {a.provider_agent_id ? t("connected") : t("notConnected")}
-                </Badge>
+                <div className="rounded-lg border bg-muted/40 p-2 text-xs">
+                  {!a.is_active ? (
+                    <span className="text-muted-foreground">⏸ الوكيل موقوف — فعّله من المفتاح أعلاه</span>
+                  ) : a.channel === "voice" && !a.provider_agent_id ? (
+                    <span className="text-muted-foreground">⚪ لم يُطلق بعد — اضغط «إنشاء الوكيل تلقائياً»</span>
+                  ) : (
+                    <span className="font-medium text-primary">🟢 جاهز للاستقبال</span>
+                  )}
+                  <p className="mt-1 text-muted-foreground">
+                    «تجربة كتابية» مجانية · «اتصل بالوكيل» مكالمة حية تُحتسب من دقائقك. بعد تعديل المعرفة اضغط «تحديث الوكيل والمعرفة».
+                  </p>
+                </div>
                 <div className="flex flex-wrap items-center gap-2 border-t pt-3">
                   <AgentTester
                     companyId={companyId}
