@@ -42,6 +42,7 @@ import { Route as AdminCompaniesCompanyIdRouteImport } from './routes/admin_.com
 import { Route as ApiCronJobRouteImport } from './routes/api/cron/$job'
 import { Route as ApiPublicCalendarTokenRouteImport } from './routes/api/public/calendar.$token'
 import { Route as ApiPublicJobsClinicRemindersRouteImport } from './routes/api/public/jobs/clinic-reminders'
+import { Route as ApiPublicJobsWhatsappSyncRouteImport } from './routes/api/public/jobs/whatsapp-sync'
 import { Route as ApiPublicWebhooksProviderRouteImport } from './routes/api/public/webhooks/$provider'
 import { Route as ApiPublicWebhooksMoyasarRouteImport } from './routes/api/public/webhooks/moyasar'
 
@@ -212,6 +213,12 @@ const ApiPublicJobsClinicRemindersRoute =
     path: '/api/public/jobs/clinic-reminders',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicJobsWhatsappSyncRoute =
+  ApiPublicJobsWhatsappSyncRouteImport.update({
+    id: '/api/public/jobs/whatsapp-sync',
+    path: '/api/public/jobs/whatsapp-sync',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicWebhooksProviderRoute =
   ApiPublicWebhooksProviderRouteImport.update({
     id: '/api/public/webhooks/$provider',
@@ -259,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/jobs/clinic-reminders': typeof ApiPublicJobsClinicRemindersRoute
+  '/api/public/jobs/whatsapp-sync': typeof ApiPublicJobsWhatsappSyncRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
   '/api/public/webhooks/moyasar': typeof ApiPublicWebhooksMoyasarRoute
 }
@@ -295,6 +303,7 @@ export interface FileRoutesByTo {
   '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/jobs/clinic-reminders': typeof ApiPublicJobsClinicRemindersRoute
+  '/api/public/jobs/whatsapp-sync': typeof ApiPublicJobsWhatsappSyncRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
   '/api/public/webhooks/moyasar': typeof ApiPublicWebhooksMoyasarRoute
 }
@@ -333,6 +342,7 @@ export interface FileRoutesById {
   '/api/cron/$job': typeof ApiCronJobRoute
   '/api/public/calendar/$token': typeof ApiPublicCalendarTokenRoute
   '/api/public/jobs/clinic-reminders': typeof ApiPublicJobsClinicRemindersRoute
+  '/api/public/jobs/whatsapp-sync': typeof ApiPublicJobsWhatsappSyncRoute
   '/api/public/webhooks/$provider': typeof ApiPublicWebhooksProviderRoute
   '/api/public/webhooks/moyasar': typeof ApiPublicWebhooksMoyasarRoute
 }
@@ -372,6 +382,7 @@ export interface FileRouteTypes {
     | '/api/cron/$job'
     | '/api/public/calendar/$token'
     | '/api/public/jobs/clinic-reminders'
+    | '/api/public/jobs/whatsapp-sync'
     | '/api/public/webhooks/$provider'
     | '/api/public/webhooks/moyasar'
   fileRoutesByTo: FileRoutesByTo
@@ -408,6 +419,7 @@ export interface FileRouteTypes {
     | '/api/cron/$job'
     | '/api/public/calendar/$token'
     | '/api/public/jobs/clinic-reminders'
+    | '/api/public/jobs/whatsapp-sync'
     | '/api/public/webhooks/$provider'
     | '/api/public/webhooks/moyasar'
   id:
@@ -445,6 +457,7 @@ export interface FileRouteTypes {
     | '/api/cron/$job'
     | '/api/public/calendar/$token'
     | '/api/public/jobs/clinic-reminders'
+    | '/api/public/jobs/whatsapp-sync'
     | '/api/public/webhooks/$provider'
     | '/api/public/webhooks/moyasar'
   fileRoutesById: FileRoutesById
@@ -467,6 +480,7 @@ export interface RootRouteChildren {
   ApiCronJobRoute: typeof ApiCronJobRoute
   ApiPublicCalendarTokenRoute: typeof ApiPublicCalendarTokenRoute
   ApiPublicJobsClinicRemindersRoute: typeof ApiPublicJobsClinicRemindersRoute
+  ApiPublicJobsWhatsappSyncRoute: typeof ApiPublicJobsWhatsappSyncRoute
   ApiPublicWebhooksProviderRoute: typeof ApiPublicWebhooksProviderRoute
   ApiPublicWebhooksMoyasarRoute: typeof ApiPublicWebhooksMoyasarRoute
 }
@@ -704,6 +718,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicJobsClinicRemindersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/jobs/whatsapp-sync': {
+      id: '/api/public/jobs/whatsapp-sync'
+      path: '/api/public/jobs/whatsapp-sync'
+      fullPath: '/api/public/jobs/whatsapp-sync'
+      preLoaderRoute: typeof ApiPublicJobsWhatsappSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/webhooks/$provider': {
       id: '/api/public/webhooks/$provider'
       path: '/api/public/webhooks/$provider'
@@ -781,6 +802,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiCronJobRoute: ApiCronJobRoute,
   ApiPublicCalendarTokenRoute: ApiPublicCalendarTokenRoute,
   ApiPublicJobsClinicRemindersRoute: ApiPublicJobsClinicRemindersRoute,
+  ApiPublicJobsWhatsappSyncRoute: ApiPublicJobsWhatsappSyncRoute,
   ApiPublicWebhooksProviderRoute: ApiPublicWebhooksProviderRoute,
   ApiPublicWebhooksMoyasarRoute: ApiPublicWebhooksMoyasarRoute,
 }
