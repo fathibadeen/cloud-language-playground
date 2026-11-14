@@ -43,8 +43,12 @@ export const Route = createFileRoute("/api/public/webhooks/$provider")({
           } catch {
             return Response.json({ error: "invalid_json" }, { status: 400 });
           }
-          const call = (payload["call"] ?? payload["data"] ?? payload) as Record<string, unknown>;
           const eventType = String(payload["event"] ?? payload["type"] ?? "call");
+          // WhatsApp message events are pulled by the whatsapp-sync job instead.
+          if (eventType.startsWith("message.")) return Response.json({ ok: true, ignored: true });
+          let rawCall: unknown = payload["call_details"] ?? payload["call"] ?? payload["data"] ?? payload;
+          if (typeof rawCall === "string") { try { rawCall = JSON.parse(rawCall); } catch { rawCall = {}; } }
+          const call = (rawCall ?? {}) as Record<string, unknown>;
           const externalId = `${String(call["call_id"] ?? call["id"] ?? call["session_id"] ?? Date.now())}:${eventType}`;
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const { data: existing } = await supabaseAdmin

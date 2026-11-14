@@ -32,7 +32,7 @@ export function pick(o: Json, keys: string[]): unknown {
   }
   return undefined;
 }
-const str = (v: unknown) => (v === undefined ? null : String(v));
+const str = (v: unknown) => (v === undefined || v === "_" ? null : String(v));
 
 export async function ingestNabrahCall(
   agentRowId: string,
@@ -46,14 +46,14 @@ export async function ingestNabrahCall(
     .maybeSingle();
   if (!agent) return { ok: false, reason: "unknown_agent" };
 
-  const call = (pick(payload, ["call", "data.call", "data"]) as Json | undefined) ?? payload;
+  const call = (unwrap(pick(payload, ["call_details", "call", "data.call", "data"])) as Json | undefined) ?? payload;
   const callId = str(pick(call, ["call_id", "callId", "id", "session_id", "sessionId"]));
   if (!callId) return { ok: false, reason: "missing_call_id", companyId: agent.company_id };
 
   const direction = String(pick(call, ["direction"]) ?? "inbound").toLowerCase();
   const inbound = !direction.startsWith("out");
-  const from = str(pick(call, ["from_number", "from", "caller", "caller_number", "contact.phone"]));
-  const to = str(pick(call, ["to_number", "to", "callee", "did"]));
+  const from = str(pick(call, ["from_number", "from", "caller", "caller_number", "call_from", "contact.phone"]));
+  const to = str(pick(call, ["to_number", "to", "call_to", "callee", "did"]));
   const customerNumber = inbound ? from : to;
 
   let customerId: string | null = null;
@@ -84,8 +84,8 @@ export async function ingestNabrahCall(
           ? "ringing"
           : "completed";
   const endedReason = str(pick(call, ["ended_reason", "end_reason", "disconnection_reason"]));
-  const started = pick(call, ["started_at", "start_time", "start_timestamp"]);
-  const ended = pick(call, ["ended_at", "end_time", "end_timestamp"]);
+  const started = pick(call, ["started_at", "call_started_at", "start_time", "start_timestamp"]);
+  const ended = pick(call, ["ended_at", "call_ended_at", "end_time", "end_timestamp"]);
   const toIso = (v: unknown) => {
     if (v === undefined) return null;
     const d = new Date(typeof v === "number" ? v : String(v));

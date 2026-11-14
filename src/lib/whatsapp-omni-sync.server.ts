@@ -64,6 +64,7 @@ export async function syncOmniWhatsapp() {
         }
         const pool = [c.last_non_activity_message, ...(c.messages ?? [])].filter(Boolean) as J[];
         const seen = new Set<string>();
+        let added = 0;
         for (const m of pool) {
           const sender = mapOmniSender(m);
           const mid = `omni:${m.id}`;
@@ -78,7 +79,20 @@ export async function syncOmniWhatsapp() {
             metadata: { source: "nabrah_omni" },
             created_at: new Date(Number(m.created_at) * 1000).toISOString(),
           });
-          if (!error) msgs++;
+          if (!error) { msgs++; added++; }
+        }
+        if (added > 0) {
+          // New messages may contain an agreed appointment; book it automatically.
+          try {
+            const { data: thread } = await db.from("messages").select("sender, body")
+              .eq("conversation_id", convId!).order("created_at", { ascending: true }).limit(60);
+            const { bookFromConversation } = await import("@/lib/appointments.server");
+            await bookFromConversation({
+              companyId: acc.company_id, agentId: acc.agent_id, conversationId: convId!,
+              customerId, customerPhone: phone || null, customerName: contact.name || null,
+              source: "whatsapp",
+            }, (thread ?? []).map((m: J) => ({ role: m.sender === "customer" ? "العميل" : "الوكيل", content: m.body })));
+          } catch (e) { console.error("[wa-sync] booking", (e as Error).message); }
         }
       }
       if (list.length < 25) break;
