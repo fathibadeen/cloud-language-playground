@@ -4,7 +4,8 @@
  * by provider ids, so repeated runs only add what is new. The provider's list
  * endpoint returns each conversation's latest messages, not full history.
  */
-type J = Record<string, any>;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type J = any;
 
 export function mapOmniSender(m: J): "customer" | "ai" | "human" | null {
   if (m.message_type === 0) return "customer";
